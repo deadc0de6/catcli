@@ -119,7 +119,8 @@ class Noder:
 
     def print_tree(self, node, style=anytree.ContRoundStyle()):
         ''' print the tree similar to unix tool "tree" '''
-        for pre, fill, node in anytree.RenderTree(node, childiter=self.sort_tree):
+        rend = anytree.RenderTree(node, childiter=self.sort_tree)
+        for pre, fill, node in rend:
             self._print_node(node, pre=pre, withdepth=True)
 
     ###############################################################
