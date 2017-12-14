@@ -76,19 +76,7 @@ class Logger:
         s = '{}{}{}'.format(Logger.RED, string, Logger.RESET)
         sys.stderr.write(s+'\n')
 
-    def clog(string, color, stdout=True):
-        ''' generic printer wrapper for colored text '''
-        s = '{}{}{}'.format(color, string, Logger.RESET)
-        if stdout:
-            sys.stdout.write(s+'\n')
-        else:
-            sys.stderr.write(s+'\n')
-
     def progr(string):
         ''' print progress '''
         sys.stderr.write('{}\r'.format(string))
         sys.stderr.flush()
-
-    def get(string, color):
-        ''' get color formatted text '''
-        return '{}{}{}'.format(color, string, Logger.RESET)
