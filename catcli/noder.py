@@ -51,6 +51,9 @@ class Noder:
 
     def file_node(self, name, path, parent, storagepath):
         ''' create a new node representing a file '''
+        if not os.path.exists(path):
+            Logger.err('File \"{}\" does not exist'.format(path))
+            return None
         path = os.path.abspath(path)
         st = os.lstat(path)
         md5 = None
