@@ -64,6 +64,12 @@ See the [example](#example) for an overview of the available features.
 
 # Installation
 
+To install run:
+```bash
+$ sudo pip3 install catcli
+```
+
+Or from github directly
 ```bash
 $ cd /tmp; git clone https://github.com/deadc0de6/catcli && cd catcli
 $ sudo python3 setup.py install
