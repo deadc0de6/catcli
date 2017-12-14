@@ -21,7 +21,7 @@ setup(
     download_url = 'https://github.com/deadc0de6/catcli/archive/v'+VERSION+'.tar.gz',
 
     author='deadc0de6',
-    author_email='deadc0de6@foo',
+    author_email='deadc0de6@foo.bar',
 
     license='GPLv3',
     classifiers=[
@@ -30,6 +30,7 @@ setup(
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
+            'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
           ],
 
     keywords='catalog commandline indexer offline',
