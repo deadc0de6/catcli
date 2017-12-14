@@ -28,7 +28,10 @@ class Walker:
         for (root, dirs, files) in os.walk(path):
             for f in files:
                 sub = os.path.join(root, f)
-                Logger.progr('indexing: {:80}'.format(f))
+                n = f
+                if len(n) > 80-4:
+                    n = f[:80-4]+'...'
+                Logger.progr('indexing: {:80}'.format(n))
                 self.noder.file_node(os.path.basename(f), sub,
                                      parent, parentpath)
                 cnt += 1
