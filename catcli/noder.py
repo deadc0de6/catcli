@@ -55,7 +55,11 @@ class Noder:
             Logger.err('File \"{}\" does not exist'.format(path))
             return None
         path = os.path.abspath(path)
-        st = os.lstat(path)
+        try:
+            st = os.lstat(path)
+        except OSError as e:
+            Logger.err('OSError: {}'.format(e))
+            return None
         md5 = None
         if self.hash:
             md5 = utils.md5sum(path)
