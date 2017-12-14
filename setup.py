@@ -11,6 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='catcli',
+    packages = ['catcli'],
     version=catcli.__version__,
 
     description='The command line catalog tool for your offline data',
