@@ -73,6 +73,7 @@ $ catcli --help
 To work with catcli without installing it, you can do the following
 ```bash
 $ cd /tmp; git clone https://github.com/deadc0de6/catcli && cd catcli
+$ sudo pip3 install -r requirements.txt
 $ python3 -m catcli.catcli --help
 ```
 
