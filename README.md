@@ -40,8 +40,9 @@ see [usage](#usage) for specific info.
 
 ## Why catcli ?
 
-[Catcli](https://github.com/deadc0de6/catcli) gives the ability to navigate, explore and find your files
-that are stored on external media (DVDs, hard drives, USB sticks, ...) when those are not connected.
+[Catcli](https://github.com/deadc0de6/catcli) gives the ability to navigate,
+explore and find your files that are stored on external media
+(DVDs, hard drives, USB sticks, etc) when those are not connected.
 Catcli can just as easily index any arbitrary directories.
 
 See the [example](#example) for an overview of the available features.
@@ -113,10 +114,12 @@ directory under `catcli.catalog`.
 
 The `--meta` switch allows to add any additional information to store along in
 the catalog like for example `the blue disk in my office`.
+The `-u` switch tells catcli to also store (and calculate) the total size
+of each directory.
 
 ## Walk indexed files with ls
 
-A catalog can be walked using the command ls as if the media
+A catalog can be walked using the command `ls` as if the media
 was mounted.
 
 File/folder separator is `/`
@@ -128,7 +131,8 @@ See the [example](#example) for more.
 
 ## Find files
 
-Files and directories can be found based on their names.
+Files and directories can be found based on their names
+using the `find` command.
 
 See the [example](#example) for more.
 
@@ -169,7 +173,7 @@ $ catcli index --meta='my test directory' -u tmptest /tmp/test
 Catcli has created its catalog in the current directory as `catcli.catalog`.
 
 Printing the entire catalog as a tree is done with the command `tree`
-```bash
+```
 $ catcli tree
 top
 └── storage: tmptest (free:183.7G, total:200.0G) (my test directory)
@@ -188,7 +192,7 @@ top
 ```
 
 The catalog can be walked with `ls` as if it was a normal directory
-```bash
+```
 $ catcli ls
 top
 - storage: tmptest (free:2.6G, total:2.6G) (my test directory)
