@@ -9,19 +9,28 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+VERSION = catcli.__version__
+
 setup(
     name='catcli',
-    packages = ['catcli'],
-    version=catcli.__version__,
+    version=VERSION,
 
     description='The command line catalog tool for your offline data',
     long_description=long_description,
     url='https://github.com/deadc0de6/catcli',
+    download_url = 'https://github.com/deadc0de6/catcli/archive/v'+VERSION+'.tar.gz',
 
     author='deadc0de6',
     author_email='deadc0de6@foo',
 
     license='GPLv3',
+    classifiers=[
+            'Development Status :: 5 - Production/Stable',
+            'Programming Language :: Python :: 3.3',
+            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
+          ],
 
     keywords='catalog commandline indexer offline',
     packages=find_packages(exclude=['tests*']),
