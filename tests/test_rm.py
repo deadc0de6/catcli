@@ -25,7 +25,8 @@ class TestRm(unittest.TestCase):
         noder = Noder()
 
         # create fake args dict
-        args = {'<path>': '', '--recursive': False}
+        args = {'<path>': '', '--recursive': False,
+                '--verbose': True}
 
         # list files and make sure there are children
         args['<path>'] = ''

@@ -25,7 +25,8 @@ class TestWalking(unittest.TestCase):
         noder = Noder()
 
         # create fake args
-        args = {'<path>': '', '--recursive': False}
+        args = {'<path>': '', '--recursive': False,
+                '--verbose': True}
 
         # list root
         args['<path>'] = ''

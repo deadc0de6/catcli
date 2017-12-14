@@ -27,7 +27,8 @@ class TestFind(unittest.TestCase):
         noder = Noder()
 
         # create fake args
-        args = {'<term>': '7544G', '--script': False}
+        args = {'<term>': '7544G', '--script': True,
+                '--verbose': True}
 
         # try to find something
         found = cmd_find(args, noder, top)
