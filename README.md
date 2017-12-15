@@ -60,6 +60,7 @@ See the [example](#example) for an overview of the available features.
   * [Walk indexed files with ls](#walk-indexed-files-with-ls)
   * [Find files](#find-files)
   * [Display entire tree](#display-entire-tree)
+  * [Catalog graph](#catalog-graph)
 
 * [Example](#example)
 * [Contribution](#contribution)
@@ -150,6 +151,18 @@ See the [example](#example) for more.
 The entire catalog can be shown using the `tree` command.
 
 See the [example](#example) for more.
+
+## Catalog graph
+
+The catalog can be exported in a dot file that can be used to
+generate a graph of the indexed files.
+
+```bash
+$ catcli graph
+dot file created under "/tmp/catcli.dot"
+create graph with "dot /tmp/catcli.dot -T png -o /tmp/tree.png" (you need graphviz)
+$ dot /tmp/catcli.dot -T png -o /tmp/tree.png
+```
 
 # Example
 
