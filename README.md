@@ -28,6 +28,8 @@ Features:
 Quick start:
 
 ```bash
+# install catcli with pip
+sudo pip3 install catcli
 # index a directory in the catalog
 catcli index -u --meta='some description' log /var/log
 # display the content
@@ -119,7 +121,7 @@ and store that in your catalog under the name `<short-name>`.
 $ catcli index --meta=<some-description> -u <short-name> /media/mnt
 ```
 
-If not specified otherwise (switch `--catalog`), the catalog is saved in the current
+If not specified otherwise (with the switch `--catalog`), the catalog is saved in the current
 directory under `catcli.catalog`.
 
 The `--meta` switch allows to add any additional information to store along in
@@ -192,7 +194,7 @@ external storage:
 $ catcli index --meta='my test directory' -u tmptest /tmp/test
 ```
 
-Catcli has created its catalog in the current directory as `catcli.catalog`.
+Catcli has created its catalog file in the current directory as `catcli.catalog`.
 
 Printing the entire catalog as a tree is done with the command `tree`
 ```
