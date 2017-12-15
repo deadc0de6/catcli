@@ -3,11 +3,15 @@ from codecs import open
 from os import path
 import catcli
 
+readme = 'README.md'
 here = path.abspath(path.dirname(__file__))
 
-# Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+try:
+    from pypandoc import convert
+    read_readme = lambda f: convert(f, 'rst')
+except ImportError:
+    print('\n[WARNING] pypandoc not found, could not convert \"{}\"\n'.format(readme))
+    read_readme = lambda f: open(f, 'r').read()
 
 VERSION = catcli.__version__
 
@@ -16,7 +20,7 @@ setup(
     version=VERSION,
 
     description='The command line catalog tool for your offline data',
-    long_description=long_description,
+    long_description=read_readme(readme),
     url='https://github.com/deadc0de6/catcli',
     download_url = 'https://github.com/deadc0de6/catcli/archive/v'+VERSION+'.tar.gz',
 
