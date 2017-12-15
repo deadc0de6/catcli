@@ -89,7 +89,7 @@ $ python3 -m catcli.catcli --help
 or install it in a virtualenv
 ```bash
 $ cd /tmp; git clone https://github.com/deadc0de6/catcli && cd catcli
-$ virtualenv env
+$ virtualenv -p python3 env
 $ source env/bin/activate
 $ python setup.py install
 $ catcli --help
