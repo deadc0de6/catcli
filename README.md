@@ -40,7 +40,8 @@ catcli ls log
 catcli find log
 ```
 
-see [usage](#usage) for specific info.
+see [usage](#usage) for specific info and the [screencast](#screencast)
+for a demo.
 
 ## Why catcli ?
 
@@ -64,6 +65,7 @@ See the [example](#example) for an overview of the available features.
   * [Display entire tree](#display-entire-tree)
   * [Catalog graph](#catalog-graph)
 
+* [Screencast](#screencast)
 * [Example](#example)
 * [Contribution](#contribution)
 
@@ -165,6 +167,10 @@ dot file created under "/tmp/catcli.dot"
 create graph with "dot /tmp/catcli.dot -T png -o /tmp/tree.png" (you need graphviz)
 $ dot /tmp/catcli.dot -T png -o /tmp/tree.png
 ```
+
+# Screencast
+
+[![asciicast](https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png)](https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8)
 
 # Example
 
