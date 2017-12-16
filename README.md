@@ -170,7 +170,7 @@ $ dot /tmp/catcli.dot -T png -o /tmp/tree.png
 
 # Screencast
 
-[![asciicast](https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png)](https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8)
+<a href="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8"><img src="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png" width="50%" height="50%"></a>
 
 # Example
 
