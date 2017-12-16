@@ -42,6 +42,15 @@ class Noder:
         ''' return a list of all storage names '''
         return [x.name for x in list(top.children)]
 
+    def get_node(self, top, path):
+        ''' get the node at path '''
+        r = anytree.resolver.Resolver('name')
+        try:
+            return r.get(top, path)
+        except anytree.resolver.ChildResolverError:
+            Logger.err('No node at path \"{}\"'.format(path))
+            return None
+
     ###############################################################
     # node creationg
     ###############################################################

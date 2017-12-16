@@ -39,8 +39,9 @@ Usage:
     {1} ls    [--catalog=<path>] [-rV] [<path>]
     {1} find  [--catalog=<path>] [-sV] <term>
     {1} rm    [--catalog=<path>] [-fV] <storage>
-    {1} tree  [--catalog=<path>] [-V]
+    {1} tree  [--catalog=<path>] [-V] [<path>]
     {1} graph [--catalog=<path>] [-V] [<path>]
+    {1} help
     {1} --help
     {1} --version
 
@@ -113,7 +114,12 @@ def cmd_find(args, noder, top):
 
 
 def cmd_tree(args, noder, top):
-    noder.print_tree(top)
+    path = args['<path>']
+    node = top
+    if path:
+        node = noder.get_node(top, path)
+    if node:
+        noder.print_tree(node)
 
 
 def cmd_graph(args, noder, top):
@@ -131,6 +137,10 @@ def banner():
 
 def main():
     args = docopt(USAGE, version=VERSION)
+
+    if args['help']:
+        print(USAGE)
+        return True
 
     # print banner
     banner()
