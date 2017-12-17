@@ -25,6 +25,9 @@ Features:
   * Store files and folders sizes
   * Store md5 hash of files
 
+
+<a href="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8"><img src="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png" width="50%" height="50%"></a>
+
 Quick start:
 
 ```bash
@@ -64,8 +67,7 @@ See the [example](#example) for an overview of the available features.
   * [Find files](#find-files)
   * [Display entire tree](#display-entire-tree)
   * [Catalog graph](#catalog-graph)
-
-* [Screencast](#screencast)
+  
 * [Example](#example)
 * [Contribution](#contribution)
 
@@ -167,10 +169,6 @@ dot file created under "/tmp/catcli.dot"
 create graph with "dot /tmp/catcli.dot -T png -o /tmp/tree.png" (you need graphviz)
 $ dot /tmp/catcli.dot -T png -o /tmp/tree.png
 ```
-
-# Screencast
-
-<a href="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8"><img src="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png" width="50%" height="50%"></a>
 
 # Example
 
