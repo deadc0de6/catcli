@@ -144,7 +144,8 @@ def cmd_rename(args, noder, catalog, top):
         node = next(filter(lambda x: x.name == storage, top.children))
         node.name = new
         if catalog.save(top):
-            Logger.info('Storage \"{}\" renamed to \"{}\"'.format(storage, new))
+            m = 'Storage \"{}\" renamed to \"{}\"'.format(storage, new)
+            Logger.info(m)
     else:
         Logger.err('Storage named \"{}\" does not exist'.format(storage))
     return top

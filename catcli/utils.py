@@ -57,7 +57,7 @@ def ask(question):
 def edit(string):
     ''' edit the information with the default EDITOR '''
     string = string.encode('utf-8')
-    EDITOR = os.environ.get('EDITOR','vim')
+    EDITOR = os.environ.get('EDITOR', 'vim')
     with tempfile.NamedTemporaryFile(prefix='catcli', suffix='.tmp') as f:
         f.write(string)
         f.flush()
