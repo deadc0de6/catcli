@@ -237,10 +237,7 @@ class Noder:
 
     def _get_storage(self, node):
         ''' recursively traverse up to find storage '''
-        if node.parent.type == self.TYPE_STORAGE:
-            return node.parent
-        else:
-            return self._get_storage(node.parent)
+        return node.ancestors[1]
 
     def get_meta_node(self, top):
         ''' return the meta node if any '''
