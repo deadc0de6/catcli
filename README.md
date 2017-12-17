@@ -43,8 +43,7 @@ catcli ls log
 catcli find log
 ```
 
-see [usage](#usage) for specific info and the [screencast](#screencast)
-for a demo.
+see [usage](#usage) for specific info
 
 ## Why catcli ?
 
