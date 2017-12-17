@@ -35,12 +35,13 @@ USAGE = """
 {0}
 
 Usage:
-    {1} index [--catalog=<path>] [--meta=<meta>...] [-fcuV] <name> <path>
-    {1} ls    [--catalog=<path>] [-rV] [<path>]
-    {1} find  [--catalog=<path>] [-sV] <term>
-    {1} rm    [--catalog=<path>] [-fV] <storage>
-    {1} tree  [--catalog=<path>] [-V] [<path>]
-    {1} graph [--catalog=<path>] [-V] [<path>]
+    {1} index  [--catalog=<path>] [--meta=<meta>...] [-fcuV] <name> <path>
+    {1} ls     [--catalog=<path>] [-rV] [<path>]
+    {1} find   [--catalog=<path>] [-sV] <term>
+    {1} rm     [--catalog=<path>] [-fV] <storage>
+    {1} tree   [--catalog=<path>] [-V] [<path>]
+    {1} rename [--catalog=<path>] [-fV] <storage> <name>
+    {1} graph  [--catalog=<path>] [-V] [<path>]
     {1} help
     {1} --help
     {1} --version
@@ -104,6 +105,7 @@ def cmd_rm(args, noder, catalog, top):
         node = next(filter(lambda x: x.name == what, top.children))
         node.parent = None
         catalog.save(top)
+        Logger.info('Storage \"{}\" removed'.format(what))
     else:
         Logger.err('Storage named \"{}\" does not exist'.format(what))
     return top
@@ -128,6 +130,20 @@ def cmd_graph(args, noder, top):
         path = GRAPHPATH
     cmd = noder.to_dot(top, path)
     Logger.info('create graph with \"{}\" (you need graphviz)'.format(cmd))
+
+
+def cmd_rename(args, noder, catalog, top):
+    storage = args['<storage>']
+    new = args['<name>']
+    storages = list(x.name for x in top.children)
+    if storage in storages:
+        node = next(filter(lambda x: x.name == storage, top.children))
+        node.name = new
+        catalog.save(top)
+        Logger.info('Storage \"{}\" renamed to \"{}\"'.format(storage, new))
+    else:
+        Logger.err('Storage named \"{}\" does not exist'.format(storage))
+    return top
 
 
 def banner():
@@ -172,6 +188,8 @@ def main():
         cmd_rm(args, noder, catalog, top)
     elif args['graph']:
         cmd_graph(args, noder, top)
+    elif args['rename']:
+        cmd_rename(args, noder, catalog, top)
 
     return True
 
