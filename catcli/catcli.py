@@ -155,6 +155,10 @@ def main():
     if not top:
         top = noder.new_top_node()
 
+    # handle the meta node
+    meta = noder.update_metanode(noder.get_meta_node(top))
+    catalog.set_metanode(meta)
+
     # parse command
     if args['index']:
         cmd_index(args, noder, catalog, top)

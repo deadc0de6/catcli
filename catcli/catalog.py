@@ -21,8 +21,14 @@ class Catalog:
         self.path = path  # catalog path
         self.verbose = verbose  # verbosity
         self.force = force  # force overwrite if exists
+        self.metanode = None
         # prefer json for git versioning
         self.pickle = pickle
+
+    def set_metanode(self, metanode):
+        ''' remove the metanode until tree is re-written '''
+        self.metanode = metanode
+        self.metanode.parent = None
 
     def restore(self):
         ''' restore the catalog '''
@@ -49,6 +55,8 @@ class Catalog:
         if d and not os.path.exists(d):
             Logger.err('Cannot write to \"{}\"'.format(d))
             return False
+        if self.metanode:
+            self.metanode.parent = node
         if self.pickle:
             return self._save_pickle(node)
         return self._save_json(node)

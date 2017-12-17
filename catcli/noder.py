@@ -11,6 +11,7 @@ import psutil
 import time
 
 # local imports
+from . import __version__ as VERSION
 import catcli.utils as utils
 from catcli.logger import Logger
 
@@ -26,10 +27,12 @@ There are 4 types of node:
 class Noder:
 
     TOPNAME = 'top'
+    METANAME = 'meta'
     TYPE_TOP = 'top'  # tip top ;-)
     TYPE_FILE = 'file'
     TYPE_DIR = 'dir'
     TYPE_STORAGE = 'storage'
+    TYPE_META = 'meta'
 
     def __init__(self, verbose=False):
         self.hash = True
@@ -57,6 +60,19 @@ class Noder:
     def new_top_node(self):
         ''' create a new top node'''
         return anytree.AnyNode(name=self.TOPNAME, type=self.TYPE_TOP)
+
+    def update_metanode(self, meta):
+        ''' create or update meta node information '''
+        epoch = int(time.time())
+        if not meta:
+            attr = {}
+            attr['created'] = epoch
+            attr['created_version'] = VERSION
+            meta = anytree.AnyNode(name=self.METANAME, type=self.TYPE_META,
+                                   attr=attr)
+        meta.attr['access'] = epoch
+        meta.attr['access_version'] = VERSION
+        return meta
 
     def file_node(self, name, path, parent, storagepath):
         ''' create a new node representing a file '''
@@ -88,7 +104,7 @@ class Noder:
         path = os.path.abspath(path)
         free = psutil.disk_usage(path).free
         total = psutil.disk_usage(path).total
-        epoch = time.time()
+        epoch = int(time.time())
         return anytree.AnyNode(name=name, type=self.TYPE_STORAGE, free=free,
                                total=total, parent=parent, attr=attr, ts=epoch)
 
@@ -225,6 +241,14 @@ class Noder:
             return node.parent
         else:
             return self._get_storage(node.parent)
+
+    def get_meta_node(self, top):
+        ''' return the meta node if any '''
+        try:
+            return next(filter(lambda x: x.type == self.TYPE_META,
+                        top.children))
+        except StopIteration:
+            return None
 
     def rec_size(self, node):
         ''' recursively traverse tree and store dir size '''
