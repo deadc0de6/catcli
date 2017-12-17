@@ -100,7 +100,8 @@ class Noder:
     ###############################################################
     # printing
     ###############################################################
-    def _print_node(self, node, pre='', withpath=False, withdepth=False):
+    def _print_node(self, node, pre='', withpath=False,
+                    withdepth=False, withstorage=False):
         ''' print a node '''
         if node.type == self.TYPE_TOP:
             Logger.out('{}{}'.format(pre, node.name))
@@ -108,10 +109,14 @@ class Noder:
             name = node.name
             if withpath:
                 name = node.relpath
+            if withstorage:
+                storage = self._get_storage(node)
             attr = ''
             if node.md5:
                 attr = ', md5:{}'.format(node.md5)
             compl = 'size:{}{}'.format(utils.human(node.size), attr)
+            if withstorage:
+                compl += ', storage:{}'.format(Logger.bold(storage.name))
             Logger.file(pre, name, compl)
         elif node.type == self.TYPE_DIR:
             name = node.name
@@ -120,9 +125,13 @@ class Noder:
             depth = ''
             if withdepth:
                 depth = len(node.children)
-            attr = None
+            if withstorage:
+                storage = self._get_storage(node)
+            attr = []
             if node.size:
-                attr = [['totsize', utils.human(node.size)]]
+                attr.append(['totsize', utils.human(node.size)])
+            if withstorage:
+                attr.append(['storage', Logger.bold(storage.name)])
             Logger.dir(pre, name, depth=depth, attr=attr)
         elif node.type == self.TYPE_STORAGE:
             hf = utils.human(node.free)
@@ -153,7 +162,8 @@ class Noder:
             if f.type == self.TYPE_STORAGE:
                 # ignore storage nodes
                 continue
-            self._print_node(f, withpath=True, withdepth=True)
+            self._print_node(f, withpath=True, withdepth=True,
+                             withstorage=True)
             paths.append(f.relpath)
         if script:
             tmp = ['${source}/'+x for x in paths]
@@ -208,6 +218,13 @@ class Noder:
         anytree.exporter.DotExporter(node).to_dotfile(path)
         Logger.info('dot file created under \"{}\"'.format(path))
         return 'dot {} -T png -o /tmp/tree.png'.format(path)
+
+    def _get_storage(self, node):
+        ''' recursively traverse up to find storage '''
+        if node.parent.type == self.TYPE_STORAGE:
+            return node.parent
+        else:
+            return self._get_storage(node.parent)
 
     def rec_size(self, node):
         ''' recursively traverse tree and store dir size '''

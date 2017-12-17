@@ -19,6 +19,7 @@ class Logger:
     MAGENTA = '\033[95m'
     RESET = '\033[0m'
     EMPH = '\033[33m'
+    BOLD = '\033[1m'
     UND = '\033[4m'
 
     def __init__(self):
@@ -80,3 +81,6 @@ class Logger:
         ''' print progress '''
         sys.stderr.write('{}\r'.format(string))
         sys.stderr.flush()
+
+    def bold(string):
+        return '{}{}{}'.format(Logger.BOLD, string, Logger.RESET)
