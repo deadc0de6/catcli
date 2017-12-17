@@ -38,7 +38,7 @@ USAGE = """
 Usage:
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-fcuV] <name> <path>
     {1} ls     [--catalog=<path>] [-rVS] [<path>]
-    {1} find   [--catalog=<path>] [-bVS] <term>
+    {1} find   [--catalog=<path>] [-bV] <term>
     {1} rm     [--catalog=<path>] [-fV] <storage>
     {1} tree   [--catalog=<path>] [-VS] [<path>]
     {1} rename [--catalog=<path>] [-fV] <storage> <name>

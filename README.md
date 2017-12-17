@@ -152,8 +152,6 @@ See the [example](#example) for more.
 Files and directories can be found based on their names
 using the `find` command.
 
-Resulting files can be sorted by size using `-S`.
-
 See the [example](#example) for more.
 
 ## Display entire tree
