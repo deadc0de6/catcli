@@ -66,7 +66,7 @@ See the [example](#example) for an overview of the available features.
   * [Find files](#find-files)
   * [Display entire tree](#display-entire-tree)
   * [Catalog graph](#catalog-graph)
-  
+
 * [Example](#example)
 * [Contribution](#contribution)
 
@@ -243,10 +243,10 @@ $ catcli find 9
 test/c/9 [size:0]
 ```
 
-When using the `-s` switch, a one-liner is generated
+When using the `--script` switch, a one-liner is generated
 that allows to handle the found file(s)
 ```bash
-$ catcli find 9 -s
+$ catcli find 9 --script
 test/c/9 [size:0]
 op=file; source=/media/mnt; $op ${source}/test/c/9
 ```

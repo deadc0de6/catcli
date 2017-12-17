@@ -34,9 +34,10 @@ class Noder:
     TYPE_STORAGE = 'storage'
     TYPE_META = 'meta'
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, sortsize=False):
         self.hash = True
         self.verbose = verbose
+        self.sortsize = sortsize
 
     def set_hashing(self, val):
         self.hash = val
@@ -165,7 +166,7 @@ class Noder:
 
     def print_tree(self, node, style=anytree.ContRoundStyle()):
         ''' print the tree similar to unix tool "tree" '''
-        rend = anytree.RenderTree(node, childiter=self.sort_tree)
+        rend = anytree.RenderTree(node, childiter=self._sort_tree)
         for pre, fill, node in rend:
             self._print_node(node, pre=pre, withdepth=True)
 
@@ -214,7 +215,7 @@ class Noder:
             if rec:
                 self.print_tree(found[0].parent)
                 return
-            found = sorted(found, key=self.sort_walk)
+            found = sorted(found, key=self._sort, reverse=self.sortsize)
             self._print_node(found[0].parent,
                              withpath=False, withdepth=True)
             for f in found:
@@ -226,13 +227,27 @@ class Noder:
     ###############################################################
     # diverse
     ###############################################################
-    def sort_tree(self, items):
+    def _sort_tree(self, items):
         ''' sorting a list of items '''
-        return sorted(items, key=self.sort_walk)
+        return sorted(items, key=self._sort, reverse=self.sortsize)
 
-    def sort_walk(self, n):
-        ''' for sorting a node '''
+    def _sort(self, x):
+        if self.sortsize:
+            return self._sort_size(x)
+        return self._sort_fs(x)
+
+    def _sort_fs(self, n):
+        ''' sorting nodes dir first and alpha '''
         return (n.type, n.name.lstrip('\.').lower())
+
+    def _sort_size(self, n):
+        ''' sorting nodes by size '''
+        try:
+            if not n.size:
+                return 0
+            return n.size
+        except AttributeError:
+            return 0
 
     def to_dot(self, node, path='tree.dot'):
         ''' export to dot for graphing '''

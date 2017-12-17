@@ -37,10 +37,10 @@ USAGE = """
 
 Usage:
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-fcuV] <name> <path>
-    {1} ls     [--catalog=<path>] [-rV] [<path>]
-    {1} find   [--catalog=<path>] [-sV] <term>
+    {1} ls     [--catalog=<path>] [-rVS] [<path>]
+    {1} find   [--catalog=<path>] [-bVS] <term>
     {1} rm     [--catalog=<path>] [-fV] <storage>
-    {1} tree   [--catalog=<path>] [-V] [<path>]
+    {1} tree   [--catalog=<path>] [-VS] [<path>]
     {1} rename [--catalog=<path>] [-fV] <storage> <name>
     {1} edit   [--catalog=<path>] [-fV] <storage>
     {1} graph  [--catalog=<path>] [-V] [<path>]
@@ -53,7 +53,8 @@ Options:
     --meta=<meta>       Additional attribute to store [default: ].
     -u --subsize        Store size of folders [default: False].
     -f --force          Force overwrite [default: False].
-    -s --script         Output script to manage found file(s) [default: False].
+    -b --script         Output script to manage found file(s) [default: False].
+    -S --sortsize       Sort by size, largest first [default: False].
     -c --hash           Calculate md5 hash [default: False].
     -r --recursive      Recursive [default: False].
     -V --verbose        Be verbose [default: False].
@@ -182,7 +183,7 @@ def main():
     banner()
 
     # init noder
-    noder = Noder(verbose=args['--verbose'])
+    noder = Noder(verbose=args['--verbose'], sortsize=args['--sortsize'])
     # init catalog
     catalog = Catalog(args['--catalog'], verbose=args['--verbose'],
                       force=args['--force'])
