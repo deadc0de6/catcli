@@ -7,6 +7,9 @@ helpers
 
 import os
 import hashlib
+import sys
+import tempfile
+import subprocess
 
 # local imports
 from catcli.logger import Logger
@@ -49,3 +52,16 @@ def ask(question):
     ''' ask the user what to do '''
     resp = input('{} [y|N] ? '.format(question))
     return resp.lower() == 'y'
+
+
+def edit(string):
+    ''' edit the information with the default EDITOR '''
+    string = string.encode('utf-8')
+    EDITOR = os.environ.get('EDITOR','vim')
+    with tempfile.NamedTemporaryFile(prefix='catcli', suffix='.tmp') as f:
+        f.write(string)
+        f.flush()
+        subprocess.call([EDITOR, f.name])
+        f.seek(0)
+        new = f.read()
+    return new.decode('utf-8')

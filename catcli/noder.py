@@ -45,6 +45,11 @@ class Noder:
         ''' return a list of all storage names '''
         return [x.name for x in list(top.children)]
 
+    def clean_storage_attr(self, attr):
+        if not attr:
+            return ''
+        return ', '.join(attr.splitlines())
+
     def get_node(self, top, path):
         ''' get the node at path '''
         r = anytree.resolver.Resolver('name')

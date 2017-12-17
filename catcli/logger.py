@@ -32,7 +32,7 @@ class Logger:
         ''' print a storage node '''
         end = ''
         if attr:
-            end = ' {}({}){}'.format(Logger.GRAY, ','.join(attr), Logger.RESET)
+            end = ' {}({}){}'.format(Logger.GRAY, attr, Logger.RESET)
         s = '{}{}storage{}:'.format(pre, Logger.UND, Logger.RESET)
         s += ' {}{}{}{}'.format(Logger.PURPLE, name, Logger.RESET, end)
         sys.stdout.write(s+'\n')

@@ -19,6 +19,7 @@ from .logger import Logger
 from .catalog import Catalog
 from .walker import Walker
 from .noder import Noder
+from .utils import *
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
@@ -41,6 +42,7 @@ Usage:
     {1} rm     [--catalog=<path>] [-fV] <storage>
     {1} tree   [--catalog=<path>] [-V] [<path>]
     {1} rename [--catalog=<path>] [-fV] <storage> <name>
+    {1} edit   [--catalog=<path>] [-fV] <storage>
     {1} graph  [--catalog=<path>] [-V] [<path>]
     {1} help
     {1} --help
@@ -73,7 +75,8 @@ def cmd_index(args, noder, catalog, top):
         return False
     start = datetime.datetime.now()
     walker = Walker(noder, nohash=nohash)
-    root = noder.storage_node(name, path, parent=top, attr=args['--meta'])
+    attr = noder.clean_storage_attr(args['--meta'])
+    root = noder.storage_node(name, path, parent=top, attr=attr)
     _, cnt = walker.index(path, name, parent=root, parentpath=path)
     if subsize:
         noder.rec_size(root)
@@ -104,8 +107,8 @@ def cmd_rm(args, noder, catalog, top):
     if what in storages:
         node = next(filter(lambda x: x.name == what, top.children))
         node.parent = None
-        catalog.save(top)
-        Logger.info('Storage \"{}\" removed'.format(what))
+        if catalog.save(top):
+            Logger.info('Storage \"{}\" removed'.format(what))
     else:
         Logger.err('Storage named \"{}\" does not exist'.format(what))
     return top
@@ -139,8 +142,25 @@ def cmd_rename(args, noder, catalog, top):
     if storage in storages:
         node = next(filter(lambda x: x.name == storage, top.children))
         node.name = new
-        catalog.save(top)
-        Logger.info('Storage \"{}\" renamed to \"{}\"'.format(storage, new))
+        if catalog.save(top):
+            Logger.info('Storage \"{}\" renamed to \"{}\"'.format(storage, new))
+    else:
+        Logger.err('Storage named \"{}\" does not exist'.format(storage))
+    return top
+
+
+def cmd_edit(args, noder, catalog, top):
+    storage = args['<storage>']
+    storages = list(x.name for x in top.children)
+    if storage in storages:
+        node = next(filter(lambda x: x.name == storage, top.children))
+        attr = node.attr
+        if not attr:
+            attr = ''
+        new = edit(attr)
+        node.attr = noder.clean_storage_attr(new)
+        if catalog.save(top):
+            Logger.info('Storage \"{}\" edited'.format(storage))
     else:
         Logger.err('Storage named \"{}\" does not exist'.format(storage))
     return top
@@ -190,6 +210,8 @@ def main():
         cmd_graph(args, noder, top)
     elif args['rename']:
         cmd_rename(args, noder, catalog, top)
+    elif args['edit']:
+        cmd_edit(args, noder, catalog, top)
 
     return True
 
