@@ -66,6 +66,7 @@ See the [example](#example) for an overview of the available features.
   * [Find files](#find-files)
   * [Display entire tree](#display-entire-tree)
   * [Catalog graph](#catalog-graph)
+  * [Edit storage](#edit-storage)
 
 * [Example](#example)
 * [Contribution](#contribution)
@@ -142,6 +143,8 @@ File/folder separator is `/`
 $ catcli ls tmp/a/b/c
 ```
 
+Resulting files can be sorted by size using `-S`.
+
 See the [example](#example) for more.
 
 ## Find files
@@ -149,11 +152,15 @@ See the [example](#example) for more.
 Files and directories can be found based on their names
 using the `find` command.
 
+Resulting files can be sorted by size using `-S`.
+
 See the [example](#example) for more.
 
 ## Display entire tree
 
 The entire catalog can be shown using the `tree` command.
+
+Resulting files can be sorted by size using `-S`.
 
 See the [example](#example) for more.
 
@@ -168,6 +175,13 @@ dot file created under "/tmp/catcli.dot"
 create graph with "dot /tmp/catcli.dot -T png -o /tmp/tree.png" (you need graphviz)
 $ dot /tmp/catcli.dot -T png -o /tmp/tree.png
 ```
+
+## Edit storage
+
+Storage entry can be edited with
+
+* `rename` - rename the storage
+* `edit` - edit storage metadata
 
 # Example
 
