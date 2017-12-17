@@ -15,6 +15,8 @@ from catcli.logger import Logger
 
 class Walker:
 
+    MAXLINE = 80 - 15
+
     def __init__(self, noder, nohash=False):
         self.noder = noder
         self.noder.set_hashing(not nohash)
@@ -29,8 +31,8 @@ class Walker:
             for f in files:
                 sub = os.path.join(root, f)
                 n = f
-                if len(n) > 80-4:
-                    n = f[:80-4]+'...'
+                if len(n) > self.MAXLINE:
+                    n = f[:self.MAXLINE]+'...'
                 Logger.progr('indexing: {:80}'.format(n))
                 self.noder.file_node(os.path.basename(f), sub,
                                      parent, parentpath)
@@ -43,5 +45,7 @@ class Walker:
                                      parent=dummy, parentpath=parentpath)
                 cnt += cnt2
             break
+        # clean line
+        Logger.progr('{:80}'.format(' '))
 
         return parent, cnt
