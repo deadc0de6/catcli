@@ -56,6 +56,11 @@ class Logger:
         s += '{}{}{}'.format(Logger.GRAY, end, Logger.RESET)
         sys.stdout.write(s+'\n')
 
+    def arc(pre, name, archive):
+        s = '{}{}{}{}'.format(pre, Logger.YELLOW, name, Logger.RESET)
+        s += ' {}[archive:{}]{}'.format(Logger.GRAY, archive, Logger.RESET)
+        sys.stdout.write(s+'\n')
+
     ######################################################################
     # generic output
     ######################################################################

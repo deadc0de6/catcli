@@ -14,6 +14,7 @@ import time
 from . import __version__ as VERSION
 import catcli.utils as utils
 from catcli.logger import Logger
+from catcli.decomp import Decomp
 
 '''
 There are 4 types of node:
@@ -31,13 +32,17 @@ class Noder:
     TYPE_TOP = 'top'  # tip top ;-)
     TYPE_FILE = 'file'
     TYPE_DIR = 'dir'
+    TYPE_ARC = 'arc'
     TYPE_STORAGE = 'storage'
     TYPE_META = 'meta'
 
-    def __init__(self, verbose=False, sortsize=False):
+    def __init__(self, verbose=False, sortsize=False, arc=False):
         self.hash = True
         self.verbose = verbose
         self.sortsize = sortsize
+        self.arc = arc
+        if self.arc:
+            self.decomp = Decomp()
 
     def set_hashing(self, val):
         self.hash = val
@@ -96,8 +101,15 @@ class Noder:
             md5 = utils.md5sum(path)
         relpath = os.path.join(os.path.basename(storagepath),
                                os.path.relpath(path, start=storagepath))
-        return self._node(name, self.TYPE_FILE, relpath, parent,
-                          size=st.st_size, md5=md5)
+
+        n = self._node(name, self.TYPE_FILE, relpath, parent,
+                       size=st.st_size, md5=md5)
+        if self.arc:
+            ext = os.path.splitext(path)[1][1:]
+            if ext in self.decomp.get_format():
+                names = self.decomp.get_names(path)
+                self.list_to_tree(n, names)
+        return n
 
     def dir_node(self, name, path, parent, storagepath):
         ''' create a new node representing a directory '''
@@ -113,6 +125,11 @@ class Noder:
         epoch = int(time.time())
         return anytree.AnyNode(name=name, type=self.TYPE_STORAGE, free=free,
                                total=total, parent=parent, attr=attr, ts=epoch)
+
+    def archive_node(self, name, path, parent, archive):
+        return anytree.AnyNode(name=name, type=self.TYPE_ARC, relpath=path,
+                               parent=parent, size=0, md5=None,
+                               archive=archive)
 
     def _node(self, name, type, relpath, parent, size=None, md5=None):
         ''' generic node creation '''
@@ -160,6 +177,9 @@ class Noder:
             ht = utils.human(node.total)
             name = '{} (free:{}, total:{})'.format(node.name, hf, ht)
             Logger.storage(pre, name, node.attr)
+        elif node.type == self.TYPE_ARC:
+            if self.arc:
+                Logger.arc(pre, node.name, node.archive)
         else:
             Logger.err('Weird node encountered: {}'.format(node))
             # Logger.out('{}{}'.format(pre, node.name))
@@ -223,6 +243,36 @@ class Noder:
         except anytree.resolver.ChildResolverError:
             pass
         return found
+
+    ###############################################################
+    # tree creationg
+    ###############################################################
+    def _add_entry(self, name, top, resolv):
+        ''' add an entry to the tree '''
+        entries = name.rstrip(os.sep).split(os.sep)
+        if len(entries) == 1:
+            self.archive_node(name, name, top, top.name)
+            return
+        sub = os.sep.join(entries[:-1])
+        f = entries[-1]
+        try:
+            parent = resolv.get(top, sub)
+            parent = self.archive_node(f, name, parent, top.name)
+        except anytree.resolver.ChildResolverError:
+            self.archive_node(f, name, top, top.name)
+
+    def list_to_tree(self, parent, names):
+        ''' convert list of files to a tree '''
+        if not names:
+            return
+        r = anytree.resolver.Resolver('name')
+        # dirty trick for zip lists
+        first = names[0].split(os.sep)
+        if len(first) > 1:
+            self.archive_node(first[0], first[0], parent, parent.name)
+
+        for name in names:
+            self._add_entry(name, parent, r)
 
     ###############################################################
     # diverse
