@@ -70,7 +70,7 @@ See the [example](#example) for an overview of the available features.
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
 
-* [Example](#example)
+* [Examples](#examples)
 * [Contribution](#contribution)
 
 # Installation
@@ -138,7 +138,9 @@ of each directory.
 ## Index archive files
 
 Catcli is able to index and explore the content of archive files.
-Following archive formats are supported: tar, tar.gz, tar.xz, lzma, tar.bz2, zip
+Following archive formats are supported: tar, tar.gz, tar.xz, lzma, tar.bz2, zip.
+
+Also catcli is able to find files within indexed archive files.
 
 See the [archive example](#archive-example) for more.
 
@@ -190,8 +192,9 @@ Storage entry can be edited with
 * `rename` - rename the storage
 * `edit` - edit storage metadata
 
-# Example
+# Examples
 
+## Example
 Let's first create some files and directories:
 ```bash
 $ mkdir -p /tmp/test/{a,b,c}
@@ -272,7 +275,7 @@ test/c/9 [size:0]
 op=file; source=/media/mnt; $op ${source}/test/c/9
 ```
 
-# Archive example
+## Archive example
 
 Let's consider a directory containing archive files:
 ```bash
