@@ -5,7 +5,7 @@ Copyright (c) 2017, deadc0de6
 
 import sys
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 
 def main():
