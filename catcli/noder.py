@@ -266,12 +266,8 @@ class Noder:
         if not names:
             return
         r = anytree.resolver.Resolver('name')
-        # dirty trick for zip lists
-        first = names[0].split(os.sep)
-        if len(first) > 1:
-            self.archive_node(first[0], first[0], parent, parent.name)
-
         for name in names:
+            name = name.rstrip(os.sep)
             self._add_entry(name, parent, r)
 
     ###############################################################
