@@ -20,6 +20,7 @@ Features:
   * Index any directories in a catalog
   * Ability to search for files by name in the catalog
   * Ability to navigate through indexed data à la `ls`
+  * Handle archive files and index their content
   * Save catalog to json for easy versioning with git
   * Command line interface FTW
   * Store files and folders sizes
@@ -62,6 +63,7 @@ See the [example](#example) for an overview of the available features.
 * [Usage](#usage)
 
   * [Index data](#index-data)
+  * [Index archive files](#index-archive-files)
   * [Walk indexed files with ls](#walk-indexed-files-with-ls)
   * [Find files](#find-files)
   * [Display entire tree](#display-entire-tree)
@@ -132,6 +134,13 @@ The `--meta` switch allows to add any additional information to store along in
 the catalog like for example `the blue disk in my office`.
 The `-u` switch tells catcli to also store (and calculate) the total size
 of each directory.
+
+## Index archive files
+
+Catcli is able to index and explore the content of archive files.
+Following archive formats are supported: tar, tar.gz, tar.xz, lzma, tar.bz2, zip
+
+See the [archive example](#archive-example) for more.
 
 ## Walk indexed files with ls
 
@@ -261,6 +270,71 @@ that allows to handle the found file(s)
 $ catcli find 9 --script
 test/c/9 [size:0]
 op=file; source=/media/mnt; $op ${source}/test/c/9
+```
+
+# Archive example
+
+Let's consider a directory containing archive files:
+```bash
+$ ls -1 /tmp/catcli
+catcli-0.3.1
+v0.3.1.tar.gz
+v0.3.1.zip
+```
+
+To enable the indexing of archive contents use
+the `-a --archive` switch
+```bash
+$ catcli index -au some-name /tmp/catcli
+
+Indexed 26 file(s) in 0:00:00.004533
+```
+
+Then any command can be used to explore the catalog as for normal
+files but by providing `-a`, archive content are displayed.
+```bash
+$ catcli ls -a some-name
+
+   storage: some-name (free:800G, total:1T)
+   - catcli-0.3.1 [nbfiles:11, totsize:80.5K]
+   - v0.3.1.tar.gz [size:24.2K]
+   - v0.3.1.zip [size:31.2K]
+
+$ catcli ls -r some-name/v0.3.1.zip
+
+   v0.3.1.zip [size:31.2K]
+
+$ catcli ls -ar some-name/v0.3.1.zip
+
+   v0.3.1.zip [size:31.2K]
+   ├── catcli-0.3.1 [archive:v0.3.1.zip]
+   │   ├── catcli [archive:v0.3.1.zip]
+   │   │   ├── __init__.py [archive:v0.3.1.zip]
+   │   │   ├── catalog.py [archive:v0.3.1.zip]
+   │   │   ├── catcli.py [archive:v0.3.1.zip]
+   │   │   ├── logger.py [archive:v0.3.1.zip]
+   │   │   ├── noder.py [archive:v0.3.1.zip]
+   │   │   ├── utils.py [archive:v0.3.1.zip]
+   │   │   └── walker.py [archive:v0.3.1.zip]
+   │   ├── .gitignore [archive:v0.3.1.zip]
+   │   ├── LICENSE [archive:v0.3.1.zip]
+   │   ├── MANIFEST.in [archive:v0.3.1.zip]
+   │   ├── README.md [archive:v0.3.1.zip]
+   │   ├── requirements.txt [archive:v0.3.1.zip]
+   │   ├── setup.cfg [archive:v0.3.1.zip]
+   │   ├── setup.py [archive:v0.3.1.zip]
+   │   ├── tests [archive:v0.3.1.zip]
+   │   │   ├── __init__.py [archive:v0.3.1.zip]
+   │   │   ├── helpers.py [archive:v0.3.1.zip]
+   │   │   ├── test_find.py [archive:v0.3.1.zip]
+   │   │   ├── test_graph.py [archive:v0.3.1.zip]
+   │   │   ├── test_index.py [archive:v0.3.1.zip]
+   │   │   ├── test_ls.py [archive:v0.3.1.zip]
+   │   │   ├── test_rm.py [archive:v0.3.1.zip]
+   │   │   └── test_tree.py [archive:v0.3.1.zip]
+   │   ├── tests.sh [archive:v0.3.1.zip]
+   │   └── .travis.yml [archive:v0.3.1.zip]
+   └── catcli-0.3.1/ [archive:v0.3.1.zip]
 ```
 
 # Contribution
