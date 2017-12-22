@@ -20,12 +20,11 @@ Features:
   * Index any directories in a catalog
   * Ability to search for files by name in the catalog
   * Ability to navigate through indexed data à la `ls`
-  * Handle archive files and index their content
+  * Handle archive files (zip, tar, ...) and index their content
   * Save catalog to json for easy versioning with git
   * Command line interface FTW
   * Store files and folders sizes
   * Store md5 hash of files
-
 
 <a href="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8"><img src="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png" width="50%" height="50%"></a>
 
@@ -108,13 +107,14 @@ $ catcli --help
 Each indexed directory is stored in the catalog. Multiple directories can be indexed
 and they are all available through the command line interface of catcli.
 
-Four different types of entry are present in a catalog:
+Five different types of entry are present in a catalog:
 
   * *top node*: this is the root of the tree
   * *storage node*: this represents some indexed storage (a DVD, an external
     hard drive, an USB drive, some arbitrary directory, ...)
   * *dir node*: this is a directory
   * *file node*: this is a file
+  * *archive node*: this is a file contained in an archive
 
 ## Index data
 
@@ -133,7 +133,8 @@ directory under `catcli.catalog`.
 The `--meta` switch allows to add any additional information to store along in
 the catalog like for example `the blue disk in my office`.
 The `-u` switch tells catcli to also store (and calculate) the total size
-of each directory.
+of each directory. Using the `-a` switch allows to also index archive files as explained 
+[below](#index-archive-files).
 
 ## Index archive files
 
@@ -294,9 +295,9 @@ Indexed 26 file(s) in 0:00:00.004533
 ```
 
 Then any command can be used to explore the catalog as for normal
-files but by providing `-a`, archive content are displayed.
+files but, by providing the `-a` switch, archive content are displayed.
 ```bash
-$ catcli ls -a some-name
+$ catcli ls some-name
 
    storage: some-name (free:800G, total:1T)
    - catcli-0.3.1 [nbfiles:11, totsize:80.5K]
@@ -339,6 +340,8 @@ $ catcli ls -ar some-name/v0.3.1.zip
    │   └── .travis.yml [archive:v0.3.1.zip]
    └── catcli-0.3.1/ [archive:v0.3.1.zip]
 ```
+
+All commands can also handle archive file (like `tree` or `find`).
 
 # Contribution
 
