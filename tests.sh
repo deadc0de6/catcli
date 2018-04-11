@@ -5,6 +5,6 @@
 # stop on first error
 set -ev
 
-pycodestyle catcli/
+pycodestyle --ignore=W605 catcli/
 pycodestyle tests/
 PYTHONPATH=catcli python3 -m nose -s --with-coverage --cover-package=catcli
