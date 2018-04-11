@@ -35,13 +35,13 @@ class Logger:
             end = ' {}({}){}'.format(Logger.GRAY, attr, Logger.RESET)
         s = '{}{}storage{}:'.format(pre, Logger.UND, Logger.RESET)
         s += ' {}{}{}{}'.format(Logger.PURPLE, name, Logger.RESET, end)
-        sys.stdout.write(s+'\n')
+        sys.stdout.write('{}\n'.format(s))
 
     def file(pre, name, attr):
         ''' print a file node '''
         s = '{}{}'.format(pre, name)
         s += ' {}[{}]{}'.format(Logger.GRAY, attr, Logger.RESET)
-        sys.stdout.write(s+'\n')
+        sys.stdout.write('{}\n'.format(s))
 
     def dir(pre, name, depth='', attr=None):
         ''' print a directory node '''
@@ -54,33 +54,33 @@ class Logger:
             end = ' [{}]'.format(', '.join(end))
         s = '{}{}{}{}'.format(pre, Logger.BLUE, name, Logger.RESET)
         s += '{}{}{}'.format(Logger.GRAY, end, Logger.RESET)
-        sys.stdout.write(s+'\n')
+        sys.stdout.write('{}\n'.format(s))
 
     def arc(pre, name, archive):
         s = '{}{}{}{}'.format(pre, Logger.YELLOW, name, Logger.RESET)
         s += ' {}[archive:{}]{}'.format(Logger.GRAY, archive, Logger.RESET)
-        sys.stdout.write(s+'\n')
+        sys.stdout.write('{}\n'.format(s))
 
     ######################################################################
     # generic output
     ######################################################################
     def out(string):
         ''' to stdout '''
-        sys.stdout.write(string+'\n')
+        sys.stdout.write('{}\n'.format(string))
 
     def log(string):
         ''' to stderr '''
-        sys.stderr.write(string+'\n')
+        sys.stderr.write('{}\n'.format(string))
 
     def info(string):
         ''' to stderr in color '''
         s = '{}{}{}'.format(Logger.MAGENTA, string, Logger.RESET)
-        sys.stderr.write(s+'\n')
+        sys.stderr.write('{}\n'.format(s))
 
     def err(string):
         ''' to stderr in RED '''
         s = '{}{}{}'.format(Logger.RED, string, Logger.RESET)
-        sys.stderr.write(s+'\n')
+        sys.stderr.write('{}\n'.format(s))
 
     def progr(string):
         ''' print progress '''

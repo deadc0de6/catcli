@@ -208,7 +208,7 @@ class Noder:
                              withstorage=True)
             paths.append(f.relpath)
         if script:
-            tmp = ['${source}/'+x for x in paths]
+            tmp = ['${source}/' + x for x in paths]
             cmd = 'op=file; source=/media/mnt; $op {}'.format(' '.join(tmp))
             Logger.info(cmd)
         return found

@@ -32,7 +32,7 @@ class Walker:
                 sub = os.path.join(root, f)
                 n = f
                 if len(n) > self.MAXLINE:
-                    n = f[:self.MAXLINE]+'...'
+                    n = f[:self.MAXLINE] + '...'
                 Logger.progr('indexing: {:80}'.format(n))
                 self.noder.file_node(os.path.basename(f), sub,
                                      parent, parentpath)

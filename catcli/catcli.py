@@ -23,8 +23,8 @@ from .utils import *
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
-CATALOGPATH = NAME+'.catalog'
-GRAPHPATH = '/tmp/'+NAME+'.dot'
+CATALOGPATH = '{}.catalog'.format(NAME)
+GRAPHPATH = '/tmp/{}.dot'.format(NAME)
 SEPARATOR = '/'
 WILD = '*'
 
@@ -83,7 +83,7 @@ def cmd_index(args, noder, catalog, top):
     if subsize:
         noder.rec_size(root)
     stop = datetime.datetime.now()
-    Logger.info('Indexed {} file(s) in {}'.format(cnt, stop-start))
+    Logger.info('Indexed {} file(s) in {}'.format(cnt, stop - start))
     catalog.save(top)
 
 

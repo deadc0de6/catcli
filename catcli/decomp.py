@@ -26,8 +26,7 @@ class Decomp:
             'tlz': self._tar,
             'bz2': self._tar,
             'tar.bz2': self._tar,
-            'zip': self._zip
-          }
+            'zip': self._zip}
 
     def get_format(self):
         return list(self.ext.keys())
