@@ -54,7 +54,7 @@ class Noder:
     def clean_storage_attr(self, attr):
         if not attr:
             return ''
-        return ', '.join(attr.splitlines())
+        return ', '.join(attr)
 
     def get_node(self, top, path):
         ''' get the node at path '''
