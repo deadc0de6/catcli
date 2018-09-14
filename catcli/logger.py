@@ -29,7 +29,7 @@ class Logger:
     # node specific output
     ######################################################################
     def storage(pre, name, attr):
-        ''' print a storage node '''
+        '''print a storage node'''
         end = ''
         if attr:
             end = ' {}({}){}'.format(Logger.GRAY, attr, Logger.RESET)
@@ -38,13 +38,13 @@ class Logger:
         sys.stdout.write('{}\n'.format(s))
 
     def file(pre, name, attr):
-        ''' print a file node '''
+        '''print a file node'''
         s = '{}{}'.format(pre, name)
         s += ' {}[{}]{}'.format(Logger.GRAY, attr, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
 
     def dir(pre, name, depth='', attr=None):
-        ''' print a directory node '''
+        '''print a directory node'''
         end = []
         if depth != '':
             end.append('nbfiles:{}'.format(depth))
@@ -65,27 +65,28 @@ class Logger:
     # generic output
     ######################################################################
     def out(string):
-        ''' to stdout '''
+        '''to stdout'''
         sys.stdout.write('{}\n'.format(string))
 
     def log(string):
-        ''' to stderr '''
+        '''to stderr'''
         sys.stderr.write('{}\n'.format(string))
 
     def info(string):
-        ''' to stderr in color '''
+        '''to stderr in color'''
         s = '{}{}{}'.format(Logger.MAGENTA, string, Logger.RESET)
         sys.stderr.write('{}\n'.format(s))
 
     def err(string):
-        ''' to stderr in RED '''
+        '''to stderr in RED'''
         s = '{}{}{}'.format(Logger.RED, string, Logger.RESET)
         sys.stderr.write('{}\n'.format(s))
 
     def progr(string):
-        ''' print progress '''
+        '''print progress'''
         sys.stderr.write('{}\r'.format(string))
         sys.stderr.flush()
 
     def bold(string):
+        '''make it bold'''
         return '{}{}{}'.format(Logger.BOLD, string, Logger.RESET)

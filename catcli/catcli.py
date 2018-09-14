@@ -80,7 +80,7 @@ def cmd_index(args, noder, catalog, top):
         node.parent = None
     start = datetime.datetime.now()
     walker = Walker(noder, nohash=nohash)
-    attr = noder.clean_storage_attr(args['--meta'])
+    attr = noder.format_storage_attr(args['--meta'])
     root = noder.storage_node(name, path, parent=top, attr=attr)
     _, cnt = walker.index(path, name, parent=root, parentpath=path)
     if subsize:
@@ -223,7 +223,7 @@ def main():
 
 
 if __name__ == '__main__':
-    ''' entry point '''
+    '''entry point'''
     if main():
         sys.exit(0)
     sys.exit(1)

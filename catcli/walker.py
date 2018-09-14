@@ -22,7 +22,7 @@ class Walker:
         self.noder.set_hashing(not nohash)
 
     def index(self, path, name, parentpath=None, parent=None, isdir=False):
-        ''' index a folder and store in tree '''
+        '''index a folder and store in tree'''
         if not parent:
             parent = noder.dir_node(name, path, parent)
 
