@@ -49,18 +49,18 @@ Usage:
     {1} --version
 
 Options:
-    --catalog=<path>    Path to the catalog [default: {2}].
-    --meta=<meta>       Additional attribute to store [default: ].
-    -u --subsize        Store size of folders [default: False].
-    -a --archive        Handle archive file [default: False].
-    -f --force          Do not ask confirmation when updating the catalog [default: False].
-    -b --script         Output script to manage found file(s) [default: False].
-    -S --sortsize       Sort by size, largest first [default: False].
-    -c --hash           Calculate md5 hash [default: False].
-    -r --recursive      Recursive [default: False].
-    -V --verbose        Be verbose [default: False].
-    -v --version        Show version.
-    -h --help           Show this screen.
+    --catalog=<path>  Path to the catalog [default: {2}].
+    --meta=<meta>     Additional attribute to store [default: ].
+    -u --subsize      Store size of folders [default: False].
+    -a --archive      Handle archive file [default: False].
+    -f --force        Do not ask when updating the catalog [default: False].
+    -b --script       Output script to manage found file(s) [default: False].
+    -S --sortsize     Sort by size, largest first [default: False].
+    -c --hash         Calculate md5 hash [default: False].
+    -r --recursive    Recursive [default: False].
+    -V --verbose      Be verbose [default: False].
+    -v --version      Show version.
+    -h --help         Show this screen.
 """.format(BANNER, NAME, CATALOGPATH)
 
 
