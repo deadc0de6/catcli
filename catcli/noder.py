@@ -29,7 +29,7 @@ class Noder:
 
     TOPNAME = 'top'
     METANAME = 'meta'
-    TYPE_TOP = 'top'  # tip top ;-)
+    TYPE_TOP = 'top'
     TYPE_FILE = 'file'
     TYPE_DIR = 'dir'
     TYPE_ARC = 'arc'
@@ -51,13 +51,21 @@ class Noder:
         ''' return a list of all storage names '''
         return [x.name for x in list(top.children)]
 
+    def get_storage_node(self, top, name):
+        ''' return the storage node '''
+        for n in top.children:
+            if n.type != self.TYPE_STORAGE:
+                continue
+            if n.name == name:
+                return n
+
     def clean_storage_attr(self, attr):
         if not attr:
             return ''
         return ', '.join(attr)
 
     def get_node(self, top, path):
-        ''' get the node at path '''
+        ''' get the node by internal tree path '''
         r = anytree.resolver.Resolver('name')
         try:
             return r.get(top, path)

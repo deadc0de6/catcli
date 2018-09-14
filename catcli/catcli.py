@@ -71,10 +71,13 @@ def cmd_index(args, noder, catalog, top):
     subsize = args['--subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
-        return False
+        return
     if name in noder.get_storage_names(top):
-        Logger.err('storage named \"{}\" already exist'.format(name))
-        return False
+        if not ask('Overwrite storage \"{}\"'.format(name)):
+            Logger.err('storage named \"{}\" already exist'.format(name))
+            return
+        node = noder.get_storage_node(top, name)
+        node.parent = None
     start = datetime.datetime.now()
     walker = Walker(noder, nohash=nohash)
     attr = noder.clean_storage_attr(args['--meta'])
@@ -104,15 +107,14 @@ def cmd_ls(args, noder, top):
 
 
 def cmd_rm(args, noder, catalog, top):
-    what = args['<storage>']
-    storages = list(x.name for x in top.children)
-    if what in storages:
-        node = next(filter(lambda x: x.name == what, top.children))
+    name = args['<storage>']
+    node = noder.get_storage_node(top, name)
+    if node:
         node.parent = None
         if catalog.save(top):
-            Logger.info('Storage \"{}\" removed'.format(what))
+            Logger.info('Storage \"{}\" removed'.format(name))
     else:
-        Logger.err('Storage named \"{}\" does not exist'.format(what))
+        Logger.err('Storage named \"{}\" does not exist'.format(name))
     return top
 
 
