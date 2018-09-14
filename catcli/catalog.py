@@ -49,7 +49,7 @@ class Catalog:
         if d and not os.path.exists(d):
             os.makedirs(d)
         elif os.path.exists(self.path) and not self.force:
-            if not utils.ask('Overwrite \"{}\"'.format(self.path)):
+            if not utils.ask('Update catalog \"{}\"'.format(self.path)):
                 Logger.info('Catalog not saved')
                 return False
         if d and not os.path.exists(d):
