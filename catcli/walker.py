@@ -22,7 +22,7 @@ class Walker:
         self.noder.set_hashing(not nohash)
         self.debug = debug
 
-    def index(self, path, name, parent):
+    def index(self, path, parent, name):
         '''index a directory and store in tree'''
         if not parent:
             parent = noder.dir_node(name, path, parent)
@@ -32,14 +32,17 @@ class Walker:
             for f in files:
                 sub = os.path.join(root, f)
                 self._log(f)
+                self._debug('index file {}'.format(sub))
                 self.noder.file_node(os.path.basename(f), sub,
                                      parent, path)
                 cnt += 1
             for d in dirs:
                 base = os.path.basename(d)
                 sub = os.path.join(root, d)
+                self._debug('index directory {}'.format(sub))
                 dummy = self.noder.dir_node(base, sub, parent, path)
-                _, cnt2 = self.index(sub, base, dummy)
+                cnt += 1
+                _, cnt2 = self.index(sub, dummy, base)
                 cnt += cnt2
             break
         self._log(None)
@@ -50,44 +53,54 @@ class Walker:
         cnt = 0
         for (root, dirs, files) in os.walk(path):
             for f in files:
+                self._debug('found file {}'.format(f))
                 sub = os.path.join(root, f)
-                if not self._need_reindex(top, sub):
-                    self._debug('ignore {}'.format(sub))
+                maccess = os.path.getmtime(sub)
+                reindex, _ = self._need_reindex(parent, f, maccess)
+                if not reindex:
+                    self._debug('\tignore file {}'.format(sub))
                     continue
-                self._debug('re-index {}'.format(sub))
+                self._debug('\tre-index file {}'.format(sub))
                 self._log(f)
                 self.noder.file_node(os.path.basename(f), sub,
                                      parent, path)
                 cnt += 1
             for d in dirs:
+                self._debug('found dir {}'.format(d))
                 base = os.path.basename(d)
                 sub = os.path.join(root, d)
-                if not self._need_reindex(top, sub):
-                    self._debug('ignore {}'.format(sub))
-                    continue
-                self._debug('re-index {}'.format(sub))
-                dummy = self.noder.dir_node(base, sub, parent, path)
-                cnt2 = self.reindex(sub, dummy, top)
-                cnt += cnt2
+                maccess = os.path.getmtime(sub)
+                reindex, dummy = self._need_reindex(parent, base, maccess)
+                if reindex:
+                    self._debug('\tre-index directory {}'.format(sub))
+                    dummy = self.noder.dir_node(base, sub, parent, path)
+                    cnt2 = self.reindex(sub, dummy, top)
+                    cnt += cnt2
             break
         self._log(None)
         return cnt
 
-    def _need_reindex(self, top, path):
+    def _need_reindex(self, top, path, maccess):
         '''test if node needs re-indexing'''
-        cnode, newer = self.noder.get_node_if_newer(top, path)
+        cnode, newer = self.noder.get_node_if_newer(top, path, maccess)
+        if not cnode:
+            self._debug('\tdoes not exist')
+            return True, cnode
         if cnode and not newer:
             # ignore this node
-            return False
+            self._debug('\tis not newer')
+            return False, cnode
         if cnode and newer:
             # remove this node and re-add
+            self._debug('\tis newer')
             cnode.parent = None
-        return True
+        self._debug('\tis to be re-indexed')
+        return True, cnode
 
     def _debug(self, string):
         if not self.debug:
             return
-        Logger.info(string)
+        Logger.log(string)
 
     def _log(self, string):
         if self.debug:

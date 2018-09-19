@@ -67,7 +67,7 @@ class Noder:
                 Logger.err('No node at path \"{}\"'.format(path))
             return None
 
-    def get_node_if_newer(self, top, path):
+    def get_node_if_newer(self, top, path, maccess):
         '''return the node (if any) and if path is newer'''
         treepath = path.lstrip(os.sep)
         node = self.get_node(top, treepath, quiet=True)
@@ -77,9 +77,8 @@ class Noder:
         if not node.maccess:
             # force re-indexing if no maccess
             return node, True
-        maccess = node.maccess
-        cur_maccess = os.path.getmtime(path)
-        if float(cur_maccess) > maccess:
+        old_maccess = node.maccess
+        if float(maccess) > float(old_maccess):
             return node, True
         return node, False
 

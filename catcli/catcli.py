@@ -83,12 +83,13 @@ def cmd_index(args, noder, catalog, top, debug=False):
     walker = Walker(noder, nohash=nohash, debug=debug)
     attr = noder.format_storage_attr(args['--meta'])
     root = noder.storage_node(name, path, parent=top, attr=attr)
-    _, cnt = walker.index(path, name, root)
+    _, cnt = walker.index(path, root, name)
     if subsize:
         noder.rec_size(root)
     stop = datetime.datetime.now()
     Logger.info('Indexed {} file(s) in {}'.format(cnt, stop - start))
-    catalog.save(top)
+    if cnt > 0:
+        catalog.save(top)
 
 
 def cmd_update(args, noder, catalog, top, debug=False):
@@ -110,7 +111,8 @@ def cmd_update(args, noder, catalog, top, debug=False):
         noder.rec_size(root)
     stop = datetime.datetime.now()
     Logger.info('updated {} file(s) in {}'.format(cnt, stop - start))
-    catalog.save(top)
+    if cnt > 0:
+        catalog.save(top)
 
 
 def cmd_ls(args, noder, top):
