@@ -140,8 +140,9 @@ class Noder:
         relpath = os.path.join(os.path.basename(storagepath),
                                os.path.relpath(path, start=storagepath))
 
+        maccess = os.path.getmtime(path)
         n = self._node(name, self.TYPE_FILE, relpath, parent,
-                       size=st.st_size, md5=md5)
+                       size=st.st_size, md5=md5, maccess=maccess)
         if self.arc:
             ext = os.path.splitext(path)[1][1:]
             if ext in self.decomp.get_format():
@@ -153,7 +154,9 @@ class Noder:
         '''create a new node representing a directory'''
         path = os.path.abspath(path)
         relpath = os.path.relpath(path, start=storagepath)
-        return self._node(name, self.TYPE_DIR, relpath, parent)
+        maccess = os.path.getmtime(path)
+        return self._node(name, self.TYPE_DIR, relpath,
+                          parent, maccess=maccess)
 
     def storage_node(self, name, path, parent, attr=None):
         '''create a new node representing a storage'''
@@ -170,10 +173,12 @@ class Noder:
                                parent=parent, size=0, md5=None,
                                archive=archive)
 
-    def _node(self, name, type, relpath, parent, size=None, md5=None):
+    def _node(self, name, type, relpath, parent,
+              size=None, md5=None, maccess=None):
         '''generic node creation'''
         return anytree.AnyNode(name=name, type=type, relpath=relpath,
-                               parent=parent, size=size, md5=md5)
+                               parent=parent, size=size,
+                               md5=md5, maccess=maccess)
 
     ###############################################################
     # printing
