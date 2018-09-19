@@ -23,7 +23,27 @@ class Walker:
         self.debug = debug
 
     def index(self, path, name, parent):
-        return self._index(path, name, parent)
+        '''index a directory and store in tree'''
+        if not parent:
+            parent = noder.dir_node(name, path, parent)
+
+        cnt = 0
+        for (root, dirs, files) in os.walk(path):
+            for f in files:
+                sub = os.path.join(root, f)
+                self._log(f)
+                self.noder.file_node(os.path.basename(f), sub,
+                                     parent, path)
+                cnt += 1
+            for d in dirs:
+                base = os.path.basename(d)
+                sub = os.path.join(root, d)
+                dummy = self.noder.dir_node(base, sub, parent, path)
+                _, cnt2 = self.index(sub, base, dummy)
+                cnt += cnt2
+            break
+        self._log(None)
+        return parent, cnt
 
     def reindex(self, path, parent, top):
         '''reindex a directory and store in tree'''
@@ -52,29 +72,6 @@ class Walker:
             break
         self._log(None)
         return cnt
-
-    def _index(self, path, name, parent):
-        '''index a directory and store in tree'''
-        if not parent:
-            parent = noder.dir_node(name, path, parent)
-
-        cnt = 0
-        for (root, dirs, files) in os.walk(path):
-            for f in files:
-                sub = os.path.join(root, f)
-                self._log(f)
-                self.noder.file_node(os.path.basename(f), sub,
-                                     parent, path)
-                cnt += 1
-            for d in dirs:
-                base = os.path.basename(d)
-                sub = os.path.join(root, d)
-                dummy = self.noder.dir_node(base, sub, parent, path)
-                _, cnt2 = self._index(sub, base, dummy)
-                cnt += cnt2
-            break
-        self._log(None)
-        return parent, cnt
 
     def _need_reindex(self, top, path):
         '''test if node needs re-indexing'''
