@@ -37,6 +37,7 @@ USAGE = """
 
 Usage:
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-acfuV] <name> <path>
+    {1} update [--catalog=<path>] [-acfuV] <name> <path>
     {1} ls     [--catalog=<path>] [-arVS] [<path>]
     {1} find   [--catalog=<path>] [-abV] <term>
     {1} rm     [--catalog=<path>] [-fV] <storage>
@@ -51,7 +52,7 @@ Usage:
 Options:
     --catalog=<path>  Path to the catalog [default: {2}].
     --meta=<meta>     Additional attribute to store [default: ].
-    -u --subsize      Store size of folders [default: False].
+    -u --subsize      Store size of directories [default: False].
     -a --archive      Handle archive file [default: False].
     -f --force        Do not ask when updating the catalog [default: False].
     -b --script       Output script to manage found file(s) [default: False].
@@ -64,7 +65,7 @@ Options:
 """.format(BANNER, NAME, CATALOGPATH)
 
 
-def cmd_index(args, noder, catalog, top):
+def cmd_index(args, noder, catalog, top, debug=False):
     path = args['<path>']
     name = args['<name>']
     nohash = not args['--hash']
@@ -79,14 +80,36 @@ def cmd_index(args, noder, catalog, top):
         node = noder.get_storage_node(top, name)
         node.parent = None
     start = datetime.datetime.now()
-    walker = Walker(noder, nohash=nohash)
+    walker = Walker(noder, nohash=nohash, debug=debug)
     attr = noder.format_storage_attr(args['--meta'])
     root = noder.storage_node(name, path, parent=top, attr=attr)
-    _, cnt = walker.index(path, name, parent=root, parentpath=path)
+    _, cnt = walker.index(path, name, root)
     if subsize:
         noder.rec_size(root)
     stop = datetime.datetime.now()
     Logger.info('Indexed {} file(s) in {}'.format(cnt, stop - start))
+    catalog.save(top)
+
+
+def cmd_update(args, noder, catalog, top, debug=False):
+    path = args['<path>']
+    name = args['<name>']
+    nohash = not args['--hash']
+    subsize = args['--subsize']
+    if not os.path.exists(path):
+        Logger.err('\"{}\" does not exist'.format(path))
+        return
+    root = noder.get_storage_node(top, name)
+    if not root:
+        Logger.err('storage named \"{}\" does not exist'.format(name))
+        return
+    start = datetime.datetime.now()
+    walker = Walker(noder, nohash=nohash, debug=debug)
+    cnt = walker.reindex(path, root, top)
+    if subsize:
+        noder.rec_size(root)
+    stop = datetime.datetime.now()
+    Logger.info('updated {} file(s) in {}'.format(cnt, stop - start))
     catalog.save(top)
 
 
@@ -203,7 +226,9 @@ def main():
 
     # parse command
     if args['index']:
-        cmd_index(args, noder, catalog, top)
+        cmd_index(args, noder, catalog, top, debug=args['--verbose'])
+    if args['update']:
+        cmd_update(args, noder, catalog, top, debug=args['--verbose'])
     elif args['find']:
         cmd_find(args, noder, top)
     elif args['tree']:

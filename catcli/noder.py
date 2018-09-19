@@ -55,15 +55,33 @@ class Noder:
                 continue
             if n.name == name:
                 return n
+        return None
 
-    def get_node(self, top, path):
+    def get_node(self, top, path, quiet=False):
         '''get the node by internal tree path'''
         r = anytree.resolver.Resolver('name')
         try:
             return r.get(top, path)
         except anytree.resolver.ChildResolverError:
-            Logger.err('No node at path \"{}\"'.format(path))
+            if not quiet:
+                Logger.err('No node at path \"{}\"'.format(path))
             return None
+
+    def get_node_if_newer(self, top, path):
+        '''return the node (if any) and if path is newer'''
+        treepath = path.lstrip(os.sep)
+        node = self.get_node(top, treepath, quiet=True)
+        if not node:
+            # node does not exist
+            return None, True
+        if not node.maccess:
+            # force re-indexing if no maccess
+            return node, True
+        maccess = node.maccess
+        cur_maccess = os.path.getmtime(path)
+        if float(cur_maccess) > maccess:
+            return node, True
+        return node, False
 
     def get_meta_node(self, top):
         '''return the meta node if any'''
@@ -76,7 +94,7 @@ class Noder:
     def rec_size(self, node):
         '''recursively traverse tree and store dir size'''
         if self.verbose:
-            Logger.info('getting folder size recursively')
+            Logger.info('getting directory size recursively')
         if node.type == self.TYPE_FILE:
             return node.size
         size = 0
