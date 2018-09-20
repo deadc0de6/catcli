@@ -47,7 +47,8 @@ def edit_file(path, newcontent):
 def unix_tree(path):
     if not os.path.exists(path):
         return
-    cmd = ['tree', path]
+    # cmd = ['tree', path]
+    cmd = ['ls', '-R', path]
     subprocess.call(cmd)
 
 
