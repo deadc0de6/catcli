@@ -10,6 +10,7 @@ import string
 import random
 import tempfile
 import shutil
+import subprocess
 
 TMPSUFFIX = '.catcli'
 
@@ -34,6 +35,21 @@ def clean(path):
         shutil.rmtree(path)
     else:
         os.remove(path)
+
+
+def edit_file(path, newcontent):
+    if not os.path.exists(path):
+        write_to_file(path, newcontent)
+    else:
+        write_to_file(path, newcontent)
+
+
+def unix_tree(path):
+    if not os.path.exists(path):
+        return
+    cmd = ['tree', path]
+    subprocess.call(cmd)
+
 
 ############################################################
 # catcli specific
@@ -82,9 +98,21 @@ def create_rnd_file(path, filename, content=None):
     if not content:
         content = get_rnd_string(100)
     fpath = os.path.join(path, filename)
-    with open(fpath, 'w') as f:
+    return write_to_file(fpath, content)
+
+
+def write_to_file(path, content):
+    with open(path, 'w') as f:
         f.write(content)
-    return fpath
+    return path
+
+
+def read_from_file(path):
+    if not os.path.exists(path):
+        return ''
+    with open(path, 'r') as f:
+        content = f.read()
+    return content
 
 
 ############################################################
