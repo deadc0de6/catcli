@@ -39,7 +39,7 @@ class Walker:
                                      parent, path)
                 cnt += 1
             for d in dirs:
-                self._debug('found dir {} under {}'.format(f, path))
+                self._debug('found dir {} under {}'.format(d, path))
                 base = os.path.basename(d)
                 sub = os.path.join(root, d)
                 self._debug('index directory {}'.format(sub))
