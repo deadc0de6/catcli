@@ -51,7 +51,7 @@ Usage:
 
 Options:
     --catalog=<path>  Path to the catalog [default: {2}].
-    --meta=<meta>     Additional attribute to store sep by a comma [default: ].
+    --meta=<meta>     Additional attribute to store [default: ].
     -u --subsize      Store size of directories [default: False].
     -a --archive      Handle archive file [default: False].
     -f --force        Do not ask when updating the catalog [default: False].
@@ -81,7 +81,7 @@ def cmd_index(args, noder, catalog, top, debug=False):
         node.parent = None
     start = datetime.datetime.now()
     walker = Walker(noder, nohash=nohash, debug=debug)
-    attr = noder.format_storage_attr(args['--meta'].split(','))
+    attr = noder.format_storage_attr(args['--meta'])
     root = noder.storage_node(name, path, parent=top, attr=attr)
     _, cnt = walker.index(path, root, name)
     if subsize:
