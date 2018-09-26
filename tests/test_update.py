@@ -47,7 +47,7 @@ class TestIndexing(unittest.TestCase):
         # create fake args
         tmpdirname = 'tmpdir'
         args = {'<path>': dirpath, '<name>': tmpdirname,
-                '--hash': True, '--meta': 'some meta',
+                '--hash': True, '--meta': ['some meta'],
                 '--subsize': True, '--verbose': True}
 
         # index the directory
