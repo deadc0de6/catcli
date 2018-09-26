@@ -236,7 +236,11 @@ class Noder:
         elif node.type == self.TYPE_STORAGE:
             hf = utils.human(node.free)
             ht = utils.human(node.total)
-            name = '{} (free:{}, total:{})'.format(node.name, hf, ht)
+            dt = ''
+            if node.ts:
+                dt = ', date:'
+                dt += utils.epoch_to_str(node.ts)
+            name = '{} (free:{}, total:{}{})'.format(node.name, hf, ht, dt)
             Logger.storage(pre, name, node.attr)
         elif node.type == self.TYPE_ARC:
             if self.arc:

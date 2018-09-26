@@ -10,6 +10,7 @@ import hashlib
 import sys
 import tempfile
 import subprocess
+import datetime
 
 # local imports
 from catcli.logger import Logger
@@ -46,6 +47,13 @@ def human(size):
             return '{:.1f}{}'.format(size, i)
         size = size / div
     return '{:.1f}{}'.format(size, suf[-1])
+
+
+def epoch_to_str(epoch):
+    '''convert epoch to string'''
+    fmt = '%Y-%m-%d %H:%M:%S'
+    t = datetime.datetime.fromtimestamp(float(epoch))
+    return t.strftime(fmt)
 
 
 def ask(question):
