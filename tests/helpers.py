@@ -102,18 +102,6 @@ def create_rnd_file(path, filename, content=None):
     return write_to_file(fpath, content)
 
 
-def remove(path):
-    '''Delete file or directory.'''
-    if not os.path.exists(path):
-        return
-    if os.path.islink(path):
-        os.remove(path)
-    elif os.path.isdir(path):
-        shutil.rmtree(path)
-    else:
-        os.remove(path)
-
-
 def write_to_file(path, content):
     with open(path, 'w') as f:
         f.write(content)
