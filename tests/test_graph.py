@@ -6,6 +6,8 @@ Basic unittest for graph
 """
 
 import unittest
+import tempfile
+import os
 
 from catcli.catcli import *
 from catcli.noder import Noder
@@ -19,7 +21,7 @@ class TestGraph(unittest.TestCase):
     def test_graph(self):
         # init
         path = 'fake'
-        gpath = '/tmp/graph.dot'
+        gpath = tempfile.gettempdir() + os.sep + 'graph.dot'
         self.addCleanup(clean, path)
         self.addCleanup(clean, gpath)
         catalog = Catalog(path, force=True, verbose=False)
