@@ -175,6 +175,28 @@ class Noder:
         return self._node(name, self.TYPE_DIR, relpath,
                           parent, maccess=maccess)
 
+    def clean_not_flagged(self, top):
+        '''remove any node not flagged and clean flags'''
+        cnt = 0
+        for node in anytree.PreOrderIter(top):
+            if node.type != self.TYPE_FILE and node.type != self.TYPE_DIR:
+                continue
+            if self._clean(node):
+                cnt += 1
+        return cnt
+
+    def flag(self, node):
+        node.flag = True
+
+    def _clean(self, node):
+        '''remove node if not flagged'''
+        if not self._has_attr(node, 'flag') or \
+                not node.flag:
+            node.parent = None
+            return True
+        del node.flag
+        return False
+
     def storage_node(self, name, path, parent, attr=None):
         '''create a new node representing a storage'''
         path = os.path.abspath(path)
@@ -237,7 +259,7 @@ class Noder:
             hf = utils.human(node.free)
             ht = utils.human(node.total)
             dt = ''
-            if node.ts:
+            if self._has_attr(node, 'ts'):
                 dt = ', date:'
                 dt += utils.epoch_to_str(node.ts)
             name = '{} (free:{}, total:{}{})'.format(node.name, hf, ht, dt)
@@ -369,3 +391,6 @@ class Noder:
     def _get_storage(self, node):
         '''recursively traverse up to find storage'''
         return node.ancestors[1]
+
+    def _has_attr(self, node, attr):
+        return attr in node.__dict__.keys()
