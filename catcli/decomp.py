@@ -29,22 +29,25 @@ class Decomp:
             'zip': self._zip}
 
     def get_format(self):
+        '''return list of supported extensions'''
         return list(self.ext.keys())
 
     def get_names(self, path):
-        ''' get tree of compressed archive '''
+        '''get tree of compressed archive'''
         ext = os.path.splitext(path)[1][1:]
         if ext in list(self.ext.keys()):
             return self.ext[ext](path)
         return None
 
     def _tar(self, path):
+        '''return list of file names in tar'''
         if not tarfile.is_tarfile(path):
             return None
         tar = tarfile.open(path, "r")
         return tar.getnames()
 
     def _zip(self, path):
+        '''return list of file names in zip'''
         if not zipfile.is_zipfile(path):
             return None
         z = zipfile.ZipFile(path)

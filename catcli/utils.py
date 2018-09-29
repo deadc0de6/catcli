@@ -10,13 +10,14 @@ import hashlib
 import sys
 import tempfile
 import subprocess
+import datetime
 
 # local imports
 from catcli.logger import Logger
 
 
 def md5sum(path):
-    ''' calculate md5 sum of a file '''
+    '''calculate md5 sum of a file'''
     p = os.path.realpath(path)
     if not os.path.exists(p):
         Logger.err('\nunable to get md5sum on {}'.format(path))
@@ -36,7 +37,7 @@ def md5sum(path):
 
 
 def human(size):
-    ''' human readable size '''
+    '''human readable size'''
     div = 1024.
     suf = ['B', 'K', 'M', 'G', 'T', 'P']
     if size < div:
@@ -48,14 +49,21 @@ def human(size):
     return '{:.1f}{}'.format(size, suf[-1])
 
 
+def epoch_to_str(epoch):
+    '''convert epoch to string'''
+    fmt = '%Y-%m-%d %H:%M:%S'
+    t = datetime.datetime.fromtimestamp(float(epoch))
+    return t.strftime(fmt)
+
+
 def ask(question):
-    ''' ask the user what to do '''
+    '''ask the user what to do'''
     resp = input('{} [y|N] ? '.format(question))
     return resp.lower() == 'y'
 
 
 def edit(string):
-    ''' edit the information with the default EDITOR '''
+    '''edit the information with the default EDITOR'''
     string = string.encode('utf-8')
     EDITOR = os.environ.get('EDITOR', 'vim')
     with tempfile.NamedTemporaryFile(prefix='catcli', suffix='.tmp') as f:

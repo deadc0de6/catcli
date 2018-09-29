@@ -37,6 +37,7 @@ USAGE = """
 
 Usage:
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-acfuV] <name> <path>
+    {1} update [--catalog=<path>] [-acfuV] <name> <path>
     {1} ls     [--catalog=<path>] [-arVS] [<path>]
     {1} find   [--catalog=<path>] [-abV] <term>
     {1} rm     [--catalog=<path>] [-fV] <storage>
@@ -49,42 +50,69 @@ Usage:
     {1} --version
 
 Options:
-    --catalog=<path>    Path to the catalog [default: {2}].
-    --meta=<meta>       Additional attribute to store [default: ].
-    -u --subsize        Store size of folders [default: False].
-    -a --archive        Handle archive file [default: False].
-    -f --force          Force overwrite [default: False].
-    -b --script         Output script to manage found file(s) [default: False].
-    -S --sortsize       Sort by size, largest first [default: False].
-    -c --hash           Calculate md5 hash [default: False].
-    -r --recursive      Recursive [default: False].
-    -V --verbose        Be verbose [default: False].
-    -v --version        Show version.
-    -h --help           Show this screen.
+    --catalog=<path>  Path to the catalog [default: {2}].
+    --meta=<meta>     Additional attribute to store [default: ].
+    -u --subsize      Store size of directories [default: False].
+    -a --archive      Handle archive file [default: False].
+    -f --force        Do not ask when updating the catalog [default: False].
+    -b --script       Output script to manage found file(s) [default: False].
+    -S --sortsize     Sort by size, largest first [default: False].
+    -c --hash         Calculate md5 hash [default: False].
+    -r --recursive    Recursive [default: False].
+    -V --verbose      Be verbose [default: False].
+    -v --version      Show version.
+    -h --help         Show this screen.
 """.format(BANNER, NAME, CATALOGPATH)
 
 
-def cmd_index(args, noder, catalog, top):
+def cmd_index(args, noder, catalog, top, debug=False):
     path = args['<path>']
     name = args['<name>']
     nohash = not args['--hash']
     subsize = args['--subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
-        return False
+        return
     if name in noder.get_storage_names(top):
-        Logger.err('storage named \"{}\" already exist'.format(name))
-        return False
+        if not ask('Overwrite storage \"{}\"'.format(name)):
+            Logger.err('storage named \"{}\" already exist'.format(name))
+            return
+        node = noder.get_storage_node(top, name)
+        node.parent = None
     start = datetime.datetime.now()
-    walker = Walker(noder, nohash=nohash)
-    attr = noder.clean_storage_attr(args['--meta'])
+    walker = Walker(noder, nohash=nohash, debug=debug)
+    attr = noder.format_storage_attr(args['--meta'])
     root = noder.storage_node(name, path, parent=top, attr=attr)
-    _, cnt = walker.index(path, name, parent=root, parentpath=path)
+    _, cnt = walker.index(path, root, name)
     if subsize:
         noder.rec_size(root)
     stop = datetime.datetime.now()
     Logger.info('Indexed {} file(s) in {}'.format(cnt, stop - start))
-    catalog.save(top)
+    if cnt > 0:
+        catalog.save(top)
+
+
+def cmd_update(args, noder, catalog, top, debug=False):
+    path = args['<path>']
+    name = args['<name>']
+    nohash = not args['--hash']
+    subsize = args['--subsize']
+    if not os.path.exists(path):
+        Logger.err('\"{}\" does not exist'.format(path))
+        return
+    root = noder.get_storage_node(top, name)
+    if not root:
+        Logger.err('storage named \"{}\" does not exist'.format(name))
+        return
+    start = datetime.datetime.now()
+    walker = Walker(noder, nohash=nohash, debug=debug)
+    cnt = walker.reindex(path, root, top)
+    if subsize:
+        noder.rec_size(root)
+    stop = datetime.datetime.now()
+    Logger.info('updated {} file(s) in {}'.format(cnt, stop - start))
+    if cnt > 0:
+        catalog.save(top)
 
 
 def cmd_ls(args, noder, top):
@@ -104,15 +132,14 @@ def cmd_ls(args, noder, top):
 
 
 def cmd_rm(args, noder, catalog, top):
-    what = args['<storage>']
-    storages = list(x.name for x in top.children)
-    if what in storages:
-        node = next(filter(lambda x: x.name == what, top.children))
+    name = args['<storage>']
+    node = noder.get_storage_node(top, name)
+    if node:
         node.parent = None
         if catalog.save(top):
-            Logger.info('Storage \"{}\" removed'.format(what))
+            Logger.info('Storage \"{}\" removed'.format(name))
     else:
-        Logger.err('Storage named \"{}\" does not exist'.format(what))
+        Logger.err('Storage named \"{}\" does not exist'.format(name))
     return top
 
 
@@ -201,7 +228,9 @@ def main():
 
     # parse command
     if args['index']:
-        cmd_index(args, noder, catalog, top)
+        cmd_index(args, noder, catalog, top, debug=args['--verbose'])
+    if args['update']:
+        cmd_update(args, noder, catalog, top, debug=args['--verbose'])
     elif args['find']:
         cmd_find(args, noder, top)
     elif args['tree']:
@@ -221,7 +250,7 @@ def main():
 
 
 if __name__ == '__main__':
-    ''' entry point '''
+    '''entry point'''
     if main():
         sys.exit(0)
     sys.exit(1)
