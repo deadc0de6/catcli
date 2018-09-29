@@ -69,6 +69,7 @@ See the [example](#example) for an overview of the available features.
   * [Display entire tree](#display-entire-tree)
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
+  * [Update catalog](#update-catalog)
 
 * [Examples](#examples)
 * [Contribution](#contribution)
@@ -195,6 +196,12 @@ Storage entry can be edited with
 
 * `rename` - rename the storage
 * `edit` - edit storage metadata
+
+## Update catalog
+
+The catalog can be updated with the `update` command.
+Updates is based on the access time of each of the file. If using
+`--hash`, only new files are re-hashed.
 
 # Examples
 
