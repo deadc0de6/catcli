@@ -4,6 +4,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [![Coverage Status](https://coveralls.io/repos/github/deadc0de6/catcli/badge.svg?branch=master)](https://coveralls.io/github/deadc0de6/catcli?branch=master)
 [![PyPI version](https://badge.fury.io/py/catcli.svg)](https://badge.fury.io/py/catcli)
+[![AUR](https://img.shields.io/aur/version/catcli-git.svg)](https://aur.archlinux.org/packages/catcli-git)
 [![Python](https://img.shields.io/pypi/pyversions/catcli.svg)](https://pypi.python.org/pypi/catcli)
 
 *The command line catalog tool for your offline data*
@@ -102,6 +103,8 @@ $ python setup.py install
 $ catcli --help
 ```
 
+Catcli is also available on aur: https://aur.archlinux.org/packages/catcli-git/
+
 # Usage
 
 Each indexed directory is stored in the catalog. Multiple directories can be indexed
@@ -133,7 +136,7 @@ directory under `catcli.catalog`.
 The `--meta` switch allows to add any additional information to store along in
 the catalog like for example `the blue disk in my office`.
 The `-u` switch tells catcli to also store (and calculate) the total size
-of each directory. Using the `-a` switch allows to also index archive files as explained 
+of each directory. Using the `-a` switch allows to also index archive files as explained
 [below](#index-archive-files).
 
 ## Index archive files
