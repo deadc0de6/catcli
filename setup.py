@@ -8,7 +8,7 @@ here = path.abspath(path.dirname(__file__))
 
 try:
     from pypandoc import convert
-    read_readme = lambda f: convert(f, 'rst')
+    read_readme = lambda f: convert_file(f, 'rst')
 except ImportError:
     print('\n[WARNING] pypandoc not found, could not convert \"{}\"\n'.format(readme))
     read_readme = lambda f: open(f, 'r').read()
@@ -29,7 +29,7 @@ setup(
     author_email='deadc0de6@foo.bar',
 
     license='GPLv3',
-    requires_python=REQUIRES_PYTHON,
+    python_requires=REQUIRES_PYTHON,
     classifiers=[
             'Development Status :: 5 - Production/Stable',
             'Programming Language :: Python :: 3.3',
