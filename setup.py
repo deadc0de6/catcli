@@ -7,7 +7,7 @@ readme = 'README.md'
 here = path.abspath(path.dirname(__file__))
 
 try:
-    from pypandoc import convert
+    from pypandoc import convert_file
     read_readme = lambda f: convert_file(f, 'rst')
 except ImportError:
     print('\n[WARNING] pypandoc not found, could not convert \"{}\"\n'.format(readme))
