@@ -74,7 +74,8 @@ class Noder:
         if not node:
             # node does not exist
             return None, True
-        if not node.maccess:
+        if not self._has_attr(node, 'maccess') or \
+                not node.maccess:
             # force re-indexing if no maccess
             return node, True
         old_maccess = node.maccess
