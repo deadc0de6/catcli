@@ -155,8 +155,7 @@ class Noder:
         md5 = None
         if self.hash:
             md5 = utils.md5sum(path)
-        relpath = os.path.join(os.path.basename(storagepath),
-                               os.path.relpath(path, start=storagepath))
+        relpath = os.sep.join([storagepath, name])
 
         maccess = os.path.getmtime(path)
         n = self._node(name, self.TYPE_FILE, relpath, parent,
@@ -171,7 +170,7 @@ class Noder:
     def dir_node(self, name, path, parent, storagepath):
         '''create a new node representing a directory'''
         path = os.path.abspath(path)
-        relpath = os.path.relpath(path, start=storagepath)
+        relpath = os.sep.join([storagepath, name])
         maccess = os.path.getmtime(path)
         return self._node(name, self.TYPE_DIR, relpath,
                           parent, maccess=maccess)
@@ -224,14 +223,26 @@ class Noder:
     # printing
     ###############################################################
     def _print_node(self, node, pre='', withpath=False,
-                    withdepth=False, withstorage=False):
-        '''print a node'''
+                    withdepth=False, withstorage=False,
+                    recalcparent=False):
+        '''
+        print a node
+        @node: the node to print
+        @pre: string to print before node
+        @withpath: print the node path
+        @withdepth: print the node depth info
+        @withstorage: print the node storage it belongs to
+        @recalcparent: get relpath from tree instead of relpath field
+        '''
         if node.type == self.TYPE_TOP:
             Logger.out('{}{}'.format(pre, node.name))
         elif node.type == self.TYPE_FILE:
             name = node.name
             if withpath:
-                name = node.relpath
+                if recalcparent:
+                    name = os.sep.join([self._get_parents(node.parent), name])
+                else:
+                    name = node.relpath
             if withstorage:
                 storage = self._get_storage(node)
             attr = ''
@@ -244,7 +255,10 @@ class Noder:
         elif node.type == self.TYPE_DIR:
             name = node.name
             if withpath:
-                name = node.relpath
+                if recalcparent:
+                    name = os.sep.join([self._get_parents(node.parent), name])
+                else:
+                    name = node.relpath
             depth = ''
             if withdepth:
                 depth = len(node.children)
@@ -287,7 +301,9 @@ class Noder:
     ###############################################################
     # searching
     ###############################################################
-    def find_name(self, root, key, script=False):
+    def find_name(self, root, key,
+                  script=False,
+                  parentfromtree=False):
         '''find files based on their names'''
         if self.verbose:
             Logger.info('searching for \"{}\"'.format(key))
@@ -299,8 +315,11 @@ class Noder:
                 # ignore storage nodes
                 continue
             self._print_node(f, withpath=True, withdepth=True,
-                             withstorage=True)
-            paths.append(f.relpath)
+                             withstorage=True, recalcparent=parentfromtree)
+            if parentfromtree:
+                paths.append(self._get_parents(f))
+            else:
+                paths.append(f.relpath)
         if script:
             tmp = ['${source}/' + x for x in paths]
             cmd = 'op=file; source=/media/mnt; $op {}'.format(' '.join(tmp))
@@ -395,3 +414,12 @@ class Noder:
 
     def _has_attr(self, node, attr):
         return attr in node.__dict__.keys()
+
+    def _get_parents(self, node):
+        '''get all parents recursively'''
+        if node.type == self.TYPE_STORAGE:
+            return ''
+        parent = self._get_parents(node.parent)
+        if parent:
+            return os.sep.join([parent, node.name])
+        return node.name

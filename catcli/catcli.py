@@ -39,7 +39,7 @@ Usage:
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-acfuV] <name> <path>
     {1} update [--catalog=<path>] [-acfuV] <name> <path>
     {1} ls     [--catalog=<path>] [-arVS] [<path>]
-    {1} find   [--catalog=<path>] [-abV] <term>
+    {1} find   [--catalog=<path>] [-abVP] <term>
     {1} rm     [--catalog=<path>] [-fV] <storage>
     {1} tree   [--catalog=<path>] [-aVS] [<path>]
     {1} rename [--catalog=<path>] [-fV] <storage> <name>
@@ -59,6 +59,7 @@ Options:
     -S --sortsize     Sort by size, largest first [default: False].
     -c --hash         Calculate md5 hash [default: False].
     -r --recursive    Recursive [default: False].
+    -P --parent       Ignore stored relpath [default: True].
     -V --verbose      Be verbose [default: False].
     -v --version      Show version.
     -h --help         Show this screen.
@@ -74,8 +75,12 @@ def cmd_index(args, noder, catalog, top, debug=False):
         Logger.err('\"{}\" does not exist'.format(path))
         return
     if name in noder.get_storage_names(top):
-        if not ask('Overwrite storage \"{}\"'.format(name)):
-            Logger.err('storage named \"{}\" already exist'.format(name))
+        try:
+            if not ask('Overwrite storage \"{}\"'.format(name)):
+                Logger.err('storage named \"{}\" already exist'.format(name))
+                return
+        except KeyboardInterrupt:
+            Logger.err('aborted')
             return
         node = noder.get_storage_node(top, name)
         node.parent = None
@@ -144,7 +149,9 @@ def cmd_rm(args, noder, catalog, top):
 
 
 def cmd_find(args, noder, top):
-    return noder.find_name(top, args['<term>'], script=args['--script'])
+    fromtree = args['--parent']
+    return noder.find_name(top, args['<term>'], script=args['--script'],
+                           parentfromtree=fromtree)
 
 
 def cmd_tree(args, noder, top):

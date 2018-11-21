@@ -22,7 +22,7 @@ class Walker:
         self.noder.set_hashing(not nohash)
         self.debug = debug
 
-    def index(self, path, parent, name):
+    def index(self, path, parent, name, storagepath=''):
         '''index a directory and store in tree'''
         self._debug('indexing starting at {}'.format(path))
         if not parent:
@@ -36,16 +36,19 @@ class Walker:
                 self._log(f)
                 self._debug('index file {}'.format(sub))
                 self.noder.file_node(os.path.basename(f), sub,
-                                     parent, path)
+                                     parent, storagepath)
                 cnt += 1
             for d in dirs:
                 self._debug('found dir {} under {}'.format(d, path))
                 base = os.path.basename(d)
                 sub = os.path.join(root, d)
                 self._debug('index directory {}'.format(sub))
-                dummy = self.noder.dir_node(base, sub, parent, path)
+                dummy = self.noder.dir_node(base, sub, parent, storagepath)
                 cnt += 1
-                _, cnt2 = self.index(sub, dummy, base)
+                nstoragepath = os.sep.join([storagepath, base])
+                if not storagepath:
+                    nstoragepath = base
+                _, cnt2 = self.index(sub, dummy, base, nstoragepath)
                 cnt += cnt2
             break
         self._log(None)
@@ -53,11 +56,11 @@ class Walker:
 
     def reindex(self, path, parent, top):
         '''reindex a directory and store in tree'''
-        cnt = self._reindex(path, parent, top)
+        cnt = self._reindex(path, parent, top, '')
         cnt += self.noder.clean_not_flagged(top)
         return cnt
 
-    def _reindex(self, path, parent, top):
+    def _reindex(self, path, parent, top, storagepath):
         '''reindex a directory and store in tree'''
         self._debug('reindexing starting at {}'.format(path))
         cnt = 0
@@ -74,7 +77,7 @@ class Walker:
                 self._debug('\tre-index file {}'.format(sub))
                 self._log(f)
                 n = self.noder.file_node(os.path.basename(f), sub,
-                                         parent, path)
+                                         parent, storagepath)
                 self.noder.flag(n)
                 cnt += 1
             for d in dirs:
@@ -85,11 +88,14 @@ class Walker:
                 reindex, dummy = self._need_reindex(parent, base, maccess)
                 if reindex:
                     self._debug('\tre-index directory {}'.format(sub))
-                    dummy = self.noder.dir_node(base, sub, parent, path)
+                    dummy = self.noder.dir_node(base, sub, parent, storagepath)
                     cnt += 1
                 self.noder.flag(dummy)
                 self._debug('reindexing deeper under {}'.format(sub))
-                cnt2 = self._reindex(sub, dummy, top)
+                nstoragepath = os.sep.join([storagepath, base])
+                if not storagepath:
+                    nstoragepath = base
+                cnt2 = self._reindex(sub, dummy, top, nstoragepath)
                 cnt += cnt2
             break
         self._log(None)
