@@ -235,8 +235,10 @@ class Noder:
         @recalcparent: get relpath from tree instead of relpath field
         '''
         if node.type == self.TYPE_TOP:
+            # top node
             Logger.out('{}{}'.format(pre, node.name))
         elif node.type == self.TYPE_FILE:
+            # node of type file
             name = node.name
             if withpath:
                 if recalcparent:
@@ -253,6 +255,7 @@ class Noder:
                 compl += ', storage:{}'.format(Logger.bold(storage.name))
             Logger.file(pre, name, compl)
         elif node.type == self.TYPE_DIR:
+            # node of type directory
             name = node.name
             if withpath:
                 if recalcparent:
@@ -271,20 +274,24 @@ class Noder:
                 attr.append(['storage', Logger.bold(storage.name)])
             Logger.dir(pre, name, depth=depth, attr=attr)
         elif node.type == self.TYPE_STORAGE:
+            # node of type storage
             hf = utils.human(node.free)
             ht = utils.human(node.total)
+            nbchildren = len(node.children)
             dt = ''
             if self._has_attr(node, 'ts'):
                 dt = ', date:'
                 dt += utils.epoch_to_str(node.ts)
-            name = '{} (free:{}, total:{}{})'.format(node.name, hf, ht, dt)
-            Logger.storage(pre, name, node.attr)
+            name = '{}'.format(node.name)
+            args = '(nbfiles:{}, free:{}/{}{})'.format(nbchildren,
+                                                       hf, ht, dt)
+            Logger.storage(pre, name, args, node.attr)
         elif node.type == self.TYPE_ARC:
+            # archive node
             if self.arc:
                 Logger.arc(pre, node.name, node.archive)
         else:
-            Logger.err('Weird node encountered: {}'.format(node))
-            # Logger.out('{}{}'.format(pre, node.name))
+            Logger.err('bad node encountered: {}'.format(node))
 
     def print_tree(self, node, style=anytree.ContRoundStyle()):
         '''print the tree similar to unix tool "tree"'''
@@ -347,7 +354,7 @@ class Noder:
                 return []
             if rec:
                 self.print_tree(found[0].parent)
-                return
+                return found
             found = sorted(found, key=self._sort, reverse=self.sortsize)
             self._print_node(found[0].parent,
                              withpath=False, withdepth=True)

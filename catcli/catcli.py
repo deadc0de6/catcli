@@ -133,7 +133,10 @@ def cmd_ls(args, noder, top):
         path += SEPARATOR
     if not path.endswith(WILD):
         path += WILD
-    return noder.walk(top, path, rec=args['--recursive'])
+    found = noder.walk(top, path, rec=args['--recursive'])
+    if not found:
+        Logger.err('\"{}\": nothing found'.format(args['<path>']))
+    return found
 
 
 def cmd_rm(args, noder, catalog, top):

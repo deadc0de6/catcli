@@ -22,19 +22,24 @@ class Logger:
     BOLD = '\033[1m'
     UND = '\033[4m'
 
+    STORAGE = 'storage'
+    ARCHIVE = 'archive'
+    NBFILES = 'nbfiles'
+
     def __init__(self):
         pass
 
     ######################################################################
     # node specific output
     ######################################################################
-    def storage(pre, name, attr):
+    def storage(pre, name, args, attr):
         '''print a storage node'''
         end = ''
         if attr:
             end = ' {}({}){}'.format(Logger.GRAY, attr, Logger.RESET)
-        s = '{}{}storage{}:'.format(pre, Logger.UND, Logger.RESET)
+        s = '{}{}{}{}:'.format(pre, Logger.UND, Logger.STORAGE, Logger.RESET)
         s += ' {}{}{}{}'.format(Logger.PURPLE, name, Logger.RESET, end)
+        s += ' {}{}{}'.format(Logger.GRAY, args, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
 
     def file(pre, name, attr):
@@ -47,7 +52,7 @@ class Logger:
         '''print a directory node'''
         end = []
         if depth != '':
-            end.append('nbfiles:{}'.format(depth))
+            end.append('{}:{}'.format(Logger.NBFILES, depth))
         if attr:
             end.append(' '.join(['{}:{}'.format(x, y) for x, y in attr]))
         if end:
@@ -58,7 +63,8 @@ class Logger:
 
     def arc(pre, name, archive):
         s = '{}{}{}{}'.format(pre, Logger.YELLOW, name, Logger.RESET)
-        s += ' {}[archive:{}]{}'.format(Logger.GRAY, archive, Logger.RESET)
+        s += ' {}[{}:{}]{}'.format(Logger.GRAY, Logger.ARCHIVE,
+                                   archive, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
 
     ######################################################################
