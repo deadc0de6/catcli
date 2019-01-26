@@ -10,10 +10,10 @@
 *The command line catalog tool for your offline data*
 
 Did you ever wanted to find back that specific file that should be on one of your
-backup DVDs or one of your external hard drives ? You usually go through all
-of them hoping to find the right one on the first try ?
-Well [catcli](https://github.com/deadc0de6/catcli) indexes external media
-in a catalog and allows to quickly find specific files or even navigate in the
+backup DVDs or one of your external hard drives? You usually go through all
+of them hoping to find the right one on the first try?
+[Catcli](https://github.com/deadc0de6/catcli) indexes external media
+in a catalog file and allows to quickly find specific files or even navigate in the
 catalog of indexed files while these are not connected to your host.
 
 Features:
@@ -24,8 +24,10 @@ Features:
   * Handle archive files (zip, tar, ...) and index their content
   * Save catalog to json for easy versioning with git
   * Command line interface FTW
-  * Store files and folders sizes
+  * Store files and directories sizes
   * Store md5 hash of files
+  * Ability to update the catalog
+  * Tag your different storages with additional information
 
 <a href="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8"><img src="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png" width="50%" height="50%"></a>
 
@@ -40,20 +42,20 @@ catcli index -u --meta='some description' log /var/log
 catcli tree
 # navigate
 catcli ls log
-# find files/folders named '*log*'
+# find files/directories named '*log*'
 catcli find log
 ```
 
 see [usage](#usage) for specific info
 
-## Why catcli ?
+## Why catcli?
 
 [Catcli](https://github.com/deadc0de6/catcli) gives the ability to navigate,
 explore and find your files that are stored on external media
 (DVDs, hard drives, USB sticks, etc) when those are not connected.
 Catcli can just as easily index any arbitrary directories.
 
-See the [example](#example) for an overview of the available features.
+See the [examples](#examples) for an overview of the available features.
 
 ---
 
@@ -113,12 +115,12 @@ and they are all available through the command line interface of catcli.
 
 Five different types of entry are present in a catalog:
 
-  * *top node*: this is the root of the tree
-  * *storage node*: this represents some indexed storage (a DVD, an external
-    hard drive, an USB drive, some arbitrary directory, ...)
-  * *dir node*: this is a directory
-  * *file node*: this is a file
-  * *archive node*: this is a file contained in an archive
+  * **top node**: this is the root of the tree
+  * **storage node**: this represents an indexed storage (a DVD, an external
+    hard drive, an USB drive, some arbitrary directory, etc).
+  * **dir node**: this is a directory
+  * **file node**: this is a file
+  * **archive node**: this is a file contained in an archive (tar, zip, etc)
 
 ## Index data
 
@@ -136,47 +138,42 @@ directory under `catcli.catalog`.
 
 The `--meta` switch allows to add any additional information to store along in
 the catalog like for example `the blue disk in my office`.
-The `-u` switch tells catcli to also store (and calculate) the total size
-of each directory. Using the `-a` switch allows to also index archive files as explained
+The `-u --subsize` switch tells catcli to also store (and calculate) the total size
+of each directory. Using the `-a --archive` switch allows to also index archive files as explained
 [below](#index-archive-files).
 
 ## Index archive files
 
 Catcli is able to index and explore the content of archive files.
-Following archive formats are supported: tar, tar.gz, tar.xz, lzma, tar.bz2, zip.
-
-Also catcli is able to find files within indexed archive files.
+Following archive formats are supported: *tar*, *tar.gz*, *tar.xz*, *lzma*, *tar.bz2*, *zip*.
+Catcli is also able to find files within indexed archive files.
 
 See the [archive example](#archive-example) for more.
 
 ## Walk indexed files with ls
 
 A catalog can be walked using the command `ls` as if the media
-was mounted.
+is mounted (File/directories separator is `/`).
 
-File/folder separator is `/`
 ```bash
 $ catcli ls tmp/a/b/c
 ```
 
-Resulting files can be sorted by size using `-S`.
-
-See the [example](#example) for more.
+Resulting files can be sorted by size using `-S --sortsize`.
+See the [examples](#examples) for more.
 
 ## Find files
 
 Files and directories can be found based on their names
 using the `find` command.
-
-See the [example](#example) for more.
+See the [examples](#examples) for more.
 
 ## Display entire tree
 
 The entire catalog can be shown using the `tree` command.
+Resulting files can be sorted by size using the `-S --sortsize` switch.
 
-Resulting files can be sorted by size using `-S`.
-
-See the [example](#example) for more.
+See the [examples](#examples) for more.
 
 ## Catalog graph
 
@@ -192,7 +189,7 @@ $ dot /tmp/catcli.dot -T png -o /tmp/tree.png
 
 ## Edit storage
 
-Storage entry can be edited with
+Storage entry can be edited with following catcli commands:
 
 * `rename` - rename the storage
 * `edit` - edit storage metadata
@@ -200,95 +197,109 @@ Storage entry can be edited with
 ## Update catalog
 
 The catalog can be updated with the `update` command.
-Updates is based on the access time of each of the file. If using
-`--hash`, only new files are re-hashed.
+Updates are based on the access time of each of the files. If using
+`-c --hash`, only new files are re-hashed.
 
 # Examples
 
-## Example
+## Simple example
+
 Let's first create some files and directories:
+
 ```bash
 $ mkdir -p /tmp/test/{a,b,c}
-$ touch /tmp/test/a/{1,2,3}
-$ touch /tmp/test/b/{4,5,6}
-$ touch /tmp/test/c/{7,8,9}
-$ ls -R /tmp/test
-/tmp/test:
-a  b  c
+$ echo 'something in files in a' > /tmp/test/a/{1,2,3}
+$ echo 'something else in files in b' > /tmp/test/b/{4,5,6}
+$ echo 'some bytes' > /tmp/test/c/{7,8,9}
+$ tree /tmp/test
+/tmp/test
+├── a
+│   ├── 1
+│   ├── 2
+│   └── 3
+├── b
+│   ├── 4
+│   ├── 5
+│   └── 6
+└── c
+    ├── 7
+    ├── 8
+    └── 9
 
-/tmp/test/a:
-1  2  3
-
-/tmp/test/b:
-4  5  6
-
-/tmp/test/c:
-7  8  9
+3 directories, 9 files
 ```
 
-First this directory is indexed by catcli as if it was some kind of
+First this directory is indexed with `catcli` as if it was some kind of
 external storage:
+
 ```bash
-$ catcli index --meta='my test directory' -u tmptest /tmp/test
+$ catcli index --meta='my test directory' --subsize tmptest /tmp/test
 ```
 
-Catcli has created its catalog file in the current directory as `catcli.catalog`.
+Catcli creates its catalog file in the current directory as `catcli.catalog`.
 
 Printing the entire catalog as a tree is done with the command `tree`
+
 ```
 $ catcli tree
 top
-└── storage: tmptest (free:183.7G, total:200.0G) (my test directory)
-    ├── b [nbfiles:3]
-    │   ├── 4 [size:0]
-    │   ├── 5 [size:0]
-    │   └── 6 [size:0]
-    ├── a [nbfiles:3]
-    │   ├── 1 [size:0]
-    │   ├── 3 [size:0]
-    │   └── 2 [size:0]
-    └── c [nbfiles:3]
-        ├── 7 [size:0]
-        ├── 8 [size:0]
-        └── 9 [size:0]
+└── storage: tmptest (my test directory) (nbfiles:3, free:3.7G/3.7G, date:2019-01-26 19:59:47)
+    ├── a [nbfiles:3, totsize:72]
+    │   ├── 1 [size:24]
+    │   ├── 2 [size:24]
+    │   └── 3 [size:24]
+    ├── b [nbfiles:3, totsize:87]
+    │   ├── 4 [size:29]
+    │   ├── 5 [size:29]
+    │   └── 6 [size:29]
+    └── c [nbfiles:3, totsize:33]
+        ├── 7 [size:11]
+        ├── 8 [size:11]
+        └── 9 [size:11]
 ```
 
 The catalog can be walked with `ls` as if it was a normal directory
+
 ```
 $ catcli ls
 top
-- storage: tmptest (free:2.6G, total:2.6G) (my test directory)
+- storage: tmptest (my test directory) (nbfiles:3, free:3.7G/3.7G, date:2019-01-26 19:59:47)
 
 $ catcli ls tmptest
-storage: tmptest (free:3.7G, total:3.7G) (my test directory)
-- a [nbfiles:3]
-- b [nbfiles:3]
-- c [nbfiles:3]
+storage: tmptest (my test directory) (nbfiles:3, free:3.7G/3.7G, date:2019-01-26 19:59:47)
+- a [nbfiles:3, totsize:72]
+- b [nbfiles:3, totsize:87]
+- c [nbfiles:3, totsize:33]
 
 $ catcli ls tmptest/b
-b [nbfiles:3]
-- 4 [size:0]
-- 5 [size:0]
-- 6 [size:0]
+b [nbfiles:3, totsize:87]
+- 4 [size:29]
+- 5 [size:29]
+- 6 [size:29]
 ```
 
 And files can be found using the command `find`
+
 ```bash
 $ catcli find 9
-test/c/9 [size:0]
+
+c/9 [size:11, storage:tmptest]
 ```
 
-When using the `--script` switch, a one-liner is generated
+When using the `-b --script` switch, a one-liner is generated
 that allows to handle the found file(s)
-```bash
+
+```
 $ catcli find 9 --script
-test/c/9 [size:0]
-op=file; source=/media/mnt; $op ${source}/test/c/9
+
+c/9 [size:11, storage:tmptest]
+op=file; source=/media/mnt; $op ${source}/c/9
 ```
 
 ## Archive example
 
 Let's consider a directory containing archive files:
+
 ```bash
 $ ls -1 /tmp/catcli
 catcli-0.3.1
@@ -298,14 +309,14 @@ v0.3.1.zip
 
 To enable the indexing of archive contents use
 the `-a --archive` switch
+
 ```bash
 $ catcli index -au some-name /tmp/catcli
-
-Indexed 26 file(s) in 0:00:00.004533
 ```
 
 Then any command can be used to explore the catalog as for normal
-files but, by providing the `-a` switch, archive content are displayed.
+files but, by providing the `-a --archive` switch, archive content are displayed.
+
 ```bash
 $ catcli ls some-name
 
@@ -351,7 +362,7 @@ $ catcli ls -ar some-name/v0.3.1.zip
    └── catcli-0.3.1/ [archive:v0.3.1.zip]
 ```
 
-All commands can also handle archive file (like `tree` or `find`).
+All commands handle archive files (like `tree` or `find`).
 
 # Contribution
 
