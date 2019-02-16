@@ -245,6 +245,7 @@ class Noder:
                     name = os.sep.join([self._get_parents(node.parent), name])
                 else:
                     name = node.relpath
+            name = name.lstrip(os.sep)
             if withstorage:
                 storage = self._get_storage(node)
             attr = ''
@@ -262,6 +263,7 @@ class Noder:
                     name = os.sep.join([self._get_parents(node.parent), name])
                 else:
                     name = node.relpath
+            name = name.lstrip(os.sep)
             depth = ''
             if withdepth:
                 depth = len(node.children)
@@ -309,17 +311,23 @@ class Noder:
     # searching
     ###############################################################
     def find_name(self, root, key,
-                  script=False,
-                  parentfromtree=False):
+                  script=False, directory=False,
+                  startpath=None, parentfromtree=False):
         '''find files based on their names'''
         if self.verbose:
             Logger.info('searching for \"{}\"'.format(key))
+        start = root
+        if startpath:
+            start = self.get_node(root, startpath)
         self.term = key
-        found = anytree.findall(root, filter_=self._find_name)
+        found = anytree.findall(start, filter_=self._find_name)
         paths = []
         for f in found:
             if f.type == self.TYPE_STORAGE:
                 # ignore storage nodes
+                continue
+            if directory and f.type != self.TYPE_DIR:
+                # ignore non directory
                 continue
             self._print_node(f, withpath=True, withdepth=True,
                              withstorage=True, recalcparent=parentfromtree)
