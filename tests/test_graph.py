@@ -9,11 +9,10 @@ import unittest
 import tempfile
 import os
 
-from catcli.catcli import *
+from catcli.catcli import cmd_graph
 from catcli.noder import Noder
-from catcli.walker import Walker
 from catcli.catalog import Catalog
-from tests.helpers import *
+from tests.helpers import clean, get_fakecatalog
 
 
 class TestGraph(unittest.TestCase):

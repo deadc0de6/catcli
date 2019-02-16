@@ -7,7 +7,6 @@ helpers
 
 import os
 import hashlib
-import sys
 import tempfile
 import subprocess
 import datetime

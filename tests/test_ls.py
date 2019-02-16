@@ -7,11 +7,10 @@ Basic unittest for ls
 
 import unittest
 
-from catcli.catcli import *
+from catcli.catcli import cmd_ls
 from catcli.noder import Noder
-from catcli.walker import Walker
 from catcli.catalog import Catalog
-from tests.helpers import *
+from tests.helpers import get_fakecatalog, clean
 
 
 class TestWalking(unittest.TestCase):

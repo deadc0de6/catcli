@@ -7,11 +7,10 @@ Basic unittest for tree
 
 import unittest
 
-from catcli.catcli import *
+from catcli.catcli import cmd_tree
 from catcli.noder import Noder
-from catcli.walker import Walker
 from catcli.catalog import Catalog
-from tests.helpers import *
+from tests.helpers import clean, get_fakecatalog
 
 
 class TestTree(unittest.TestCase):

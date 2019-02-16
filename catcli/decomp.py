@@ -5,7 +5,6 @@ Copyright (c) 2017, deadc0de6
 Catcli generic compressed data lister
 """
 
-import sys
 import os
 import tarfile
 import zipfile

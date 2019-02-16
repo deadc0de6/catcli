@@ -6,12 +6,13 @@ Basic unittest for updating an index
 """
 
 import unittest
+import os
 
-from catcli.catcli import *
+from catcli.catcli import cmd_index, cmd_update
 from catcli.noder import Noder
-from catcli.walker import Walker
 from catcli.catalog import Catalog
-from tests.helpers import *
+from tests.helpers import create_dir, create_rnd_file, get_tempdir, \
+        clean, unix_tree, edit_file, read_from_file
 import anytree
 
 
@@ -42,7 +43,6 @@ class TestIndexing(unittest.TestCase):
 
         noder = Noder()
         top = noder.new_top_node()
-        walker = Walker(noder)
         catalog = Catalog(catalogpath, force=True, verbose=False)
 
         # create fake args

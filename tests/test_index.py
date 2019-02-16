@@ -5,13 +5,14 @@ Copyright (c) 2017, deadc0de6
 Basic unittest for indexing
 """
 
+import os
 import unittest
 
-from catcli.catcli import *
+from catcli.catcli import cmd_index
 from catcli.noder import Noder
-from catcli.walker import Walker
 from catcli.catalog import Catalog
-from tests.helpers import *
+from tests.helpers import get_tempdir, create_rnd_file, clean, \
+        get_rnd_string, create_dir
 
 
 class TestIndexing(unittest.TestCase):
@@ -35,13 +36,12 @@ class TestIndexing(unittest.TestCase):
         d2 = create_dir(dirpath, get_rnd_string(3))
 
         # fill directories with files
-        d1f1 = create_rnd_file(d1, get_rnd_string(4))
-        d1f2 = create_rnd_file(d1, get_rnd_string(4))
-        d2f1 = create_rnd_file(d2, get_rnd_string(6))
+        _ = create_rnd_file(d1, get_rnd_string(4))
+        _ = create_rnd_file(d1, get_rnd_string(4))
+        _ = create_rnd_file(d2, get_rnd_string(6))
 
         noder = Noder()
         top = noder.new_top_node()
-        walker = Walker(noder)
         catalog = Catalog(catalogpath, force=True, verbose=False)
 
         # create fake args

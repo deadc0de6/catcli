@@ -19,7 +19,7 @@ from .logger import Logger
 from .catalog import Catalog
 from .walker import Walker
 from .noder import Noder
-from .utils import *
+from .utils import ask, edit
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))

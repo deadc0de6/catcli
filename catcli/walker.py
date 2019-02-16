@@ -6,10 +6,8 @@ Catcli filesystem indexer
 """
 
 import os
-import anytree
 
 # local imports
-from catcli.noder import Noder
 from catcli.logger import Logger
 
 
@@ -26,7 +24,7 @@ class Walker:
         '''index a directory and store in tree'''
         self._debug('indexing starting at {}'.format(path))
         if not parent:
-            parent = noder.dir_node(name, path, parent)
+            parent = self.noder.dir_node(name, path, parent)
 
         cnt = 0
         for (root, dirs, files) in os.walk(path):

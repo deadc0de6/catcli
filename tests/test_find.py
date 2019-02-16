@@ -7,15 +7,10 @@ Basic unittest for find
 
 import unittest
 
-import catcli
-
-from catcli.catcli import *
+from catcli.catcli import cmd_find
 from catcli.noder import Noder
-from catcli.walker import Walker
 from catcli.catalog import Catalog
-from catcli.logger import Logger
-from catcli.utils import *
-from tests.helpers import *
+from tests.helpers import get_fakecatalog
 
 
 class TestFind(unittest.TestCase):
