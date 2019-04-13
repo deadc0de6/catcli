@@ -138,8 +138,11 @@ directory under `catcli.catalog`.
 
 The `--meta` switch allows to add any additional information to store along in
 the catalog like for example `the blue disk in my office`.
-The `-u --subsize` switch tells catcli to also store (and calculate) the total size
-of each directory. Using the `-a --archive` switch allows to also index archive files as explained
+
+Catcli will calculate and store the total size of each node (directories, storages, etc)
+unless the `-n --no-subsize` switch is used.
+
+Using the `-a --archive` switch allows to also index archive files as explained
 [below](#index-archive-files).
 
 ## Index archive files
@@ -233,7 +236,7 @@ First this directory is indexed with `catcli` as if it was some kind of
 external storage:
 
 ```bash
-$ catcli index --meta='my test directory' --subsize tmptest /tmp/test
+$ catcli index --meta='my test directory' tmptest /tmp/test
 ```
 
 Catcli creates its catalog file in the current directory as `catcli.catalog`.
