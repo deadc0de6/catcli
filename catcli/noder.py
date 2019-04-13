@@ -91,22 +91,36 @@ class Noder:
         except StopIteration:
             return None
 
-    def rec_size(self, node):
-        '''recursively traverse tree and store dir size'''
+    def _rec_size(self, node, store=True):
+        '''
+        recursively traverse tree and return size
+        @store: store the size in the node
+        '''
         if self.verbose:
-            Logger.info('getting directory size recursively')
+            Logger.info('getting node size recursively')
         if node.type == self.TYPE_FILE:
             return node.size
         size = 0
         for i in node.children:
             if node.type == self.TYPE_DIR:
-                size += self.rec_size(i)
+                sz = self._rec_size(i, store=store)
+                if store:
+                    i.size = sz
+                size += sz
             if node.type == self.TYPE_STORAGE:
-                self.rec_size(i)
+                sz = self._rec_size(i, store=store)
+                if store:
+                    i.size = sz
+                size += sz
             else:
                 continue
-        node.size = size
+        if store:
+            node.size = size
         return size
+
+    def rec_size(self, node):
+        '''recursively traverse tree and store dir size'''
+        return self._rec_size(node, store=True)
 
     ###############################################################
     # public helpers
@@ -280,14 +294,23 @@ class Noder:
             hf = utils.human(node.free)
             ht = utils.human(node.total)
             nbchildren = len(node.children)
+            # get the date
             dt = ''
             if self._has_attr(node, 'ts'):
-                dt = ', date:'
-                dt += utils.epoch_to_str(node.ts)
+                dt = 'date:{}'.format(utils.epoch_to_str(node.ts))
+            ds = ''
+            # the children size
+            sz = self._rec_size(node, store=False)
+            sz = utils.human(sz)
+            ds = 'totsize:{}'.format(sz)
+            # format the output
             name = '{}'.format(node.name)
-            args = '(nbfiles:{}, free:{}/{}{})'.format(nbchildren,
-                                                       hf, ht, dt)
-            Logger.storage(pre, name, args, node.attr)
+            args = [
+                'nbfiles:{}'.format(nbchildren),
+                'free:{}/{}'.format(hf, ht),
+                dt,
+                ds]
+            Logger.storage(pre, name, '({})'.format(','.join(args)), node.attr)
         elif node.type == self.TYPE_ARC:
             # archive node
             if self.arc:
