@@ -35,7 +35,7 @@ Quick start:
 
 ```bash
 # install catcli with pip
-sudo pip3 install catcli
+pip3 install catcli --user
 # index a directory in the catalog
 catcli index -u --meta='some description' log /var/log
 # display the content
@@ -80,7 +80,7 @@ See the [examples](#examples) for an overview of the available features.
 
 To install run:
 ```bash
-$ sudo pip3 install catcli
+$ pip3 install catcli --user
 ```
 
 Or from github directly
@@ -93,7 +93,7 @@ $ catcli --help
 To work with catcli without installing it, you can do the following
 ```bash
 $ cd /tmp; git clone https://github.com/deadc0de6/catcli && cd catcli
-$ sudo pip3 install -r requirements.txt
+$ pip3 install -r requirements.txt --user
 $ python3 -m catcli.catcli --help
 ```
 
