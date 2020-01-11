@@ -41,7 +41,7 @@ setup(
 
     keywords='catalog commandline indexer offline',
     packages=find_packages(exclude=['tests*']),
-    install_requires=['docopt', 'anytree','psutil'],
+    install_requires=['docopt', 'anytree'],
 
     extras_require={
         'dev': ['check-manifest'],

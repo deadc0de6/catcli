@@ -7,7 +7,7 @@ Class that represents a node in the catalog tree
 
 import os
 import anytree
-import psutil
+import shutil
 import time
 
 # local imports
@@ -214,8 +214,8 @@ class Noder:
     def storage_node(self, name, path, parent, attr=None):
         '''create a new node representing a storage'''
         path = os.path.abspath(path)
-        free = psutil.disk_usage(path).free
-        total = psutil.disk_usage(path).total
+        free = shutil.disk_usage(path).free
+        total = shutil.disk_usage(path).total
         epoch = int(time.time())
         return anytree.AnyNode(name=name, type=self.TYPE_STORAGE, free=free,
                                total=total, parent=parent, attr=attr, ts=epoch)
