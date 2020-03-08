@@ -55,7 +55,7 @@ class Walker:
     def reindex(self, path, parent, top):
         '''reindex a directory and store in tree'''
         cnt = self._reindex(path, parent, top, '')
-        cnt += self.noder.clean_not_flagged(top)
+        cnt += self.noder.clean_not_flagged(parent)
         return cnt
 
     def _reindex(self, path, parent, top, storagepath):
