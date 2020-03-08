@@ -37,7 +37,7 @@ Quick start:
 # install catcli with pip
 pip3 install catcli --user
 # index a directory in the catalog
-catcli index -u --meta='some description' log /var/log
+catcli index --meta='some description' log /var/log
 # display the content
 catcli tree
 # navigate
@@ -130,7 +130,7 @@ will index the entire directory `/media/mnt`
 and store that in your catalog under the name `<short-name>`.
 
 ```bash
-$ catcli index --meta=<some-description> -u <short-name> /media/mnt
+$ catcli index --meta=<some-description> <short-name> /media/mnt
 ```
 
 If not specified otherwise (with the switch `--catalog`), the catalog is saved in the current
