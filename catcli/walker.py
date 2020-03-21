@@ -21,27 +21,45 @@ class Walker:
         self.debug = debug
 
     def index(self, path, parent, name, storagepath=''):
-        '''index a directory and store in tree'''
+        '''
+        index a directory and store in tree
+        @path: path to index
+        @parent: parent node
+        @name: this stoarge name
+        '''
         self._debug('indexing starting at {}'.format(path))
         if not parent:
             parent = self.noder.dir_node(name, path, parent)
+
+        if os.path.islink(path):
+            rel = os.readlink(path)
+            ab = os.path.join(path, rel)
+            if os.path.isdir(ab):
+                return parent, 0
 
         cnt = 0
         for (root, dirs, files) in os.walk(path):
             for f in files:
                 self._debug('found file {} under {}'.format(f, path))
                 sub = os.path.join(root, f)
+                if not os.path.exists(sub):
+                    continue
                 self._log(f)
                 self._debug('index file {}'.format(sub))
-                self.noder.file_node(os.path.basename(f), sub,
-                                     parent, storagepath)
-                cnt += 1
+                n = self.noder.file_node(os.path.basename(f), sub,
+                                         parent, storagepath)
+                if n:
+                    cnt += 1
             for d in dirs:
                 self._debug('found dir {} under {}'.format(d, path))
                 base = os.path.basename(d)
                 sub = os.path.join(root, d)
                 self._debug('index directory {}'.format(sub))
+                if not os.path.exists(sub):
+                    continue
                 dummy = self.noder.dir_node(base, sub, parent, storagepath)
+                if not dummy:
+                    continue
                 cnt += 1
                 nstoragepath = os.sep.join([storagepath, base])
                 if not storagepath:
@@ -67,8 +85,8 @@ class Walker:
                 self._debug('found file {} under {}'.format(f, path))
                 sub = os.path.join(root, f)
                 maccess = os.path.getmtime(sub)
-                reindex, n = self._need_reindex(parent, f, maccess)
-                if not reindex:
+                need_reindex, n = self._need_reindex(parent, f, maccess)
+                if not need_reindex:
                     self._debug('\tignore file {}'.format(sub))
                     self.noder.flag(n)
                     continue
@@ -83,8 +101,8 @@ class Walker:
                 base = os.path.basename(d)
                 sub = os.path.join(root, d)
                 maccess = os.path.getmtime(sub)
-                reindex, dummy = self._need_reindex(parent, base, maccess)
-                if reindex:
+                need_reindex, dummy = self._need_reindex(parent, base, maccess)
+                if need_reindex:
                     self._debug('\tre-index directory {}'.format(sub))
                     dummy = self.noder.dir_node(base, sub, parent, storagepath)
                     cnt += 1
