@@ -62,7 +62,7 @@ Options:
     -c --hash         Calculate md5 hash [default: False].
     -r --recursive    Recursive [default: False].
     -P --parent       Ignore stored relpath [default: True].
-    -V --erbose      Be verbose [default: False].
+    -V --verbose      Be verbose [default: False].
     -v --version      Show version.
     -h --help         Show this screen.
 """.format(BANNER, NAME, CATALOGPATH)
