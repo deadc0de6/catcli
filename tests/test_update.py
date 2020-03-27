@@ -42,7 +42,8 @@ class TestIndexing(unittest.TestCase):
         d1f2 = create_rnd_file(d1, 'dir1file2')
         d2f1 = create_rnd_file(d2, 'dir2file1')
 
-        noder = Noder()
+        noder = Noder(debug=True)
+        noder.set_hashing(True)
         top = noder.new_top_node()
         catalog = Catalog(catalogpath, force=True, debug=False)
 
@@ -92,6 +93,7 @@ class TestIndexing(unittest.TestCase):
         maccess = os.path.getmtime(f4)
         EDIT = 'edited'
         edit_file(f4, EDIT)
+
         # reset edit time
         os.utime(f4, (maccess, maccess))
         f4_md5_new = md5sum(d1f1)

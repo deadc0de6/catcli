@@ -58,10 +58,7 @@ def clean(path):
 
 
 def edit_file(path, newcontent):
-    if not os.path.exists(path):
-        write_to_file(path, newcontent)
-    else:
-        write_to_file(path, newcontent)
+    return write_to_file(path, newcontent)
 
 
 def unix_tree(path):
