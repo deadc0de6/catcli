@@ -62,7 +62,7 @@ Options:
     -c --hash         Calculate md5 hash [default: False].
     -r --recursive    Recursive [default: False].
     -P --parent       Ignore stored relpath [default: True].
-    -V --verbose      Be verbose [default: False].
+    -V --erbose      Be verbose [default: False].
     -v --version      Show version.
     -h --help         Show this screen.
 """.format(BANNER, NAME, CATALOGPATH)
@@ -230,10 +230,10 @@ def main():
     banner()
 
     # init noder
-    noder = Noder(verbose=args['--verbose'], sortsize=args['--sortsize'],
+    noder = Noder(debug=args['--verbose'], sortsize=args['--sortsize'],
                   arc=args['--archive'])
     # init catalog
-    catalog = Catalog(args['--catalog'], verbose=args['--verbose'],
+    catalog = Catalog(args['--catalog'], debug=args['--verbose'],
                       force=args['--force'])
     # init top node
     top = catalog.restore()

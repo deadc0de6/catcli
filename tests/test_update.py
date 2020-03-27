@@ -44,7 +44,7 @@ class TestIndexing(unittest.TestCase):
 
         noder = Noder()
         top = noder.new_top_node()
-        catalog = Catalog(catalogpath, force=True, verbose=False)
+        catalog = Catalog(catalogpath, force=True, debug=False)
 
         # get checksums
         f4_md5 = md5sum(f4)

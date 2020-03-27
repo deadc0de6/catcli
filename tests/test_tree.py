@@ -19,7 +19,7 @@ class TestTree(unittest.TestCase):
         # init
         path = 'fake'
         self.addCleanup(clean, path)
-        catalog = Catalog(path, force=True, verbose=False)
+        catalog = Catalog(path, force=True, debug=False)
         top = catalog._restore_json(get_fakecatalog())
         noder = Noder()
 

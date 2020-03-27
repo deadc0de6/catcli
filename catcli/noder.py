@@ -36,9 +36,9 @@ class Noder:
     TYPE_STORAGE = 'storage'
     TYPE_META = 'meta'
 
-    def __init__(self, verbose=False, sortsize=False, arc=False):
+    def __init__(self, debug=False, sortsize=False, arc=False):
         self.hash = True
-        self.verbose = verbose
+        self.debug = debug
         self.sortsize = sortsize
         self.arc = arc
         if self.arc:
@@ -352,8 +352,7 @@ class Noder:
                   script=False, directory=False,
                   startpath=None, parentfromtree=False):
         '''find files based on their names'''
-        if self.verbose:
-            Logger.info('searching for \"{}\"'.format(key))
+        self._debug('searching for \"{}\"'.format(key))
         start = root
         if startpath:
             start = self.get_node(root, startpath)
@@ -390,8 +389,7 @@ class Noder:
     ###############################################################
     def walk(self, root, path, rec=False):
         '''walk the tree for ls based on names'''
-        if self.verbose:
-            Logger.info('walking path: \"{}\"'.format(path))
+        self._debug('walking path: \"{}\"'.format(path))
         r = anytree.resolver.Resolver('name')
         found = []
         try:
@@ -482,6 +480,6 @@ class Noder:
         return utils.md5sum(path)
 
     def _debug(self, string):
-        if not self.verbose:
+        if not self.debug:
             return
         Logger.debug(string)
