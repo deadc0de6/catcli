@@ -88,7 +88,7 @@ class Noder:
             return node, True
         # maccess changed
         old_maccess = node.maccess
-        if float(maccess) > float(old_maccess):
+        if float(maccess) != float(old_maccess):
             self._debug('maccess changed for \"{}\"'.format(path))
             return node, True
         # test hash
