@@ -484,4 +484,4 @@ class Noder:
     def _debug(self, string):
         if not self.verbose:
             return
-        Logger.info(string)
+        Logger.debug(string)

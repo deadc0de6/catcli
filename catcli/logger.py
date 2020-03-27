@@ -71,17 +71,17 @@ class Logger:
     # generic output
     ######################################################################
     def out(string):
-        '''to stdout'''
+        '''to stdout no color'''
         sys.stdout.write('{}\n'.format(string))
 
-    def log(string):
-        '''to stderr'''
+    def debug(string):
+        '''to stderr no color'''
         sys.stderr.write('{}\n'.format(string))
 
     def info(string):
-        '''to stderr in color'''
+        '''to stdout in color'''
         s = '{}{}{}'.format(Logger.MAGENTA, string, Logger.RESET)
-        sys.stderr.write('{}\n'.format(s))
+        sys.stdout.write('{}\n'.format(s))
 
     def err(string):
         '''to stderr in RED'''

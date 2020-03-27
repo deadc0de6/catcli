@@ -131,7 +131,7 @@ class Walker:
     def _debug(self, string):
         if not self.debug:
             return
-        Logger.log(string)
+        Logger.debug(string)
 
     def _log(self, string):
         if self.debug:
