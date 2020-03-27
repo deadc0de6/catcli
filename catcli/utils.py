@@ -32,6 +32,8 @@ def md5sum(path):
             return d.hexdigest()
     except PermissionError:
         pass
+    except OSError as e:
+        Logger.err('md5sum error: {}'.format(e))
     return None
 
 
