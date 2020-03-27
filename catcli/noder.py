@@ -78,25 +78,26 @@ class Noder:
         node = self.get_node(top, treepath, quiet=True)
         # node does not exist
         if not node:
-            self._debug('node does not exist')
+            self._debug('change: node does not exist')
             return None, True
         # force re-indexing if no maccess
         maccess = os.path.getmtime(path)
         if not self._has_attr(node, 'maccess') or \
                 not node.maccess:
-            self._debug('changed as no maccess found')
+            self._debug('change: no maccess found')
             return node, True
         # maccess changed
         old_maccess = node.maccess
         if float(maccess) != float(old_maccess):
-            self._debug('maccess changed for \"{}\"'.format(path))
+            self._debug('change: maccess changed for \"{}\"'.format(path))
             return node, True
         # test hash
         if self.hash and node.md5:
             md5 = self._get_hash(path)
             if md5 != node.md5:
-                self._debug('checksum changed for \"{}\"'.format(path))
+                self._debug('change: checksum changed for \"{}\"'.format(path))
                 return node, True
+        self._debug('change: no change for \"{}\"'.format(path))
         return node, False
 
     def get_meta_node(self, top):
@@ -112,9 +113,11 @@ class Noder:
         recursively traverse tree and return size
         @store: store the size in the node
         '''
-        self._debug('getting node size recursively')
         if node.type == self.TYPE_FILE:
+            self._debug('getting node size for \"{}\"'.format(node.name))
             return node.size
+        m = 'getting node size recursively for \"{}\"'.format(node.name)
+        self._debug(m)
         size = 0
         for i in node.children:
             if node.type == self.TYPE_DIR:
