@@ -89,7 +89,7 @@ class Noder:
         # maccess changed
         old_maccess = node.maccess
         if float(maccess) > float(old_maccess):
-            self._debug('macess changed for \"{}\"'.format(path))
+            self._debug('maccess changed for \"{}\"'.format(path))
             return node, True
         # test hash
         if self.hash and node.md5:
