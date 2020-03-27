@@ -200,8 +200,9 @@ Storage entry can be edited with following catcli commands:
 ## Update catalog
 
 The catalog can be updated with the `update` command.
-Updates are based on the access time of each of the files. If using
-`-c --hash`, only new files are re-hashed.
+Updates are based on the access time of each of the files and on the
+hash checksum if present (catalog was indexed with `-c --hash` and
+`update` is called with the switch `-c --hash`).
 
 # Examples
 

@@ -12,7 +12,7 @@ from catcli.catcli import cmd_index, cmd_update
 from catcli.noder import Noder
 from catcli.catalog import Catalog
 from tests.helpers import create_dir, create_rnd_file, get_tempdir, \
-        clean, unix_tree, edit_file, read_from_file
+        clean, unix_tree, edit_file, read_from_file, md5sum
 import anytree
 
 
@@ -31,6 +31,7 @@ class TestIndexing(unittest.TestCase):
         f1 = create_rnd_file(dirpath, 'file1')
         f2 = create_rnd_file(dirpath, 'file2')
         f3 = create_rnd_file(dirpath, 'file3')
+        f4 = create_rnd_file(dirpath, 'file4')
 
         # create 2 directories
         d1 = create_dir(dirpath, 'dir1')
@@ -45,6 +46,12 @@ class TestIndexing(unittest.TestCase):
         top = noder.new_top_node()
         catalog = Catalog(catalogpath, force=True, verbose=False)
 
+        # get checksums
+        f4_md5 = md5sum(f4)
+        self.assertTrue(f4_md5)
+        d1f1_md5 = md5sum(d1f1)
+        self.assertTrue(d1f1_md5)
+
         # create fake args
         tmpdirname = 'tmpdir'
         args = {'<path>': dirpath, '<name>': tmpdirname,
@@ -55,6 +62,13 @@ class TestIndexing(unittest.TestCase):
         unix_tree(dirpath)
         cmd_index(args, noder, catalog, top, debug=True)
         self.assertTrue(os.stat(catalogpath).st_size != 0)
+
+        # ensure md5 sum are in
+        nods = noder.find_name(top, os.path.basename(f4))
+        self.assertTrue(len(nods) == 1)
+        nod = nods[0]
+        self.assertTrue(nod)
+        self.assertTrue(nod.md5 == f4_md5)
 
         # print catalog
         noder.print_tree(top)
@@ -70,6 +84,19 @@ class TestIndexing(unittest.TestCase):
         # modify files
         EDIT = 'edited'
         edit_file(d1f1, EDIT)
+        d1f1_md5_new = md5sum(d1f1)
+        self.assertTrue(d1f1_md5_new)
+        self.assertTrue(d1f1_md5_new != d1f1_md5)
+
+        # change file without mtime
+        maccess = os.path.getmtime(f4)
+        EDIT = 'edited'
+        edit_file(f4, EDIT)
+        # reset edit time
+        os.utime(f4, (maccess, maccess))
+        f4_md5_new = md5sum(d1f1)
+        self.assertTrue(f4_md5_new)
+        self.assertTrue(f4_md5_new != f4_md5)
 
         # update storage
         cmd_update(args, noder, catalog, top, debug=True)
@@ -81,7 +108,23 @@ class TestIndexing(unittest.TestCase):
         # explore the top node to find all nodes
         self.assertTrue(len(top.children) == 1)
         storage = top.children[0]
-        self.assertTrue(len(storage.children) == 7)
+        self.assertTrue(len(storage.children) == 8)
+
+        # ensure d1f1 md5 sum has changed in catalog
+        nods = noder.find_name(top, os.path.basename(d1f1))
+        self.assertTrue(len(nods) == 1)
+        nod = nods[0]
+        self.assertTrue(nod)
+        self.assertTrue(nod.md5 != d1f1_md5)
+        self.assertTrue(nod.md5 == d1f1_md5_new)
+
+        # ensure f4 md5 sum has changed in catalog
+        nods = noder.find_name(top, os.path.basename(f4))
+        self.assertTrue(len(nods) == 1)
+        nod = nods[0]
+        self.assertTrue(nod)
+        self.assertTrue(nod.md5 != f4_md5)
+        self.assertTrue(nod.md5 == f4_md5_new)
 
         # ensures files and directories are in
         names = [node.name for node in anytree.PreOrderIter(storage)]
@@ -89,6 +132,7 @@ class TestIndexing(unittest.TestCase):
         self.assertTrue(os.path.basename(f1) in names)
         self.assertTrue(os.path.basename(f2) in names)
         self.assertTrue(os.path.basename(f3) in names)
+        self.assertTrue(os.path.basename(f4) in names)
         self.assertTrue(os.path.basename(d1) in names)
         self.assertTrue(os.path.basename(d1f1) in names)
         self.assertTrue(os.path.basename(d1f2) in names)

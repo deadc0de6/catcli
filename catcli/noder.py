@@ -67,20 +67,29 @@ class Noder:
                 Logger.err('No node at path \"{}\"'.format(path))
             return None
 
-    def get_node_if_newer(self, top, path, maccess):
-        '''return the node (if any) and if path is newer'''
+    def get_node_if_changed(self, top, path):
+        '''return the node (if any) and if it has changed'''
         treepath = path.lstrip(os.sep)
         node = self.get_node(top, treepath, quiet=True)
+        # node does not exist
         if not node:
-            # node does not exist
             return None, True
+        # force re-indexing if no maccess
+        maccess = os.path.getmtime(path)
         if not self._has_attr(node, 'maccess') or \
                 not node.maccess:
-            # force re-indexing if no maccess
             return node, True
+        # maccess changed
         old_maccess = node.maccess
         if float(maccess) > float(old_maccess):
+            self._debug('macess changed for \"{}\"'.format(path))
             return node, True
+        # test hash
+        if self.hash and node.md5:
+            md5 = self._get_hash(path)
+            if md5 != node.md5:
+                self._debug('checksum changed for \"{}\"'.format(path))
+                return node, True
         return node, False
 
     def get_meta_node(self, top):
@@ -96,8 +105,7 @@ class Noder:
         recursively traverse tree and return size
         @store: store the size in the node
         '''
-        if self.verbose:
-            Logger.info('getting node size recursively')
+        self._debug('getting node size recursively')
         if node.type == self.TYPE_FILE:
             return node.size
         size = 0
@@ -168,7 +176,7 @@ class Noder:
             return None
         md5 = None
         if self.hash:
-            md5 = utils.md5sum(path)
+            md5 = self._get_hash(path)
         relpath = os.sep.join([storagepath, name])
 
         maccess = os.path.getmtime(path)
@@ -461,3 +469,12 @@ class Noder:
         if parent:
             return os.sep.join([parent, node.name])
         return node.name
+
+    def _get_hash(self, path):
+        """return md5 hash of node"""
+        return utils.md5sum(path)
+
+    def _debug(self, string):
+        if not self.verbose:
+            return
+        Logger.info('getting node size recursively')

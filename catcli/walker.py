@@ -17,7 +17,8 @@ class Walker:
 
     def __init__(self, noder, nohash=False, debug=False):
         self.noder = noder
-        self.noder.set_hashing(not nohash)
+        self.nohash = nohash
+        self.noder.set_hashing(not self.nohash)
         self.debug = debug
 
     def index(self, path, parent, name, storagepath=''):
@@ -66,8 +67,7 @@ class Walker:
             for f in files:
                 self._debug('found file {} under {}'.format(f, path))
                 sub = os.path.join(root, f)
-                maccess = os.path.getmtime(sub)
-                reindex, n = self._need_reindex(parent, f, maccess)
+                reindex, n = self._need_reindex(parent, sub)
                 if not reindex:
                     self._debug('\tignore file {}'.format(sub))
                     self.noder.flag(n)
@@ -82,8 +82,7 @@ class Walker:
                 self._debug('found dir {} under {}'.format(d, path))
                 base = os.path.basename(d)
                 sub = os.path.join(root, d)
-                maccess = os.path.getmtime(sub)
-                reindex, dummy = self._need_reindex(parent, base, maccess)
+                reindex, dummy = self._need_reindex(parent, sub)
                 if reindex:
                     self._debug('\tre-index directory {}'.format(sub))
                     dummy = self.noder.dir_node(base, sub, parent, storagepath)
@@ -99,19 +98,19 @@ class Walker:
         self._log(None)
         return cnt
 
-    def _need_reindex(self, top, path, maccess):
+    def _need_reindex(self, top, path):
         '''test if node needs re-indexing'''
-        cnode, newer = self.noder.get_node_if_newer(top, path, maccess)
+        cnode, changed = self.noder.get_node_if_changed(top, path)
         if not cnode:
             self._debug('\tdoes not exist')
             return True, cnode
-        if cnode and not newer:
+        if cnode and not changed:
             # ignore this node
-            self._debug('\tis not newer')
+            self._debug('\thas not changed')
             return False, cnode
-        if cnode and newer:
+        if cnode and changed:
             # remove this node and re-add
-            self._debug('\tis newer')
+            self._debug('\thas changed')
             self._debug('\tremoving node {}'.format(cnode))
             cnode.parent = None
         self._debug('\tis to be re-indexed')

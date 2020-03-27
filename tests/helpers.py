@@ -11,6 +11,7 @@ import random
 import tempfile
 import shutil
 import subprocess
+import hashlib
 
 TMPSUFFIX = '.catcli'
 
@@ -23,6 +24,25 @@ def get_rnd_string(length):
     '''Get a random string of specific length '''
     alpha = string.ascii_uppercase + string.digits
     return ''.join(random.choice(alpha) for _ in range(length))
+
+
+def md5sum(path):
+    '''calculate md5 sum of a file'''
+    p = os.path.realpath(path)
+    if not os.path.exists(p):
+        return None
+    try:
+        with open(p, mode='rb') as f:
+            d = hashlib.md5()
+            while True:
+                buf = f.read(4096)
+                if not buf:
+                    break
+                d.update(buf)
+            return d.hexdigest()
+    except PermissionError:
+        pass
+    return None
 
 
 def clean(path):
