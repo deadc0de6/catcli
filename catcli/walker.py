@@ -55,19 +55,25 @@ class Walker:
 
     def reindex(self, path, parent, top):
         '''reindex a directory and store in tree'''
-        cnt = self._reindex(path, parent, top, '')
+        cnt = self._reindex(path, parent, top)
         cnt += self.noder.clean_not_flagged(parent)
         return cnt
 
-    def _reindex(self, path, parent, top, storagepath):
-        '''reindex a directory and store in tree'''
+    def _reindex(self, path, parent, top, storagepath=''):
+        '''
+        reindex a directory and store in tree
+        @path: directory path to re-index
+        @top: top node (storage)
+        @storagepath: rel path relative to indexed directory
+        '''
         self._debug('reindexing starting at {}'.format(path))
         cnt = 0
         for (root, dirs, files) in os.walk(path):
             for f in files:
-                self._debug('found file {} under {}'.format(f, path))
+                self._debug('found file \"{}\" under {}'.format(f, path))
                 sub = os.path.join(root, f)
-                reindex, n = self._need_reindex(parent, sub)
+                treepath = os.path.join(storagepath, f)
+                reindex, n = self._need_reindex(parent, sub, treepath)
                 if not reindex:
                     self._debug('\tignore file {}'.format(sub))
                     self.noder.flag(n)
@@ -79,10 +85,11 @@ class Walker:
                 self.noder.flag(n)
                 cnt += 1
             for d in dirs:
-                self._debug('found dir {} under {}'.format(d, path))
+                self._debug('found dir \"{}\" under {}'.format(d, path))
                 base = os.path.basename(d)
                 sub = os.path.join(root, d)
-                reindex, dummy = self._need_reindex(parent, sub)
+                treepath = os.path.join(storagepath, d)
+                reindex, dummy = self._need_reindex(parent, sub, treepath)
                 if reindex:
                     self._debug('\tre-index directory {}'.format(sub))
                     dummy = self.noder.dir_node(base, sub, parent, storagepath)
@@ -98,22 +105,27 @@ class Walker:
         self._log(None)
         return cnt
 
-    def _need_reindex(self, top, path):
-        '''test if node needs re-indexing'''
-        cnode, changed = self.noder.get_node_if_changed(top, path)
+    def _need_reindex(self, top, path, treepath):
+        '''
+        test if node needs re-indexing
+        @top: top node (storage)
+        @path: abs path to file
+        @treepath: rel path from indexed directory
+        '''
+        cnode, changed = self.noder.get_node_if_changed(top, path, treepath)
         if not cnode:
-            self._debug('\tdoes not exist')
+            self._debug('{} does not exist'.format(path))
             return True, cnode
         if cnode and not changed:
             # ignore this node
-            self._debug('\thas not changed')
+            self._debug('{} has not changed'.format(path))
             return False, cnode
         if cnode and changed:
             # remove this node and re-add
-            self._debug('\thas changed')
-            self._debug('\tremoving node {}'.format(cnode))
+            self._debug('{} has changed'.format(path))
+            self._debug('removing node {} for {}'.format(cnode, path))
             cnode.parent = None
-        self._debug('\tis to be re-indexed')
+        self._debug('{} is to be re-indexed'.format(path))
         return True, cnode
 
     def _debug(self, string):

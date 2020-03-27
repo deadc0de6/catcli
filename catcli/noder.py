@@ -67,17 +67,24 @@ class Noder:
                 Logger.err('No node at path \"{}\"'.format(path))
             return None
 
-    def get_node_if_changed(self, top, path):
-        '''return the node (if any) and if it has changed'''
-        treepath = path.lstrip(os.sep)
+    def get_node_if_changed(self, top, path, treepath):
+        '''
+        return the node (if any) and if it has changed
+        @top: top node (storage)
+        @path: abs path to file
+        @treepath: rel path from indexed directory
+        '''
+        treepath = treepath.lstrip(os.sep)
         node = self.get_node(top, treepath, quiet=True)
         # node does not exist
         if not node:
+            self._debug('node does not exist')
             return None, True
         # force re-indexing if no maccess
         maccess = os.path.getmtime(path)
         if not self._has_attr(node, 'maccess') or \
                 not node.maccess:
+            self._debug('changed as no maccess found')
             return node, True
         # maccess changed
         old_maccess = node.maccess
@@ -477,4 +484,4 @@ class Noder:
     def _debug(self, string):
         if not self.verbose:
             return
-        Logger.info('getting node size recursively')
+        Logger.info(string)
