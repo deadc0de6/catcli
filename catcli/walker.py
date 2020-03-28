@@ -78,8 +78,7 @@ class Walker:
                     self._debug('\tskip file {}'.format(sub))
                     self.noder.flag(n)
                     continue
-                self._debug('\tre-index file {}'.format(sub))
-                self._log(f)
+                Logger.out('- new file \"{}\"'.format(sub))
                 n = self.noder.file_node(os.path.basename(f), sub,
                                          parent, storagepath)
                 self.noder.flag(n)
@@ -91,7 +90,7 @@ class Walker:
                 treepath = os.path.join(storagepath, d)
                 reindex, dummy = self._need_reindex(parent, sub, treepath)
                 if reindex:
-                    self._debug('\tre-index directory {}'.format(sub))
+                    Logger.out('- new directory \"{}\"'.format(sub))
                     dummy = self.noder.dir_node(base, sub, parent, storagepath)
                     cnt += 1
                 self.noder.flag(dummy)
@@ -125,7 +124,7 @@ class Walker:
             self._debug('\t{} has changed'.format(path))
             self._debug('\tremoving node {} for {}'.format(cnode.name, path))
             cnode.parent = None
-        self._debug('\t{} is to be re-indexed'.format(path))
+        Logger.out('- update \"{}\"'.format(path))
         return True, cnode
 
     def _debug(self, string):
