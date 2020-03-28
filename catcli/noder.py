@@ -59,7 +59,6 @@ class Noder:
 
     def get_node(self, top, path, quiet=False):
         '''get the node by internal tree path'''
-        print(path)
         r = anytree.resolver.Resolver('name')
         try:
             p = os.path.basename(path)
@@ -82,6 +81,8 @@ class Noder:
         if not node:
             self._debug('\tchange: node does not exist')
             return None, True
+        if os.path.isdir(path):
+            return node, False
         # force re-indexing if no maccess
         maccess = os.path.getmtime(path)
         if not self._has_attr(node, 'maccess') or \

@@ -123,7 +123,7 @@ class Walker:
         if cnode and changed:
             # remove this node and re-add
             self._debug('\t{} has changed'.format(path))
-            self._debug('\tremoving node {} for {}'.format(cnode, path))
+            self._debug('\tremoving node {} for {}'.format(cnode.name, path))
             cnode.parent = None
         self._debug('\t{} is to be re-indexed'.format(path))
         return True, cnode
