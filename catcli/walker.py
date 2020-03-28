@@ -78,7 +78,7 @@ class Walker:
                     self._debug('\tskip file {}'.format(sub))
                     self.noder.flag(n)
                     continue
-                Logger.out('- new file \"{}\"'.format(sub))
+                Logger.out('- update catalag for \"{}\"'.format(sub))
                 n = self.noder.file_node(os.path.basename(f), sub,
                                          parent, storagepath)
                 self.noder.flag(n)
@@ -90,7 +90,7 @@ class Walker:
                 treepath = os.path.join(storagepath, d)
                 reindex, dummy = self._need_reindex(parent, sub, treepath)
                 if reindex:
-                    Logger.out('- new directory \"{}\"'.format(sub))
+                    Logger.out('- update catalog for \"{}\"'.format(sub))
                     dummy = self.noder.dir_node(base, sub, parent, storagepath)
                     cnt += 1
                 self.noder.flag(dummy)
@@ -124,7 +124,6 @@ class Walker:
             self._debug('\t{} has changed'.format(path))
             self._debug('\tremoving node {} for {}'.format(cnode.name, path))
             cnode.parent = None
-        Logger.out('- update \"{}\"'.format(path))
         return True, cnode
 
     def _debug(self, string):

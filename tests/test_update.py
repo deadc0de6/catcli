@@ -41,6 +41,7 @@ class TestIndexing(unittest.TestCase):
         d1f1 = create_rnd_file(d1, 'dir1file1')
         d1f2 = create_rnd_file(d1, 'dir1file2')
         d2f1 = create_rnd_file(d2, 'dir2file1')
+        d2f2 = create_rnd_file(d2, 'dir2file2')
 
         noder = Noder(debug=True)
         noder.set_hashing(True)
@@ -52,6 +53,8 @@ class TestIndexing(unittest.TestCase):
         self.assertTrue(f4_md5)
         d1f1_md5 = md5sum(d1f1)
         self.assertTrue(d1f1_md5)
+        d2f2_md5 = md5sum(d2f2)
+        self.assertTrue(d2f2_md5)
 
         # create fake args
         tmpdirname = 'tmpdir'
@@ -93,12 +96,21 @@ class TestIndexing(unittest.TestCase):
         maccess = os.path.getmtime(f4)
         EDIT = 'edited'
         edit_file(f4, EDIT)
-
         # reset edit time
         os.utime(f4, (maccess, maccess))
         f4_md5_new = md5sum(d1f1)
         self.assertTrue(f4_md5_new)
         self.assertTrue(f4_md5_new != f4_md5)
+
+        # change file without mtime
+        maccess = os.path.getmtime(d2f2)
+        EDIT = 'edited'
+        edit_file(d2f2, EDIT)
+        # reset edit time
+        os.utime(d2f2, (maccess, maccess))
+        d2f2_md5_new = md5sum(d2f2)
+        self.assertTrue(d2f2_md5_new)
+        self.assertTrue(d2f2_md5_new != d2f2_md5)
 
         # update storage
         cmd_update(args, noder, catalog, top, debug=True)
@@ -128,6 +140,14 @@ class TestIndexing(unittest.TestCase):
         self.assertTrue(nod.md5 != f4_md5)
         self.assertTrue(nod.md5 == f4_md5_new)
 
+        # ensure d2f2 md5 sum has changed in catalog
+        nods = noder.find_name(top, os.path.basename(d2f2))
+        self.assertTrue(len(nods) == 1)
+        nod = nods[0]
+        self.assertTrue(nod)
+        self.assertTrue(nod.md5 != d2f2_md5)
+        self.assertTrue(nod.md5 == d2f2_md5_new)
+
         # ensures files and directories are in
         names = [node.name for node in anytree.PreOrderIter(storage)]
         print(names)
@@ -150,7 +170,7 @@ class TestIndexing(unittest.TestCase):
             if node.name == os.path.basename(d1):
                 self.assertTrue(len(node.children) == 3)
             elif node.name == os.path.basename(d2):
-                self.assertTrue(len(node.children) == 2)
+                self.assertTrue(len(node.children) == 3)
             elif node.name == os.path.basename(new3):
                 self.assertTrue(len(node.children) == 0)
             elif node.name == os.path.basename(new4):
@@ -172,10 +192,12 @@ class TestIndexing(unittest.TestCase):
         self.assertTrue(os.path.basename(f1) in names)
         self.assertTrue(os.path.basename(f2) in names)
         self.assertTrue(os.path.basename(f3) in names)
+        self.assertTrue(os.path.basename(f4) in names)
         self.assertTrue(os.path.basename(d1) in names)
         self.assertTrue(os.path.basename(d1f1) not in names)
         self.assertTrue(os.path.basename(d1f2) in names)
         self.assertTrue(os.path.basename(d2) not in names)
+        self.assertTrue(os.path.basename(d2f1) not in names)
         self.assertTrue(os.path.basename(d2f1) not in names)
         self.assertTrue(os.path.basename(new1) in names)
         self.assertTrue(os.path.basename(new2) not in names)
