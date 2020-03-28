@@ -59,12 +59,14 @@ class Noder:
 
     def get_node(self, top, path, quiet=False):
         '''get the node by internal tree path'''
+        print(path)
         r = anytree.resolver.Resolver('name')
         try:
-            return r.get(top, path)
+            p = os.path.basename(path)
+            return r.get(top, p)
         except anytree.resolver.ChildResolverError:
             if not quiet:
-                Logger.err('No node at path \"{}\"'.format(path))
+                Logger.err('No node at path \"{}\"'.format(p))
             return None
 
     def get_node_if_changed(self, top, path, treepath):
@@ -78,26 +80,26 @@ class Noder:
         node = self.get_node(top, treepath, quiet=True)
         # node does not exist
         if not node:
-            self._debug('change: node does not exist')
+            self._debug('\tchange: node does not exist')
             return None, True
         # force re-indexing if no maccess
         maccess = os.path.getmtime(path)
         if not self._has_attr(node, 'maccess') or \
                 not node.maccess:
-            self._debug('change: no maccess found')
+            self._debug('\tchange: no maccess found')
             return node, True
         # maccess changed
         old_maccess = node.maccess
         if float(maccess) != float(old_maccess):
-            self._debug('change: maccess changed for \"{}\"'.format(path))
+            self._debug('\tchange: maccess changed for \"{}\"'.format(path))
             return node, True
         # test hash
         if self.hash and node.md5:
             md5 = self._get_hash(path)
             if md5 != node.md5:
-                self._debug('change: checksum changed for \"{}\"'.format(path))
+                self._debug('\tchange: checksum changed for \"{}\"'.format(path))
                 return node, True
-        self._debug('change: no change for \"{}\"'.format(path))
+        self._debug('\tchange: no change for \"{}\"'.format(path))
         return node, False
 
     def get_meta_node(self, top):

@@ -75,7 +75,7 @@ class Walker:
                 treepath = os.path.join(storagepath, f)
                 reindex, n = self._need_reindex(parent, sub, treepath)
                 if not reindex:
-                    self._debug('\tignore file {}'.format(sub))
+                    self._debug('\tskip file {}'.format(sub))
                     self.noder.flag(n)
                     continue
                 self._debug('\tre-index file {}'.format(sub))
@@ -114,18 +114,18 @@ class Walker:
         '''
         cnode, changed = self.noder.get_node_if_changed(top, path, treepath)
         if not cnode:
-            self._debug('{} does not exist'.format(path))
+            self._debug('\t{} does not exist'.format(path))
             return True, cnode
         if cnode and not changed:
             # ignore this node
-            self._debug('{} has not changed'.format(path))
+            self._debug('\t{} has not changed'.format(path))
             return False, cnode
         if cnode and changed:
             # remove this node and re-add
-            self._debug('{} has changed'.format(path))
-            self._debug('removing node {} for {}'.format(cnode, path))
+            self._debug('\t{} has changed'.format(path))
+            self._debug('\tremoving node {} for {}'.format(cnode, path))
             cnode.parent = None
-        self._debug('{} is to be re-indexed'.format(path))
+        self._debug('\t{} is to be re-indexed'.format(path))
         return True, cnode
 
     def _debug(self, string):
