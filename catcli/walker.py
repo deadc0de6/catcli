@@ -15,10 +15,15 @@ class Walker:
 
     MAXLINE = 80 - 15
 
-    def __init__(self, noder, nohash=False, debug=False):
+    def __init__(self, noder, hash=True, debug=False):
+        '''
+        @noder: the noder to use
+        @hash: calculate hash of nodes
+        @debug: debug mode
+        '''
         self.noder = noder
-        self.nohash = nohash
-        self.noder.set_hashing(not self.nohash)
+        self.hash = hash
+        self.noder.set_hashing(self.hash)
         self.debug = debug
 
     def index(self, path, parent, name, storagepath=''):
@@ -32,7 +37,7 @@ class Walker:
             for f in files:
                 self._debug('found file {} under {}'.format(f, path))
                 sub = os.path.join(root, f)
-                self._log(f)
+                self._progress(f)
                 self._debug('index file {}'.format(sub))
                 self.noder.file_node(os.path.basename(f), sub,
                                      parent, storagepath)
@@ -50,7 +55,7 @@ class Walker:
                 _, cnt2 = self.index(sub, dummy, base, nstoragepath)
                 cnt += cnt2
             break
-        self._log(None)
+        self._progress(None)
         return parent, cnt
 
     def reindex(self, path, parent, top):
@@ -101,7 +106,6 @@ class Walker:
                 cnt2 = self._reindex(sub, dummy, top, nstoragepath)
                 cnt += cnt2
             break
-        self._log(None)
         return cnt
 
     def _need_reindex(self, top, path, treepath):
@@ -127,11 +131,13 @@ class Walker:
         return True, cnode
 
     def _debug(self, string):
+        '''print to debug'''
         if not self.debug:
             return
         Logger.debug(string)
 
-    def _log(self, string):
+    def _progress(self, string):
+        '''print progress'''
         if self.debug:
             return
         if not string:

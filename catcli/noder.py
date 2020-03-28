@@ -37,6 +37,11 @@ class Noder:
     TYPE_META = 'meta'
 
     def __init__(self, debug=False, sortsize=False, arc=False):
+        '''
+        @debug: debug mode
+        @sortsize: sort nodes by size
+        @arch: handle archive
+        '''
         self.hash = True
         self.debug = debug
         self.sortsize = sortsize
@@ -222,6 +227,7 @@ class Noder:
         return cnt
 
     def flag(self, node):
+        '''flag a node'''
         node.flag = True
 
     def _clean(self, node):
@@ -416,7 +422,7 @@ class Noder:
         return found
 
     ###############################################################
-    # tree creationg
+    # tree creation
     ###############################################################
     def _add_entry(self, name, top, resolv):
         '''add an entry to the tree'''
@@ -449,6 +455,7 @@ class Noder:
         return sorted(items, key=self._sort, reverse=self.sortsize)
 
     def _sort(self, x):
+        '''sort a list'''
         if self.sortsize:
             return self._sort_size(x)
         return self._sort_fs(x)
@@ -487,6 +494,7 @@ class Noder:
         return utils.md5sum(path)
 
     def _debug(self, string):
+        '''print debug'''
         if not self.debug:
             return
         Logger.debug(string)

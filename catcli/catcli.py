@@ -71,7 +71,7 @@ Options:
 def cmd_index(args, noder, catalog, top, debug=False):
     path = args['<path>']
     name = args['<name>']
-    nohash = not args['--hash']
+    hash = args['--hash']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
@@ -87,7 +87,7 @@ def cmd_index(args, noder, catalog, top, debug=False):
         node = noder.get_storage_node(top, name)
         node.parent = None
     start = datetime.datetime.now()
-    walker = Walker(noder, nohash=nohash, debug=debug)
+    walker = Walker(noder, hash=hash, debug=debug)
     attr = noder.format_storage_attr(args['--meta'])
     root = noder.storage_node(name, path, parent=top, attr=attr)
     _, cnt = walker.index(path, root, name)
@@ -102,7 +102,7 @@ def cmd_index(args, noder, catalog, top, debug=False):
 def cmd_update(args, noder, catalog, top, debug=False):
     path = args['<path>']
     name = args['<name>']
-    nohash = not args['--hash']
+    hash = args['--hash']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
@@ -112,7 +112,7 @@ def cmd_update(args, noder, catalog, top, debug=False):
         Logger.err('storage named \"{}\" does not exist'.format(name))
         return
     start = datetime.datetime.now()
-    walker = Walker(noder, nohash=nohash, debug=debug)
+    walker = Walker(noder, hash=hash, debug=debug)
     cnt = walker.reindex(path, root, top)
     if subsize:
         noder.rec_size(root)
