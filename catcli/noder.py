@@ -98,7 +98,8 @@ class Noder:
         if self.hash and node.md5:
             md5 = self._get_hash(path)
             if md5 != node.md5:
-                self._debug('\tchange: checksum changed for \"{}\"'.format(path))
+                m = '\tchange: checksum changed for \"{}\"'.format(path)
+                self._debug(m)
                 return node, True
         self._debug('\tchange: no change for \"{}\"'.format(path))
         return node, False
