@@ -76,7 +76,7 @@ class Logger:
 
     def debug(string):
         '''to stderr no color'''
-        sys.stderr.write('{}\n'.format(string))
+        sys.stderr.write('[DBG] {}\n'.format(string))
 
     def info(string):
         '''to stdout in color'''
