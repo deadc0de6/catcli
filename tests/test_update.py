@@ -65,7 +65,7 @@ class TestIndexing(unittest.TestCase):
 
         # index the directory
         unix_tree(dirpath)
-        cmd_index(args, noder, catalog, top, debug=True)
+        cmd_index(args, noder, catalog, top)
         self.assertTrue(os.stat(catalogpath).st_size != 0)
 
         # ensure md5 sum are in
@@ -114,7 +114,7 @@ class TestIndexing(unittest.TestCase):
         self.assertTrue(d2f2_md5_new != d2f2_md5)
 
         # update storage
-        cmd_update(args, noder, catalog, top, debug=True)
+        cmd_update(args, noder, catalog, top)
 
         # print catalog
         # print(read_from_file(catalogpath))
@@ -185,7 +185,7 @@ class TestIndexing(unittest.TestCase):
         clean(new4)
 
         # update storage
-        cmd_update(args, noder, catalog, top, debug=True)
+        cmd_update(args, noder, catalog, top)
 
         # ensures files and directories are (not) in
         names = [node.name for node in anytree.PreOrderIter(storage)]

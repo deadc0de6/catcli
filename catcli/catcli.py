@@ -69,10 +69,11 @@ Options:
 """.format(BANNER, NAME, CATALOGPATH)
 
 
-def cmd_index(args, noder, catalog, top, debug=False):
+def cmd_index(args, noder, catalog, top):
     path = args['<path>']
     name = args['<name>']
     hash = args['--hash']
+    debug = args['--verbose']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
@@ -100,11 +101,12 @@ def cmd_index(args, noder, catalog, top, debug=False):
         catalog.save(top)
 
 
-def cmd_update(args, noder, catalog, top, debug=False):
+def cmd_update(args, noder, catalog, top):
     path = args['<path>']
     name = args['<name>']
     hash = args['--hash']
     logpath = args['--lpath']
+    debug = args['--verbose']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
@@ -244,14 +246,14 @@ def main():
         top = noder.new_top_node()
 
     # handle the meta node
-    meta = noder.update_metanode(noder.get_meta_node(top))
+    meta = noder.update_metanode(top)
     catalog.set_metanode(meta)
 
     # parse command
     if args['index']:
-        cmd_index(args, noder, catalog, top, debug=args['--verbose'])
+        cmd_index(args, noder, catalog, top)
     if args['update']:
-        cmd_update(args, noder, catalog, top, debug=args['--verbose'])
+        cmd_update(args, noder, catalog, top)
     elif args['find']:
         cmd_find(args, noder, top)
     elif args['tree']:

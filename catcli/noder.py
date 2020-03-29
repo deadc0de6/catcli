@@ -109,14 +109,6 @@ class Noder:
         self._debug('\tchange: no change for \"{}\"'.format(path))
         return node, False
 
-    def get_meta_node(self, top):
-        '''return the meta node if any'''
-        try:
-            return next(filter(lambda x: x.type == self.TYPE_META,
-                        top.children))
-        except StopIteration:
-            return None
-
     def _rec_size(self, node, store=True):
         '''
         recursively traverse tree and return size
@@ -169,8 +161,9 @@ class Noder:
         '''create a new top node'''
         return anytree.AnyNode(name=self.TOPNAME, type=self.TYPE_TOP)
 
-    def update_metanode(self, meta):
+    def update_metanode(self, top):
         '''create or update meta node information'''
+        meta = self._get_meta_node(top)
         epoch = int(time.time())
         if not meta:
             attr = {}
@@ -181,6 +174,14 @@ class Noder:
         meta.attr['access'] = epoch
         meta.attr['access_version'] = VERSION
         return meta
+
+    def _get_meta_node(self, top):
+        '''return the meta node if any'''
+        try:
+            return next(filter(lambda x: x.type == self.TYPE_META,
+                        top.children))
+        except StopIteration:
+            return None
 
     def file_node(self, name, path, parent, storagepath):
         '''create a new node representing a file'''
