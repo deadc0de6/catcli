@@ -96,3 +96,10 @@ class Logger:
     def bold(string):
         '''make it bold'''
         return '{}{}{}'.format(Logger.BOLD, string, Logger.RESET)
+
+    def flog(path, string, append=True):
+        mode = 'w'
+        if append:
+            mode = 'a'
+        with open(path, mode) as f:
+            f.write(string)

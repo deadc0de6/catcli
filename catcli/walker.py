@@ -15,16 +15,19 @@ class Walker:
 
     MAXLINE = 80 - 15
 
-    def __init__(self, noder, hash=True, debug=False):
+    def __init__(self, noder, hash=True, debug=False,
+                 logpath=None):
         '''
         @noder: the noder to use
         @hash: calculate hash of nodes
         @debug: debug mode
+        @logpath: path where to log catalog changes on reindex
         '''
         self.noder = noder
         self.hash = hash
         self.noder.set_hashing(self.hash)
         self.debug = debug
+        self.lpath = logpath
 
     def index(self, path, parent, name, storagepath=''):
         '''index a directory and store in tree'''
@@ -83,7 +86,7 @@ class Walker:
                     self._debug('\tskip file {}'.format(sub))
                     self.noder.flag(n)
                     continue
-                Logger.out('- update catalag for \"{}\"'.format(sub))
+                self._log2file('update catalog for \"{}\"'.format(sub))
                 n = self.noder.file_node(os.path.basename(f), sub,
                                          parent, storagepath)
                 self.noder.flag(n)
@@ -95,7 +98,7 @@ class Walker:
                 treepath = os.path.join(storagepath, d)
                 reindex, dummy = self._need_reindex(parent, sub, treepath)
                 if reindex:
-                    Logger.out('- update catalog for \"{}\"'.format(sub))
+                    self._log2file('update catalog for \"{}\"'.format(sub))
                     dummy = self.noder.dir_node(base, sub, parent, storagepath)
                     cnt += 1
                 self.noder.flag(dummy)
@@ -147,3 +150,10 @@ class Walker:
         if len(string) > self.MAXLINE:
             string = string[:self.MAXLINE] + '...'
         Logger.progr('indexing: {:80}'.format(string))
+
+    def _log2file(self, string):
+        '''log to file'''
+        if not self.lpath:
+            return
+        line = '{}\n'.format(string)
+        Logger.flog(self.lpath, line, append=True)

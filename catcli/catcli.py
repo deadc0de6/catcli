@@ -37,7 +37,7 @@ USAGE = """
 
 Usage:
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-acfnV] <name> <path>
-    {1} update [--catalog=<path>] [-acfnV] <name> <path>
+    {1} update [--catalog=<path>] [-acfnV] [--lpath=<path>] <name> <path>
     {1} ls     [--catalog=<path>] [-arVS] [<path>]
     {1} find   [--catalog=<path>] [-abdVP] [--path=<path>] <term>
     {1} rm     [--catalog=<path>] [-fV] <storage>
@@ -50,21 +50,22 @@ Usage:
     {1} --version
 
 Options:
-    --catalog=<path>  Path to the catalog [default: {2}].
-    --meta=<meta>     Additional attribute to store [default: ].
-    -p --path=<path>  Start path.
-    -n --no-subsize   Do not store size of directories [default: False].
-    -a --archive      Handle archive file [default: False].
-    -f --force        Do not ask when updating the catalog [default: False].
-    -d --directory    Only directory (default: False).
-    -b --script       Output script to manage found file(s) [default: False].
-    -S --sortsize     Sort by size, largest first [default: False].
-    -c --hash         Calculate md5 hash [default: False].
-    -r --recursive    Recursive [default: False].
-    -P --parent       Ignore stored relpath [default: True].
-    -V --verbose      Be verbose [default: False].
-    -v --version      Show version.
-    -h --help         Show this screen.
+    --catalog=<path>    Path to the catalog [default: {2}].
+    --meta=<meta>       Additional attribute to store [default: ].
+    -p --path=<path>    Start path.
+    -l --lpath=<path>   Path where changes are logged [default: ]
+    -n --no-subsize     Do not store size of directories [default: False].
+    -a --archive        Handle archive file [default: False].
+    -f --force          Do not ask when updating the catalog [default: False].
+    -d --directory      Only directory (default: False).
+    -b --script         Output script to manage found file(s) [default: False].
+    -S --sortsize       Sort by size, largest first [default: False].
+    -c --hash           Calculate md5 hash [default: False].
+    -r --recursive      Recursive [default: False].
+    -P --parent         Ignore stored relpath [default: True].
+    -V --verbose        Be verbose [default: False].
+    -v --version        Show version.
+    -h --help           Show this screen.
 """.format(BANNER, NAME, CATALOGPATH)
 
 
@@ -103,6 +104,7 @@ def cmd_update(args, noder, catalog, top, debug=False):
     path = args['<path>']
     name = args['<name>']
     hash = args['--hash']
+    logpath = args['--lpath']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
@@ -112,7 +114,8 @@ def cmd_update(args, noder, catalog, top, debug=False):
         Logger.err('storage named \"{}\" does not exist'.format(name))
         return
     start = datetime.datetime.now()
-    walker = Walker(noder, hash=hash, debug=debug)
+    walker = Walker(noder, hash=hash, debug=debug,
+                    logpath=logpath)
     cnt = walker.reindex(path, root, top)
     if subsize:
         noder.rec_size(root)

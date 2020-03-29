@@ -60,7 +60,8 @@ class TestIndexing(unittest.TestCase):
         tmpdirname = 'tmpdir'
         args = {'<path>': dirpath, '<name>': tmpdirname,
                 '--hash': True, '--meta': ['some meta'],
-                '--no-subsize': False, '--verbose': True}
+                '--no-subsize': False, '--verbose': True,
+                '--lpath': None}
 
         # index the directory
         unix_tree(dirpath)
