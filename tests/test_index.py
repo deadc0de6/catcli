@@ -42,7 +42,7 @@ class TestIndexing(unittest.TestCase):
 
         noder = Noder()
         top = noder.new_top_node()
-        catalog = Catalog(catalogpath, force=True, verbose=False)
+        catalog = Catalog(catalogpath, force=True, debug=False)
 
         # create fake args
         tmpdirname = 'tmpdir'

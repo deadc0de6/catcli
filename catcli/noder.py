@@ -36,9 +36,14 @@ class Noder:
     TYPE_STORAGE = 'storage'
     TYPE_META = 'meta'
 
-    def __init__(self, verbose=False, sortsize=False, arc=False):
+    def __init__(self, debug=False, sortsize=False, arc=False):
+        '''
+        @debug: debug mode
+        @sortsize: sort nodes by size
+        @arch: handle archive
+        '''
         self.hash = True
-        self.verbose = verbose
+        self.debug = debug
         self.sortsize = sortsize
         self.arc = arc
         if self.arc:
@@ -61,45 +66,59 @@ class Noder:
         '''get the node by internal tree path'''
         r = anytree.resolver.Resolver('name')
         try:
-            return r.get(top, path)
+            p = os.path.basename(path)
+            return r.get(top, p)
         except anytree.resolver.ChildResolverError:
             if not quiet:
-                Logger.err('No node at path \"{}\"'.format(path))
+                Logger.err('No node at path \"{}\"'.format(p))
             return None
 
-    def get_node_if_newer(self, top, path, maccess):
-        '''return the node (if any) and if path is newer'''
-        treepath = path.lstrip(os.sep)
+    def get_node_if_changed(self, top, path, treepath):
+        '''
+        return the node (if any) and if it has changed
+        @top: top node (storage)
+        @path: abs path to file
+        @treepath: rel path from indexed directory
+        '''
+        treepath = treepath.lstrip(os.sep)
         node = self.get_node(top, treepath, quiet=True)
+        # node does not exist
         if not node:
-            # node does not exist
+            self._debug('\tchange: node does not exist')
             return None, True
+        if os.path.isdir(path):
+            return node, False
+        # force re-indexing if no maccess
+        maccess = os.path.getmtime(path)
         if not self._has_attr(node, 'maccess') or \
                 not node.maccess:
-            # force re-indexing if no maccess
+            self._debug('\tchange: no maccess found')
             return node, True
+        # maccess changed
         old_maccess = node.maccess
-        if float(maccess) > float(old_maccess):
+        if float(maccess) != float(old_maccess):
+            self._debug('\tchange: maccess changed for \"{}\"'.format(path))
             return node, True
+        # test hash
+        if self.hash and node.md5:
+            md5 = self._get_hash(path)
+            if md5 != node.md5:
+                m = '\tchange: checksum changed for \"{}\"'.format(path)
+                self._debug(m)
+                return node, True
+        self._debug('\tchange: no change for \"{}\"'.format(path))
         return node, False
-
-    def get_meta_node(self, top):
-        '''return the meta node if any'''
-        try:
-            return next(filter(lambda x: x.type == self.TYPE_META,
-                        top.children))
-        except StopIteration:
-            return None
 
     def _rec_size(self, node, store=True):
         '''
         recursively traverse tree and return size
         @store: store the size in the node
         '''
-        if self.verbose:
-            Logger.info('getting node size recursively')
         if node.type == self.TYPE_FILE:
+            self._debug('getting node size for \"{}\"'.format(node.name))
             return node.size
+        m = 'getting node size recursively for \"{}\"'.format(node.name)
+        self._debug(m)
         size = 0
         for i in node.children:
             if node.type == self.TYPE_DIR:
@@ -142,8 +161,9 @@ class Noder:
         '''create a new top node'''
         return anytree.AnyNode(name=self.TOPNAME, type=self.TYPE_TOP)
 
-    def update_metanode(self, meta):
+    def update_metanode(self, top):
         '''create or update meta node information'''
+        meta = self._get_meta_node(top)
         epoch = int(time.time())
         if not meta:
             attr = {}
@@ -154,6 +174,14 @@ class Noder:
         meta.attr['access'] = epoch
         meta.attr['access_version'] = VERSION
         return meta
+
+    def _get_meta_node(self, top):
+        '''return the meta node if any'''
+        try:
+            return next(filter(lambda x: x.type == self.TYPE_META,
+                        top.children))
+        except StopIteration:
+            return None
 
     def file_node(self, name, path, parent, storagepath):
         '''create a new node representing a file'''
@@ -168,7 +196,7 @@ class Noder:
             return None
         md5 = None
         if self.hash:
-            md5 = utils.md5sum(path)
+            md5 = self._get_hash(path)
         relpath = os.sep.join([storagepath, name])
 
         maccess = os.path.getmtime(path)
@@ -200,6 +228,7 @@ class Noder:
         return cnt
 
     def flag(self, node):
+        '''flag a node'''
         node.flag = True
 
     def _clean(self, node):
@@ -337,8 +366,7 @@ class Noder:
                   script=False, directory=False,
                   startpath=None, parentfromtree=False):
         '''find files based on their names'''
-        if self.verbose:
-            Logger.info('searching for \"{}\"'.format(key))
+        self._debug('searching for \"{}\"'.format(key))
         start = root
         if startpath:
             start = self.get_node(root, startpath)
@@ -375,8 +403,7 @@ class Noder:
     ###############################################################
     def walk(self, root, path, rec=False):
         '''walk the tree for ls based on names'''
-        if self.verbose:
-            Logger.info('walking path: \"{}\"'.format(path))
+        self._debug('walking path: \"{}\"'.format(path))
         r = anytree.resolver.Resolver('name')
         found = []
         try:
@@ -396,7 +423,7 @@ class Noder:
         return found
 
     ###############################################################
-    # tree creationg
+    # tree creation
     ###############################################################
     def _add_entry(self, name, top, resolv):
         '''add an entry to the tree'''
@@ -429,6 +456,7 @@ class Noder:
         return sorted(items, key=self._sort, reverse=self.sortsize)
 
     def _sort(self, x):
+        '''sort a list'''
         if self.sortsize:
             return self._sort_size(x)
         return self._sort_fs(x)
@@ -461,3 +489,13 @@ class Noder:
         if parent:
             return os.sep.join([parent, node.name])
         return node.name
+
+    def _get_hash(self, path):
+        """return md5 hash of node"""
+        return utils.md5sum(path)
+
+    def _debug(self, string):
+        '''print debug'''
+        if not self.debug:
+            return
+        Logger.debug(string)

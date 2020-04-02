@@ -17,7 +17,7 @@ class TestFind(unittest.TestCase):
 
     def test_find(self):
         # init
-        catalog = Catalog('fake', force=True, verbose=False)
+        catalog = Catalog('fake', force=True, debug=False)
         top = catalog._restore_json(get_fakecatalog())
         noder = Noder()
 

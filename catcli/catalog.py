@@ -17,10 +17,16 @@ from catcli.logger import Logger
 
 class Catalog:
 
-    def __init__(self, path, pickle=False, verbose=False, force=False):
-        self.path = path  # catalog path
-        self.verbose = verbose  # verbosity
-        self.force = force  # force overwrite if exists
+    def __init__(self, path, pickle=False, debug=False, force=False):
+        '''
+        @path: catalog path
+        @pickle: use pickle
+        @debug: debug mode
+        @force: force overwrite if exists
+        '''
+        self.path = path
+        self.debug = debug
+        self.force = force
         self.metanode = None
         self.pickle = pickle
 
@@ -60,19 +66,22 @@ class Catalog:
             return self._save_pickle(node)
         return self._save_json(node)
 
+    def _debug(self, text):
+        if not self.debug:
+            return
+        Logger.debug(text)
+
     def _save_pickle(self, node):
         '''pickle the catalog'''
         pickle.dump(node, open(self.path, 'wb'))
-        if self.verbose:
-            Logger.info('Catalog saved to pickle \"{}\"'.format(self.path))
+        self._debug('Catalog saved to pickle \"{}\"'.format(self.path))
         return True
 
     def _restore_pickle(self):
         '''restore the pickled tree'''
         root = pickle.load(open(self.path, 'rb'))
-        if self.verbose:
-            m = 'Catalog imported from pickle \"{}\"'.format(self.path)
-            Logger.info(m)
+        m = 'Catalog imported from pickle \"{}\"'.format(self.path)
+        self._debug(m)
         return root
 
     def _save_json(self, node):
@@ -80,14 +89,12 @@ class Catalog:
         exp = JsonExporter(indent=2, sort_keys=True)
         with open(self.path, 'w') as f:
             exp.write(node, f)
-        if self.verbose:
-            Logger.info('Catalog saved to json \"{}\"'.format(self.path))
+        self._debug('Catalog saved to json \"{}\"'.format(self.path))
         return True
 
     def _restore_json(self, string):
         '''restore the tree from json'''
         imp = JsonImporter()
         root = imp.import_(string)
-        if self.verbose:
-            Logger.info('Catalog imported from json \"{}\"'.format(self.path))
+        self._debug('Catalog imported from json \"{}\"'.format(self.path))
         return root

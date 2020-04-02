@@ -23,7 +23,7 @@ class TestGraph(unittest.TestCase):
         gpath = tempfile.gettempdir() + os.sep + 'graph.dot'
         self.addCleanup(clean, path)
         self.addCleanup(clean, gpath)
-        catalog = Catalog(path, force=True, verbose=False)
+        catalog = Catalog(path, force=True, debug=False)
         top = catalog._restore_json(get_fakecatalog())
         noder = Noder()
 

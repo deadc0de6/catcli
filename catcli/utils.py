@@ -19,7 +19,7 @@ def md5sum(path):
     '''calculate md5 sum of a file'''
     p = os.path.realpath(path)
     if not os.path.exists(p):
-        Logger.err('\nunable to get md5sum on {}'.format(path))
+        Logger.err('\nmd5sum - file does not exist: {}'.format(p))
         return None
     try:
         with open(p, mode='rb') as f:
@@ -32,6 +32,8 @@ def md5sum(path):
             return d.hexdigest()
     except PermissionError:
         pass
+    except OSError as e:
+        Logger.err('md5sum error: {}'.format(e))
     return None
 
 

@@ -37,7 +37,7 @@ USAGE = """
 
 Usage:
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-acfnV] <name> <path>
-    {1} update [--catalog=<path>] [-acfnV] <name> <path>
+    {1} update [--catalog=<path>] [-acfnV] [--lpath=<path>] <name> <path>
     {1} ls     [--catalog=<path>] [-arVS] [<path>]
     {1} find   [--catalog=<path>] [-abdVP] [--path=<path>] <term>
     {1} rm     [--catalog=<path>] [-fV] <storage>
@@ -50,28 +50,30 @@ Usage:
     {1} --version
 
 Options:
-    --catalog=<path>  Path to the catalog [default: {2}].
-    --meta=<meta>     Additional attribute to store [default: ].
-    -p --path=<path>  Start path.
-    -n --no-subsize   Do not store size of directories [default: False].
-    -a --archive      Handle archive file [default: False].
-    -f --force        Do not ask when updating the catalog [default: False].
-    -d --directory    Only directory (default: False).
-    -b --script       Output script to manage found file(s) [default: False].
-    -S --sortsize     Sort by size, largest first [default: False].
-    -c --hash         Calculate md5 hash [default: False].
-    -r --recursive    Recursive [default: False].
-    -P --parent       Ignore stored relpath [default: True].
-    -V --verbose      Be verbose [default: False].
-    -v --version      Show version.
-    -h --help         Show this screen.
+    --catalog=<path>    Path to the catalog [default: {2}].
+    --meta=<meta>       Additional attribute to store [default: ].
+    -p --path=<path>    Start path.
+    -l --lpath=<path>   Path where changes are logged [default: ]
+    -n --no-subsize     Do not store size of directories [default: False].
+    -a --archive        Handle archive file [default: False].
+    -f --force          Do not ask when updating the catalog [default: False].
+    -d --directory      Only directory (default: False).
+    -b --script         Output script to manage found file(s) [default: False].
+    -S --sortsize       Sort by size, largest first [default: False].
+    -c --hash           Calculate md5 hash [default: False].
+    -r --recursive      Recursive [default: False].
+    -P --parent         Ignore stored relpath [default: True].
+    -V --verbose        Be verbose [default: False].
+    -v --version        Show version.
+    -h --help           Show this screen.
 """.format(BANNER, NAME, CATALOGPATH)
 
 
-def cmd_index(args, noder, catalog, top, debug=False):
+def cmd_index(args, noder, catalog, top):
     path = args['<path>']
     name = args['<name>']
-    nohash = not args['--hash']
+    hash = args['--hash']
+    debug = args['--verbose']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
@@ -87,7 +89,7 @@ def cmd_index(args, noder, catalog, top, debug=False):
         node = noder.get_storage_node(top, name)
         node.parent = None
     start = datetime.datetime.now()
-    walker = Walker(noder, nohash=nohash, debug=debug)
+    walker = Walker(noder, hash=hash, debug=debug)
     attr = noder.format_storage_attr(args['--meta'])
     root = noder.storage_node(name, path, parent=top, attr=attr)
     _, cnt = walker.index(path, root, name)
@@ -99,10 +101,12 @@ def cmd_index(args, noder, catalog, top, debug=False):
         catalog.save(top)
 
 
-def cmd_update(args, noder, catalog, top, debug=False):
+def cmd_update(args, noder, catalog, top):
     path = args['<path>']
     name = args['<name>']
-    nohash = not args['--hash']
+    hash = args['--hash']
+    logpath = args['--lpath']
+    debug = args['--verbose']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
@@ -112,7 +116,8 @@ def cmd_update(args, noder, catalog, top, debug=False):
         Logger.err('storage named \"{}\" does not exist'.format(name))
         return
     start = datetime.datetime.now()
-    walker = Walker(noder, nohash=nohash, debug=debug)
+    walker = Walker(noder, hash=hash, debug=debug,
+                    logpath=logpath)
     cnt = walker.reindex(path, root, top)
     if subsize:
         noder.rec_size(root)
@@ -212,8 +217,8 @@ def cmd_edit(args, noder, catalog, top):
 
 
 def banner():
-    Logger.log(BANNER)
-    Logger.log("")
+    Logger.out(BANNER)
+    Logger.out("")
 
 
 def main():
@@ -230,10 +235,10 @@ def main():
     banner()
 
     # init noder
-    noder = Noder(verbose=args['--verbose'], sortsize=args['--sortsize'],
+    noder = Noder(debug=args['--verbose'], sortsize=args['--sortsize'],
                   arc=args['--archive'])
     # init catalog
-    catalog = Catalog(args['--catalog'], verbose=args['--verbose'],
+    catalog = Catalog(args['--catalog'], debug=args['--verbose'],
                       force=args['--force'])
     # init top node
     top = catalog.restore()
@@ -241,14 +246,14 @@ def main():
         top = noder.new_top_node()
 
     # handle the meta node
-    meta = noder.update_metanode(noder.get_meta_node(top))
+    meta = noder.update_metanode(top)
     catalog.set_metanode(meta)
 
     # parse command
     if args['index']:
-        cmd_index(args, noder, catalog, top, debug=args['--verbose'])
+        cmd_index(args, noder, catalog, top)
     if args['update']:
-        cmd_update(args, noder, catalog, top, debug=args['--verbose'])
+        cmd_update(args, noder, catalog, top)
     elif args['find']:
         cmd_find(args, noder, top)
     elif args['tree']:
