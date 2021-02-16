@@ -36,9 +36,9 @@ USAGE = """
 {0}
 
 Usage:
+    {1} ls     [--catalog=<path>] [-arVS] [<path>]
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-acfnV] <name> <path>
     {1} update [--catalog=<path>] [-acfnV] [--lpath=<path>] <name> <path>
-    {1} ls     [--catalog=<path>] [-arVS] [<path>]
     {1} find   [--catalog=<path>] [-abdVP] [--path=<path>] <term>
     {1} rm     [--catalog=<path>] [-fV] <storage>
     {1} tree   [--catalog=<path>] [-aVS] [<path>]
@@ -224,7 +224,7 @@ def banner():
 def main():
     args = docopt(USAGE, version=VERSION)
 
-    if args['help']:
+    if args['help'] or args['--help']:
         print(USAGE)
         return True
 
