@@ -323,23 +323,31 @@ class Noder:
             hf = utils.human(node.free)
             ht = utils.human(node.total)
             nbchildren = len(node.children)
+            freepercent = '{:.1f}%'.format(
+                node.free * 100 / node.total
+            ).ljust(6)
             # get the date
             dt = ''
             if self._has_attr(node, 'ts'):
-                dt = 'date:{}'.format(utils.epoch_to_str(node.ts))
+                dt = 'date: '
+                dt += '{}'.format(utils.epoch_to_str(node.ts)).ljust(11)
             ds = ''
             # the children size
             sz = self._rec_size(node, store=False)
             sz = utils.human(sz)
-            ds = 'totsize:{}'.format(sz)
+            ds = 'totsize:' + '{}'.format(sz).ljust(7)
             # format the output
             name = '{}'.format(node.name)
             args = [
-                'nbfiles:{}'.format(nbchildren),
-                'free:{}/{}'.format(hf, ht),
-                dt,
-                ds]
-            Logger.storage(pre, name, '({})'.format(','.join(args)), node.attr)
+                'nbfiles:' + '{}'.format(nbchildren).ljust(6),
+                ds,
+                'free:{}'.format(freepercent),
+                'du:' + '{}/{}'.format(hf, ht).ljust(14),
+                dt]
+            Logger.storage(pre,
+                           name.ljust(20),
+                           '({})'.format(','.join(args)),
+                           node.attr)
         elif node.type == self.TYPE_ARC:
             # archive node
             if self.arc:
