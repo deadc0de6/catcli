@@ -36,15 +36,15 @@ USAGE = """
 {0}
 
 Usage:
-    {1} ls     [--catalog=<path>] [-aBrVS] [<path>]
-    {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBcfnV] <name> <path>
-    {1} update [--catalog=<path>] [-aBcfnV] [--lpath=<path>] <name> <path>
-    {1} find   [--catalog=<path>] [-aBbdVP] [--path=<path>] <term>
-    {1} rm     [--catalog=<path>] [-BfV] <storage>
-    {1} tree   [--catalog=<path>] [-aBVS] [<path>]
-    {1} rename [--catalog=<path>] [-BfV] <storage> <name>
-    {1} edit   [--catalog=<path>] [-BfV] <storage>
-    {1} graph  [--catalog=<path>] [-BV] [<path>]
+    {1} ls     [--catalog=<path>] [-aBCrVS] [<path>]
+    {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
+    {1} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
+    {1} find   [--catalog=<path>] [-aBCbdVP] [--path=<path>] <term>
+    {1} rm     [--catalog=<path>] [-BCfV] <storage>
+    {1} tree   [--catalog=<path>] [-aBCVS] [<path>]
+    {1} rename [--catalog=<path>] [-BCfV] <storage> <name>
+    {1} edit   [--catalog=<path>] [-BCfV] <storage>
+    {1} graph  [--catalog=<path>] [-BCV] [<path>]
     {1} help
     {1} --help
     {1} --version
@@ -55,6 +55,7 @@ Options:
     -a --archive        Handle archive file [default: False].
     -B --no-banner      Do not display the banner [default: False].
     -b --script         Output script to manage found file(s) [default: False].
+    -C --no-color       Do not output colors [default: False].
     -c --hash           Calculate md5 hash [default: False].
     -d --directory      Only directory (default: False).
     -f --force          Do not ask when updating the catalog [default: False].
@@ -235,6 +236,10 @@ def main():
     # print banner
     if not args['--no-banner']:
         banner()
+
+    # set colors
+    if args['--no-color']:
+        Logger.no_color()
 
     # init noder
     noder = Noder(debug=args['--verbose'], sortsize=args['--sortsize'],

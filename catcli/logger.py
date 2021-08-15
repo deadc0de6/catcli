@@ -26,8 +26,18 @@ class Logger:
     ARCHIVE = 'archive'
     NBFILES = 'nbfiles'
 
-    def __init__(self):
-        pass
+    def no_color():
+        Logger.RED = ''
+        Logger.GREEN = ''
+        Logger.YELLOW = ''
+        Logger.PURPLE = ''
+        Logger.BLUE = ''
+        Logger.GRAY = ''
+        Logger.MAGENTA = ''
+        Logger.RESET = ''
+        Logger.EMPH = ''
+        Logger.BOLD = ''
+        Logger.UND = ''
 
     ######################################################################
     # node specific output
