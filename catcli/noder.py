@@ -346,7 +346,7 @@ class Noder:
                 dt]
             Logger.storage(pre,
                            name.ljust(20),
-                           '({})'.format(','.join(args)),
+                           '{}'.format(','.join(args)),
                            node.attr)
         elif node.type == self.TYPE_ARC:
             # archive node

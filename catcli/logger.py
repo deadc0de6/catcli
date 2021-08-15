@@ -48,8 +48,8 @@ class Logger:
         if attr:
             end = ' {}({}){}'.format(Logger.GRAY, attr, Logger.RESET)
         s = '{}{}{}{}:'.format(pre, Logger.UND, Logger.STORAGE, Logger.RESET)
-        s += ' {}{}{}{}'.format(Logger.PURPLE, name, Logger.RESET, end)
-        s += ' {}{}{}'.format(Logger.GRAY, args, Logger.RESET)
+        s += ' {}{}{}{}\n'.format(Logger.PURPLE, name, Logger.RESET, end)
+        s += '  {}{}{}'.format(Logger.GRAY, args, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
 
     def file(pre, name, attr):
