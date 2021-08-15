@@ -36,15 +36,15 @@ USAGE = """
 {0}
 
 Usage:
-    {1} ls     [--catalog=<path>] [-arVS] [<path>]
-    {1} index  [--catalog=<path>] [--meta=<meta>...] [-acfnV] <name> <path>
-    {1} update [--catalog=<path>] [-acfnV] [--lpath=<path>] <name> <path>
-    {1} find   [--catalog=<path>] [-abdVP] [--path=<path>] <term>
-    {1} rm     [--catalog=<path>] [-fV] <storage>
-    {1} tree   [--catalog=<path>] [-aVS] [<path>]
-    {1} rename [--catalog=<path>] [-fV] <storage> <name>
-    {1} edit   [--catalog=<path>] [-fV] <storage>
-    {1} graph  [--catalog=<path>] [-V] [<path>]
+    {1} ls     [--catalog=<path>] [-aBrVS] [<path>]
+    {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBcfnV] <name> <path>
+    {1} update [--catalog=<path>] [-aBcfnV] [--lpath=<path>] <name> <path>
+    {1} find   [--catalog=<path>] [-aBbdVP] [--path=<path>] <term>
+    {1} rm     [--catalog=<path>] [-BfV] <storage>
+    {1} tree   [--catalog=<path>] [-aBVS] [<path>]
+    {1} rename [--catalog=<path>] [-BfV] <storage> <name>
+    {1} edit   [--catalog=<path>] [-BfV] <storage>
+    {1} graph  [--catalog=<path>] [-BV] [<path>]
     {1} help
     {1} --help
     {1} --version
@@ -52,17 +52,18 @@ Usage:
 Options:
     --catalog=<path>    Path to the catalog [default: {2}].
     --meta=<meta>       Additional attribute to store [default: ].
-    -p --path=<path>    Start path.
+    -a --archive        Handle archive file [default: False].
+    -B --no-banner      Do not display the banner [default: False].
+    -b --script         Output script to manage found file(s) [default: False].
+    -c --hash           Calculate md5 hash [default: False].
+    -d --directory      Only directory (default: False).
+    -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -n --no-subsize     Do not store size of directories [default: False].
-    -a --archive        Handle archive file [default: False].
-    -f --force          Do not ask when updating the catalog [default: False].
-    -d --directory      Only directory (default: False).
-    -b --script         Output script to manage found file(s) [default: False].
-    -S --sortsize       Sort by size, largest first [default: False].
-    -c --hash           Calculate md5 hash [default: False].
-    -r --recursive      Recursive [default: False].
     -P --parent         Ignore stored relpath [default: True].
+    -p --path=<path>    Start path.
+    -r --recursive      Recursive [default: False].
+    -S --sortsize       Sort by size, largest first [default: False].
     -V --verbose        Be verbose [default: False].
     -v --version        Show version.
     -h --help           Show this screen.
@@ -232,7 +233,8 @@ def main():
         print(args)
 
     # print banner
-    banner()
+    if not args['--no-banner']:
+        banner()
 
     # init noder
     noder = Noder(debug=args['--verbose'], sortsize=args['--sortsize'],
