@@ -7,6 +7,8 @@
 [![AUR](https://img.shields.io/aur/version/catcli-git.svg)](https://aur.archlinux.org/packages/catcli-git)
 [![Python](https://img.shields.io/pypi/pyversions/catcli.svg)](https://pypi.python.org/pypi/catcli)
 
+[![Donate](https://img.shields.io/badge/donate-KoFi-blue.svg)](https://ko-fi.com/deadc0de6)
+
 *The command line catalog tool for your offline data*
 
 Did you ever wanted to find back that specific file that should be on one of your
@@ -375,6 +377,10 @@ If you are having trouble installing or using catcli, open an issue.
 If you want to contribute, feel free to do a PR (please follow PEP8).
 
 The `tests.sh` script can be run to check the code.
+
+# Thank you
+
+If you like catcli, [buy me a coffee](https://ko-fi.com/deadc0de6).
 
 # License
 
