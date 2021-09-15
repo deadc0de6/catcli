@@ -33,7 +33,7 @@ class Decomp:
 
     def get_names(self, path):
         '''get tree of compressed archive'''
-        ext = os.path.splitext(path)[1][1:]
+        ext = os.path.splitext(path)[1][1:].lower()
         if ext in list(self.ext.keys()):
             return self.ext[ext](path)
         return None

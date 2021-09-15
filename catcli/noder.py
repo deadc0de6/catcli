@@ -205,8 +205,11 @@ class Noder:
         if self.arc:
             ext = os.path.splitext(path)[1][1:]
             if ext.lower() in self.decomp.get_formats():
+                self._debug('{} is an archive'.format(path))
                 names = self.decomp.get_names(path)
                 self.list_to_tree(n, names)
+            else:
+                self._debug('{} is NOT an archive'.format(path))
         return n
 
     def dir_node(self, name, path, parent, storagepath):
