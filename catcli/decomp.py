@@ -27,7 +27,7 @@ class Decomp:
             'tar.bz2': self._tar,
             'zip': self._zip}
 
-    def get_format(self):
+    def get_formats(self):
         '''return list of supported extensions'''
         return list(self.ext.keys())
 

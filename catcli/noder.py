@@ -204,7 +204,7 @@ class Noder:
                        size=st.st_size, md5=md5, maccess=maccess)
         if self.arc:
             ext = os.path.splitext(path)[1][1:]
-            if ext in self.decomp.get_format():
+            if ext.lower() in self.decomp.get_formats():
                 names = self.decomp.get_names(path)
                 self.list_to_tree(n, names)
         return n
