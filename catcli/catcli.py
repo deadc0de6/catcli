@@ -210,7 +210,7 @@ def cmd_edit(args, noder, catalog, top):
         if not attr:
             attr = ''
         new = edit(attr)
-        node.attr = noder.clean_storage_attr(new)
+        node.attr = noder.format_storage_attr(new)
         if catalog.save(top):
             Logger.info('Storage \"{}\" edited'.format(storage))
     else:

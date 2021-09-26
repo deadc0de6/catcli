@@ -148,7 +148,10 @@ class Noder:
         '''format the storage attr for saving'''
         if not attr:
             return ''
-        return ', '.join(attr)
+        if type(attr) is list:
+            return ', '.join(attr)
+        attr = attr.rstrip()
+        return attr
 
     def set_hashing(self, val):
         '''hash files when indexing'''
