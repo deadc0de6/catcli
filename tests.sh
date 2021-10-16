@@ -20,3 +20,5 @@ for t in ${cur}/tests-ng/*; do
   echo "running test \"`basename ${t}`\""
   ${t}
 done
+
+exit 0
