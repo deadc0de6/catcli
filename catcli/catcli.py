@@ -90,6 +90,7 @@ def cmd_index(args, noder, catalog, top):
             return
         node = noder.get_storage_node(top, name)
         node.parent = None
+
     start = datetime.datetime.now()
     walker = Walker(noder, hash=hash, debug=debug)
     attr = noder.format_storage_attr(args['--meta'])
@@ -113,7 +114,7 @@ def cmd_update(args, noder, catalog, top):
     if not os.path.exists(path):
         Logger.err('\"{}\" does not exist'.format(path))
         return
-    root = noder.get_storage_node(top, name)
+    root = noder.get_storage_node(top, name, path=path)
     if not root:
         Logger.err('storage named \"{}\" does not exist'.format(name))
         return

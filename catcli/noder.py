@@ -53,14 +53,23 @@ class Noder:
         '''return a list of all storage names'''
         return [x.name for x in list(top.children)]
 
-    def get_storage_node(self, top, name):
-        '''return the storage node if any'''
+    def get_storage_node(self, top, name, path=None):
+        '''
+        return the storage node if any
+        if path is submitted, it will update the media info
+        '''
+        found = None
         for n in top.children:
             if n.type != self.TYPE_STORAGE:
                 continue
             if n.name == name:
-                return n
-        return None
+                found = n
+                break
+        if found and path and os.path.exists(path):
+            found.free = shutil.disk_usage(path).free
+            found.total = shutil.disk_usage(path).total
+            found.ts = int(time.time())
+        return found
 
     def get_node(self, top, path, quiet=False):
         '''get the node by internal tree path'''
