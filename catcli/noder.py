@@ -35,6 +35,7 @@ class Noder:
     TYPE_ARC = 'arc'
     TYPE_STORAGE = 'storage'
     TYPE_META = 'meta'
+    CSV_HEADER = 'name,type,path,size,md5'
 
     def __init__(self, debug=False, sortsize=False, arc=False):
         '''
@@ -280,6 +281,46 @@ class Noder:
     ###############################################################
     # printing
     ###############################################################
+    def _node_to_csv(self, node, sep=','):
+        '''
+        print a node to csv
+        @node: the node to consider
+        '''
+        if not node:
+            return ''
+        if node.type == self.TYPE_TOP:
+            return ''
+        if node.type == self.TYPE_STORAGE:
+            return ''
+
+        out = []
+
+        # node name
+        out.append(node.name)
+
+        # node type
+        out.append(node.type)
+
+        # node full path
+        parents = self._get_parents(node)
+        storage = self._get_storage(node)
+        fullpath = os.path.join(storage.name, parents)
+        out.append(fullpath)
+
+        # size
+        if node.size:
+            out.append(utils.human(node.size))
+        else:
+            out.append('')
+
+        # md5 if any
+        if node.md5:
+            out.append(node.md5)
+        else:
+            out.append('')
+
+        return sep.join(['"' + o + '"' for o in out])
+
     def _print_node(self, node, pre='', withpath=False,
                     withdepth=False, withstorage=False,
                     recalcparent=False):
@@ -375,6 +416,17 @@ class Noder:
         rend = anytree.RenderTree(node, childiter=self._sort_tree)
         for pre, fill, node in rend:
             self._print_node(node, pre=pre, withdepth=True)
+
+    def to_csv(self, node, with_header=False):
+        '''print the tree to csv'''
+        if with_header:
+            Logger.out(self.CSV_HEADER)
+
+        rend = anytree.RenderTree(node, childiter=self._sort_tree)
+        for _, _, node in rend:
+            line = self._node_to_csv(node)
+            if len(line) > 0:
+                Logger.out(line)
 
     def to_dot(self, node, path='tree.dot'):
         '''export to dot for graphing'''

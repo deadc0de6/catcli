@@ -45,6 +45,7 @@ Usage:
     {1} rename [--catalog=<path>] [-BCfV] <storage> <name>
     {1} edit   [--catalog=<path>] [-BCfV] <storage>
     {1} graph  [--catalog=<path>] [-BCV] [<path>]
+    {1} export [--catalog=<path>] [-BH] [--format=<fmt>] [<path>]
     {1} help
     {1} --help
     {1} --version
@@ -57,7 +58,9 @@ Options:
     -b --script         Output script to manage found file(s) [default: False].
     -C --no-color       Do not output colors [default: False].
     -c --hash           Calculate md5 hash [default: False].
-    -d --directory      Only directory (default: False).
+    -d --directory      Only directory [default: False].
+    -F --format=<fmt>   Export format [default: csv].
+    -H --header         Export with header [default: False].
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -n --no-subsize     Do not store size of directories [default: False].
@@ -202,6 +205,21 @@ def cmd_rename(args, noder, catalog, top):
     return top
 
 
+def cmd_export(args, noder, catalog, top):
+    path = args['<path>']
+    node = top
+    if path:
+        node = noder.get_node(top, path)
+
+    header = args['--header']
+
+    fmt = args['--format']
+    if fmt == 'csv':
+        noder.to_csv(node, with_header=header)
+    else:
+        Logger.err('Format not supported: {}'.format(fmt))
+
+
 def cmd_edit(args, noder, catalog, top):
     storage = args['<storage>']
     storages = list(x.name for x in top.children)
@@ -276,6 +294,8 @@ def main():
         cmd_rename(args, noder, catalog, top)
     elif args['edit']:
         cmd_edit(args, noder, catalog, top)
+    elif args['export']:
+        cmd_export(args, noder, catalog, top)
 
     return True
 
