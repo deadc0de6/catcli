@@ -132,5 +132,3 @@ class Logger:
             mode = 'a'
         with open(path, mode) as f:
             f.write(string)
-
-
