@@ -89,6 +89,11 @@ class Logger:
         string = _fix_badchars(string)
         sys.stdout.write('{}\n'.format(string))
 
+    def out_err(string):
+        '''to stderr no color'''
+        string = _fix_badchars(string)
+        sys.stderr.write('{}\n'.format(string))
+
     def debug(string):
         '''to stderr no color'''
         string = _fix_badchars(string)

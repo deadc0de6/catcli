@@ -35,7 +35,7 @@ class Noder:
     TYPE_ARC = 'arc'
     TYPE_STORAGE = 'storage'
     TYPE_META = 'meta'
-    CSV_HEADER = 'name,type,path,size,md5'
+    CSV_HEADER = 'name,type,path,size,indexed_at,maccess,md5'
 
     def __init__(self, debug=False, sortsize=False, arc=False):
         '''
@@ -313,6 +313,12 @@ class Noder:
         else:
             out.append('')
 
+        # indexed date/time
+        out.append(utils.epoch_to_str(storage.ts))
+
+        # maccess
+        out.append(utils.epoch_to_str(node.maccess))
+
         # md5 if any
         if node.md5:
             out.append(node.md5)
@@ -551,6 +557,8 @@ class Noder:
 
     def _get_storage(self, node):
         '''recursively traverse up to find storage'''
+        if node.type == self.TYPE_STORAGE:
+            return node
         return node.ancestors[1]
 
     def _has_attr(self, node, attr):

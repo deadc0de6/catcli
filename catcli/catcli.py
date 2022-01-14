@@ -238,8 +238,8 @@ def cmd_edit(args, noder, catalog, top):
 
 
 def banner():
-    Logger.out(BANNER)
-    Logger.out("")
+    Logger.out_err(BANNER)
+    Logger.out_err("")
 
 
 def main():
