@@ -241,6 +241,12 @@ def main():
         print(USAGE)
         return True
 
+    if args['print_supported_formats']:
+        print('"native": native format')
+        print('"csv"   : CSV format')
+        print('          {}'.format(Noder.CSV_HEADER))
+        return True
+
     # check format
     fmt = args['--format']
     if fmt != 'native' and fmt != 'csv':
@@ -292,10 +298,6 @@ def main():
         cmd_rename(args, noder, catalog, top)
     elif args['edit']:
         cmd_edit(args, noder, catalog, top)
-    elif args['print_supported_formats']:
-        print('"native": native format')
-        print('"csv"   : CSV format')
-        print('          {}'.format(noder.CSV_HEADER))
 
     return True
 
