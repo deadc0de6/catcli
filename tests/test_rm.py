@@ -25,7 +25,8 @@ class TestRm(unittest.TestCase):
 
         # create fake args dict
         args = {'<path>': '', '--recursive': False,
-                '--verbose': True}
+                '--verbose': True,
+                '--format': 'native'}
 
         # list files and make sure there are children
         args['<path>'] = ''
