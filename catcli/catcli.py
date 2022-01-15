@@ -37,15 +37,14 @@ USAGE = """
 
 Usage:
     {1} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVS] [<path>]
+    {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVP] [--path=<path>] <term>
+    {1} tree   [--catalog=<path>] [--format=<fmt>] [-aBCVS] [<path>]
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
     {1} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
-    {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVP] [--path=<path>] <term>
     {1} rm     [--catalog=<path>] [-BCfV] <storage>
-    {1} tree   [--catalog=<path>] [-aBCVS] [<path>]
     {1} rename [--catalog=<path>] [-BCfV] <storage> <name>
     {1} edit   [--catalog=<path>] [-BCfV] <storage>
     {1} graph  [--catalog=<path>] [-BCV] [<path>]
-    {1} export [--catalog=<path>] [-BH] [--format=<fmt>] [<path>]
     {1} print_supported_formats
     {1} help
     {1} --help
@@ -60,8 +59,7 @@ Options:
     -C --no-color       Do not output colors [default: False].
     -c --hash           Calculate md5 hash [default: False].
     -d --directory      Only directory [default: False].
-    -F --format=<fmt>      Export format [default: native].
-    -H --header         Export with header [default: False].
+    -F --format=<fmt>   Print format, see command \"print_supported_formats\" [default: native].
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -n --no-subsize     Do not store size of directories [default: False].
@@ -179,11 +177,16 @@ def cmd_find(args, noder, top):
 
 def cmd_tree(args, noder, top):
     path = args['<path>']
+    fmt = args['--format']
+
+    # find node to start with
     node = top
     if path:
         node = noder.get_node(top, path)
+
     if node:
-        noder.print_tree(node)
+        # print the tree
+        noder.print_tree(node, fmt=fmt)
 
 
 def cmd_graph(args, noder, top):
@@ -207,22 +210,6 @@ def cmd_rename(args, noder, catalog, top):
     else:
         Logger.err('Storage named \"{}\" does not exist'.format(storage))
     return top
-
-
-def cmd_export(args, noder, catalog, top):
-    path = args['<path>']
-    node = top
-    if path:
-        node = noder.get_node(top, path)
-
-    header = args['--header']
-
-    fmt = args['--format']
-    if fmt == 'native':
-        # equivalent to tree
-        noder.print_tree(node)
-    elif fmt == 'csv':
-        noder.to_csv(node, with_header=header)
 
 
 def cmd_edit(args, noder, catalog, top):
@@ -305,11 +292,10 @@ def main():
         cmd_rename(args, noder, catalog, top)
     elif args['edit']:
         cmd_edit(args, noder, catalog, top)
-    elif args['export']:
-        cmd_export(args, noder, catalog, top)
     elif args['print_supported_formats']:
         print('"native": native format')
         print('"csv"   : CSV format')
+        print('          {}'.format(noder.CSV_HEADER))
 
     return True
 

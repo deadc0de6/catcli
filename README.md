@@ -75,7 +75,7 @@ See the [examples](#examples) for an overview of the available features.
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
   * [Update catalog](#update-catalog)
-  * [Export catalog](#export-catalog)
+  * [CSV format](#csv-format)
 
 * [Examples](#examples)
 * [Contribution](#contribution)
@@ -208,9 +208,9 @@ Updates are based on the access time of each of the files and on the
 hash checksum if present (catalog was indexed with `-c --hash` and
 `update` is called with the switch `-c --hash`).
 
-## Export catalog
+## CSV format
 
-The catalog can be exported to CSV using the `export` command.
+Results can be printed to CSV using `--format=csv`.
 Fields are separated by a comma (`,`) and are quoted with double quotes (`"`).
 
 Each line format is `name,type,path,size,indexed_at,maccess,md5`.

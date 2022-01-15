@@ -290,40 +290,38 @@ class Noder:
             return ''
         if node.type == self.TYPE_TOP:
             return ''
-        if node.type == self.TYPE_STORAGE:
-            return ''
 
         out = []
+        if node.type == self.TYPE_STORAGE:
+            # handle storage
+            out.append(node.name)
+            out.append(node.type)
+            out.append('')  # full path
+            # size
+            sz = self._rec_size(node, store=False)
+            out.append(utils.human(sz))
+            out.append(utils.epoch_to_str(node.ts))
+            out.append('')  # maccess
+            out.append('')  # md5
+        else:
+            out.append(node.name)
+            out.append(node.type)
 
-        # node name
-        out.append(node.name)
+            # node full path
+            parents = self._get_parents(node)
+            storage = self._get_storage(node)
+            fullpath = os.path.join(storage.name, parents)
+            out.append(fullpath)
 
-        # node type
-        out.append(node.type)
-
-        # node full path
-        parents = self._get_parents(node)
-        storage = self._get_storage(node)
-        fullpath = os.path.join(storage.name, parents)
-        out.append(fullpath)
-
-        # size
-        if node.size:
             out.append(utils.human(node.size))
-        else:
-            out.append('')
+            out.append(utils.epoch_to_str(storage.ts))
+            out.append(utils.epoch_to_str(node.maccess))
 
-        # indexed date/time
-        out.append(utils.epoch_to_str(storage.ts))
-
-        # maccess
-        out.append(utils.epoch_to_str(node.maccess))
-
-        # md5 if any
-        if node.md5:
-            out.append(node.md5)
-        else:
-            out.append('')
+            # md5 if any
+            if node.md5:
+                out.append(node.md5)
+            else:
+                out.append('')
 
         line = sep.join(['"' + o + '"' for o in out])
         if len(line) > 0:
@@ -419,17 +417,17 @@ class Noder:
         else:
             Logger.err('bad node encountered: {}'.format(node))
 
-    def print_tree(self, node, style=anytree.ContRoundStyle()):
+    def print_tree(self, node, style=anytree.ContRoundStyle(), fmt='native'):
         '''print the tree similar to unix tool "tree"'''
-        rend = anytree.RenderTree(node, childiter=self._sort_tree)
-        for pre, fill, node in rend:
-            self._print_node(node, pre=pre, withdepth=True)
+        if fmt == 'native':
+            rend = anytree.RenderTree(node, childiter=self._sort_tree)
+            for pre, fill, node in rend:
+                self._print_node(node, pre=pre, withdepth=True)
+        elif fmt == 'csv':
+            self._to_csv(node)
 
-    def to_csv(self, node, with_header=False):
+    def _to_csv(self, node, with_header=True):
         '''print the tree to csv'''
-        if with_header:
-            Logger.out(self.CSV_HEADER)
-
         rend = anytree.RenderTree(node, childiter=self._sort_tree)
         for _, _, node in rend:
             self._node_to_csv(node)
@@ -513,10 +511,7 @@ class Noder:
 
             if rec:
                 # print the entire tree
-                if fmt == 'native':
-                    self.print_tree(found[0].parent)
-                elif fmt == 'csv':
-                    self.to_csv(found[0].parent)
+                self.print_tree(found[0].parent, fmt=fmt)
                 return found
 
             # sort found nodes
