@@ -36,10 +36,10 @@ USAGE = """
 {0}
 
 Usage:
-    {1} ls     [--catalog=<path>] [-aBCrVS] [<path>]
+    {1} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVS] [<path>]
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
     {1} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
-    {1} find   [--catalog=<path>] [-aBCbdVP] [--path=<path>] <term>
+    {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVP] [--path=<path>] <term>
     {1} rm     [--catalog=<path>] [-BCfV] <storage>
     {1} tree   [--catalog=<path>] [-aBCVS] [<path>]
     {1} rename [--catalog=<path>] [-BCfV] <storage> <name>
@@ -59,7 +59,7 @@ Options:
     -C --no-color       Do not output colors [default: False].
     -c --hash           Calculate md5 hash [default: False].
     -d --directory      Only directory [default: False].
-    -F --format=<fmt>   Export format [default: csv].
+    -F --format=<fmt>      Export format [default: native].
     -H --header         Export with header [default: False].
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
@@ -71,7 +71,7 @@ Options:
     -V --verbose        Be verbose [default: False].
     -v --version        Show version.
     -h --help           Show this screen.
-""".format(BANNER, NAME, CATALOGPATH)
+""".format(BANNER, NAME, CATALOGPATH)  # nopep8
 
 
 def cmd_index(args, noder, catalog, top):
@@ -146,7 +146,9 @@ def cmd_ls(args, noder, top):
         path += SEPARATOR
     if not path.endswith(WILD):
         path += WILD
-    found = noder.walk(top, path, rec=args['--recursive'])
+    found = noder.walk(top, path,
+                       rec=args['--recursive'],
+                       fmt=args['--format'])
     if not found:
         Logger.err('\"{}\": nothing found'.format(args['<path>']))
     return found
@@ -168,9 +170,10 @@ def cmd_find(args, noder, top):
     fromtree = args['--parent']
     directory = args['--directory']
     startpath = args['--path']
+    fmt = args['--format']
     return noder.find_name(top, args['<term>'], script=args['--script'],
                            startpath=startpath, directory=directory,
-                           parentfromtree=fromtree)
+                           parentfromtree=fromtree, fmt=fmt)
 
 
 def cmd_tree(args, noder, top):
@@ -214,10 +217,11 @@ def cmd_export(args, noder, catalog, top):
     header = args['--header']
 
     fmt = args['--format']
-    if fmt == 'csv':
+    if fmt == 'native':
+        # equivalent to tree
+        noder.print_tree(node)
+    elif fmt == 'csv':
         noder.to_csv(node, with_header=header)
-    else:
-        Logger.err('Format not supported: {}'.format(fmt))
 
 
 def cmd_edit(args, noder, catalog, top):
@@ -248,6 +252,12 @@ def main():
     if args['help'] or args['--help']:
         print(USAGE)
         return True
+
+    # check format
+    fmt = args['--format']
+    if fmt != 'native' and fmt != 'csv':
+        Logger.err('bad format: {}'.format(fmt))
+        return False
 
     if args['--verbose']:
         print(args)
