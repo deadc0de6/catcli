@@ -46,6 +46,7 @@ Usage:
     {1} edit   [--catalog=<path>] [-BCfV] <storage>
     {1} graph  [--catalog=<path>] [-BCV] [<path>]
     {1} export [--catalog=<path>] [-BH] [--format=<fmt>] [<path>]
+    {1} print_supported_formats
     {1} help
     {1} --help
     {1} --version
@@ -306,6 +307,9 @@ def main():
         cmd_edit(args, noder, catalog, top)
     elif args['export']:
         cmd_export(args, noder, catalog, top)
+    elif args['print_supported_formats']:
+        print('"native": native format')
+        print('"csv"   : CSV format')
 
     return True
 
