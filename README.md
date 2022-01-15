@@ -30,7 +30,7 @@ Features:
   * Store md5 hash of files
   * Ability to update the catalog
   * Tag your different storages with additional information
-  * export catalog to CSV
+  * print results and export catalog to CSV
 
 <a href="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8"><img src="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png" width="50%" height="50%"></a>
 
