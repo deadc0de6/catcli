@@ -417,18 +417,27 @@ class Noder:
         else:
             Logger.err('bad node encountered: {}'.format(node))
 
-    def print_tree(self, node, style=anytree.ContRoundStyle(), fmt='native'):
-        '''print the tree similar to unix tool "tree"'''
+    def print_tree(self, node, style=anytree.ContRoundStyle(),
+                   fmt='native', header=False):
+        '''
+        print the tree similar to unix tool "tree"
+        @node: start node
+        @style: when fmt=native, defines the tree style
+        @fmt: output format
+        @header: when fmt=csv, print the header
+        '''
         if fmt == 'native':
             rend = anytree.RenderTree(node, childiter=self._sort_tree)
             for pre, fill, node in rend:
                 self._print_node(node, pre=pre, withdepth=True)
         elif fmt == 'csv':
-            self._to_csv(node)
+            self._to_csv(node, with_header=header)
 
-    def _to_csv(self, node, with_header=True):
+    def _to_csv(self, node, with_header=False):
         '''print the tree to csv'''
         rend = anytree.RenderTree(node, childiter=self._sort_tree)
+        if with_header:
+            Logger.out(self.CSV_HEADER)
         for _, _, node in rend:
             self._node_to_csv(node)
 
@@ -499,8 +508,14 @@ class Noder:
     # climbing
     ###############################################################
     def walk(self, root, path, rec=False, fmt='native'):
-        '''walk the tree for ls based on names'''
+        '''
+        walk the tree for ls based on names
+        @root: start node
+        @rec: recursive walk
+        @fmt: output format
+        '''
         self._debug('walking path: \"{}\"'.format(path))
+
         r = anytree.resolver.Resolver('name')
         found = []
         try:

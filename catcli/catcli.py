@@ -38,7 +38,7 @@ USAGE = """
 Usage:
     {1} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVS] [<path>]
     {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVP] [--path=<path>] <term>
-    {1} tree   [--catalog=<path>] [--format=<fmt>] [-aBCVS] [<path>]
+    {1} tree   [--catalog=<path>] [--format=<fmt>] [-aBCVSH] [<path>]
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
     {1} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
     {1} rm     [--catalog=<path>] [-BCfV] <storage>
@@ -61,6 +61,7 @@ Options:
     -d --directory      Only directory [default: False].
     -F --format=<fmt>   Print format, see command \"print_supported_formats\" [default: native].
     -f --force          Do not ask when updating the catalog [default: False].
+    -H --header         Print header on CSV format [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -n --no-subsize     Do not store size of directories [default: False].
     -P --parent         Ignore stored relpath [default: True].
@@ -178,6 +179,7 @@ def cmd_find(args, noder, top):
 def cmd_tree(args, noder, top):
     path = args['<path>']
     fmt = args['--format']
+    hdr = args['--header']
 
     # find node to start with
     node = top
@@ -186,7 +188,7 @@ def cmd_tree(args, noder, top):
 
     if node:
         # print the tree
-        noder.print_tree(node, fmt=fmt)
+        noder.print_tree(node, fmt=fmt, header=hdr)
 
 
 def cmd_graph(args, noder, top):
