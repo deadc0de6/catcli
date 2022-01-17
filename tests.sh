@@ -13,8 +13,10 @@ pycodestyle tests/
 pyflakes catcli/
 pyflakes tests/
 
-PYTHONPATH=catcli python3 -m nose -s --with-coverage --cover-package=catcli
-#PYTHONPATH=catcli python3 -m nose -s
+nosebin="nosetests"
+
+PYTHONPATH=catcli ${nosebin} -s --with-coverage --cover-package=catcli
+#PYTHONPATH=catcli ${nosebin} -s
 
 for t in ${cur}/tests-ng/*; do
   echo "running test \"`basename ${t}`\""

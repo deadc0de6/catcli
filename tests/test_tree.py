@@ -24,7 +24,12 @@ class TestTree(unittest.TestCase):
         noder = Noder()
 
         # create fake args dict
-        args = {'<path>': path, '--verbose': True}
+        args = {
+            '<path>': path,
+            '--verbose': True,
+            '--format': 'native',
+            '--header': False,
+        }
 
         # print tree and wait for any errors
         cmd_tree(args, noder, top)

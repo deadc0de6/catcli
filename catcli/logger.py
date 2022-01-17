@@ -39,6 +39,9 @@ class Logger:
         Logger.BOLD = ''
         Logger.UND = ''
 
+    def fix_badchars(line):
+        return line.encode('utf-8', 'ignore').decode('utf-8')
+
     ######################################################################
     # node specific output
     ######################################################################
@@ -48,13 +51,15 @@ class Logger:
         if attr:
             end = ' {}({}){}'.format(Logger.GRAY, attr, Logger.RESET)
         s = '{}{}{}{}:'.format(pre, Logger.UND, Logger.STORAGE, Logger.RESET)
-        s += ' {}{}{}{}\n'.format(Logger.PURPLE, name, Logger.RESET, end)
+        s += ' {}{}{}{}\n'.format(Logger.PURPLE,
+                                  Logger.fix_badchars(name),
+                                  Logger.RESET, end)
         s += '  {}{}{}'.format(Logger.GRAY, args, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
 
     def file(pre, name, attr):
         '''print a file node'''
-        s = '{}{}'.format(pre, name)
+        s = '{}{}'.format(pre, Logger.fix_badchars(name))
         s += ' {}[{}]{}'.format(Logger.GRAY, attr, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
 
@@ -67,12 +72,14 @@ class Logger:
             end.append(' '.join(['{}:{}'.format(x, y) for x, y in attr]))
         if end:
             end = ' [{}]'.format(', '.join(end))
-        s = '{}{}{}{}'.format(pre, Logger.BLUE, name, Logger.RESET)
+        s = '{}{}{}{}'.format(pre, Logger.BLUE,
+                              Logger.fix_badchars(name), Logger.RESET)
         s += '{}{}{}'.format(Logger.GRAY, end, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
 
     def arc(pre, name, archive):
-        s = '{}{}{}{}'.format(pre, Logger.YELLOW, name, Logger.RESET)
+        s = '{}{}{}{}'.format(pre, Logger.YELLOW,
+                              Logger.fix_badchars(name), Logger.RESET)
         s += ' {}[{}:{}]{}'.format(Logger.GRAY, Logger.ARCHIVE,
                                    archive, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
@@ -82,32 +89,44 @@ class Logger:
     ######################################################################
     def out(string):
         '''to stdout no color'''
+        string = Logger.fix_badchars(string)
         sys.stdout.write('{}\n'.format(string))
+
+    def out_err(string):
+        '''to stderr no color'''
+        string = Logger.fix_badchars(string)
+        sys.stderr.write('{}\n'.format(string))
 
     def debug(string):
         '''to stderr no color'''
+        string = Logger.fix_badchars(string)
         sys.stderr.write('[DBG] {}\n'.format(string))
 
     def info(string):
         '''to stdout in color'''
+        string = Logger.fix_badchars(string)
         s = '{}{}{}'.format(Logger.MAGENTA, string, Logger.RESET)
         sys.stdout.write('{}\n'.format(s))
 
     def err(string):
         '''to stderr in RED'''
+        string = Logger.fix_badchars(string)
         s = '{}{}{}'.format(Logger.RED, string, Logger.RESET)
         sys.stderr.write('{}\n'.format(s))
 
     def progr(string):
         '''print progress'''
+        string = Logger.fix_badchars(string)
         sys.stderr.write('{}\r'.format(string))
         sys.stderr.flush()
 
     def bold(string):
         '''make it bold'''
+        string = Logger.fix_badchars(string)
         return '{}{}{}'.format(Logger.BOLD, string, Logger.RESET)
 
     def flog(path, string, append=True):
+        string = Logger.fix_badchars(string)
         mode = 'w'
         if append:
             mode = 'a'
