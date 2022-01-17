@@ -1,5 +1,6 @@
 pycodestyle; python_version >= '3.0'
 pyflakes; python_version >= '3.0'
+#nose-py3; python_version >= '3.0'
 nose; python_version >= '3.0'
 coverage; python_version >= '3.0'
 coveralls; python_version >= '3.0'

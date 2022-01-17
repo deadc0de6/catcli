@@ -30,6 +30,7 @@ Features:
   * Store md5 hash of files
   * Ability to update the catalog
   * Tag your different storages with additional information
+  * print results and export catalog to CSV
 
 <a href="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8"><img src="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png" width="50%" height="50%"></a>
 
@@ -74,6 +75,7 @@ See the [examples](#examples) for an overview of the available features.
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
   * [Update catalog](#update-catalog)
+  * [CSV format](#csv-format)
 
 * [Examples](#examples)
 * [Contribution](#contribution)
@@ -205,6 +207,21 @@ The catalog can be updated with the `update` command.
 Updates are based on the access time of each of the files and on the
 hash checksum if present (catalog was indexed with `-c --hash` and
 `update` is called with the switch `-c --hash`).
+
+## CSV format
+
+Results can be printed to CSV using `--format=csv`.
+Fields are separated by a comma (`,`) and are quoted with double quotes (`"`).
+
+Each line format is `name,type,path,size,indexed_at,maccess,md5`.
+
+* **name**: the entry name
+* **type**: the entry type (file, directory)
+* **path**: the entry path
+* **size**: the entry size
+* **indexed_at**: when this entry was indexed
+* **maccess**: the entry modification date/time
+* **md5**: the entry checksum (if any)
 
 # Examples
 
