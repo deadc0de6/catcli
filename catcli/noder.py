@@ -35,7 +35,9 @@ class Noder:
     TYPE_ARC = 'arc'
     TYPE_STORAGE = 'storage'
     TYPE_META = 'meta'
-    CSV_HEADER = 'name,type,path,size,indexed_at,maccess,md5'
+    CSV_HEADER = ('name,type,path,size,indexed_at,'
+                  'maccess,md5,nbfiles,free_space,'
+                  'total_space,meta')
 
     def __init__(self, debug=False, sortsize=False, arc=False):
         '''
@@ -294,34 +296,41 @@ class Noder:
         out = []
         if node.type == self.TYPE_STORAGE:
             # handle storage
-            out.append(node.name)
-            out.append(node.type)
-            out.append('')  # full path
-            # size
+            out.append(node.name)   # name
+            out.append(node.type)   # type
+            out.append('')          # fake full path
             sz = self._rec_size(node, store=False)
-            out.append(utils.human(sz))
-            out.append(utils.epoch_to_str(node.ts))
-            out.append('')  # maccess
-            out.append('')  # md5
+            out.append(utils.human(sz))  # size
+            out.append(utils.epoch_to_str(node.ts))  # indexed_at
+            out.append('')  # fake maccess
+            out.append('')  # fake md5
+            out.append(str(len(node.children)))  # nbfiles
+            out.append(utils.human(node.free))  # fake free_space
+            out.append(utils.human(node.total))  # fake total_space
+            out.append(node.attr)  # meta
         else:
-            out.append(node.name)
-            out.append(node.type)
-
-            # node full path
+            # handle other nodes
+            out.append(node.name)  # name
+            out.append(node.type)  # type
             parents = self._get_parents(node)
             storage = self._get_storage(node)
             fullpath = os.path.join(storage.name, parents)
-            out.append(fullpath)
+            out.append(fullpath)  # full path
 
-            out.append(utils.human(node.size))
-            out.append(utils.epoch_to_str(storage.ts))
-            out.append(utils.epoch_to_str(node.maccess))
-
-            # md5 if any
+            out.append(utils.human(node.size))  # size
+            out.append(utils.epoch_to_str(storage.ts))  # indexed_at
+            out.append(utils.epoch_to_str(node.maccess))  # maccess
             if node.md5:
-                out.append(node.md5)
+                out.append(node.md5)  # md5
             else:
-                out.append('')
+                out.append('')  # fake md5
+            if node.type == self.TYPE_DIR:
+                out.append(str(len(node.children)))  # nbfiles
+            else:
+                out.append('')  # fake nbfiles
+            out.append('')  # fake free_space
+            out.append('')  # fake total_space
+            out.append('')  # fake meta
 
         line = sep.join(['"' + o + '"' for o in out])
         if len(line) > 0:
