@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/deadc0de6/catcli.svg?branch=master)](https://travis-ci.org/deadc0de6/catcli)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [![Coverage Status](https://coveralls.io/repos/github/deadc0de6/catcli/badge.svg?branch=master)](https://coveralls.io/github/deadc0de6/catcli?branch=master)
+
 [![PyPI version](https://badge.fury.io/py/catcli.svg)](https://badge.fury.io/py/catcli)
 [![AUR](https://img.shields.io/aur/version/catcli-git.svg)](https://aur.archlinux.org/packages/catcli-git)
 [![Python](https://img.shields.io/pypi/pyversions/catcli.svg)](https://pypi.python.org/pypi/catcli)
@@ -30,7 +31,7 @@ Features:
   * Store md5 hash of files
   * Ability to update the catalog
   * Tag your different storages with additional information
-  * print results and export catalog to CSV
+  * Export catalog to CSV
 
 <a href="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8"><img src="https://asciinema.org/a/hRE22qbVtBGxOM1yxw2y4fBy8.png" width="50%" height="50%"></a>
 
@@ -82,7 +83,7 @@ See the [examples](#examples) for an overview of the available features.
 
 # Installation
 
-To install run:
+Install from Pypi
 ```bash
 $ pip3 install catcli --user
 ```
