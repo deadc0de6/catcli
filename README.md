@@ -80,6 +80,7 @@ See the [examples](#examples) for an overview of the available features.
 
 * [Examples](#examples)
 * [Contribution](#contribution)
+* [Thank you](#thank-you)
 
 # Installation
 
