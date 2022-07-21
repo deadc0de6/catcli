@@ -321,6 +321,8 @@ class Noder:
             out.append(utils.epoch_to_str(storage.ts))  # indexed_at
             if self._has_attr(node, 'maccess'):
                 out.append(utils.epoch_to_str(node.maccess))  # maccess
+            else:
+                out.append('') # fake maccess
             if node.md5:
                 out.append(node.md5)  # md5
             else:
