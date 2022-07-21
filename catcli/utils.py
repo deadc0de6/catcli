@@ -52,6 +52,8 @@ def human(size):
 
 def epoch_to_str(epoch):
     '''convert epoch to string'''
+    if not epoch:
+        return ''
     fmt = '%Y-%m-%d %H:%M:%S'
     t = datetime.datetime.fromtimestamp(float(epoch))
     return t.strftime(fmt)
