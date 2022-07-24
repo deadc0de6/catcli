@@ -215,10 +215,10 @@ hash checksum if present (catalog was indexed with `-c --hash` and
 Results can be printed to CSV using `--format=csv`.
 Fields are separated by a comma (`,`) and are quoted with double quotes (`"`).
 
-Each line format is `name,type,path,size,indexed_at,maccess,md5`.
+Each line contains the following fields:
 
 * **name**: the entry name
-* **type**: the entry type (file, directory)
+* **type**: the entry type (file, directory, storage, etc)
 * **path**: the entry path
 * **size**: the entry size
 * **indexed_at**: when this entry was indexed
