@@ -310,12 +310,12 @@ class Noder:
             out.append(node.attr)  # meta
         else:
             # handle other nodes
-            out.append(node.name)  # name
+            out.append(node.name.replace('"', '""'))  # name
             out.append(node.type)  # type
             parents = self._get_parents(node)
             storage = self._get_storage(node)
             fullpath = os.path.join(storage.name, parents)
-            out.append(fullpath)  # full path
+            out.append(fullpath.replace('"', '""'))  # full path
 
             out.append(utils.human(node.size))  # size
             out.append(utils.epoch_to_str(storage.ts))  # indexed_at
