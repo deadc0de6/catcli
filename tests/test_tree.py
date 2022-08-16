@@ -29,6 +29,7 @@ class TestTree(unittest.TestCase):
             '--verbose': True,
             '--format': 'native',
             '--header': False,
+            '--raw-size': False,
         }
 
         # print tree and wait for any errors
