@@ -36,9 +36,9 @@ USAGE = """
 {0}
 
 Usage:
-    {1} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVS] [<path>]
-    {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVP] [--path=<path>] <term>
-    {1} tree   [--catalog=<path>] [--format=<fmt>] [-aBCVSH] [<path>]
+    {1} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
+    {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] <term>
+    {1} tree   [--catalog=<path>] [--format=<fmt>] [-aBCVSsH] [<path>]
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
     {1} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
     {1} rm     [--catalog=<path>] [-BCfV] <storage>
@@ -67,6 +67,7 @@ Options:
     -P --parent         Ignore stored relpath [default: True].
     -p --path=<path>    Start path.
     -r --recursive      Recursive [default: False].
+    -s --raw-size       Print raw size rather than human readable [default: False].
     -S --sortsize       Sort by size, largest first [default: False].
     -V --verbose        Be verbose [default: False].
     -v --version        Show version.
@@ -148,7 +149,8 @@ def cmd_ls(args, noder, top):
         path += WILD
     found = noder.walk(top, path,
                        rec=args['--recursive'],
-                       fmt=args['--format'])
+                       fmt=args['--format'],
+                       raw=args['--raw-size'])
     if not found:
         Logger.err('\"{}\": nothing found'.format(args['<path>']))
     return found
@@ -171,15 +173,17 @@ def cmd_find(args, noder, top):
     directory = args['--directory']
     startpath = args['--path']
     fmt = args['--format']
+    raw = args['--raw-size']
     return noder.find_name(top, args['<term>'], script=args['--script'],
                            startpath=startpath, directory=directory,
-                           parentfromtree=fromtree, fmt=fmt)
+                           parentfromtree=fromtree, fmt=fmt, raw=raw)
 
 
 def cmd_tree(args, noder, top):
     path = args['<path>']
     fmt = args['--format']
     hdr = args['--header']
+    raw = args['--raw-size']
 
     # find node to start with
     node = top
@@ -188,7 +192,7 @@ def cmd_tree(args, noder, top):
 
     if node:
         # print the tree
-        noder.print_tree(node, fmt=fmt, header=hdr)
+        noder.print_tree(node, fmt=fmt, header=hdr, raw=raw)
 
 
 def cmd_graph(args, noder, top):

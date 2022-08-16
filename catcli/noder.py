@@ -283,10 +283,12 @@ class Noder:
     ###############################################################
     # printing
     ###############################################################
-    def _node_to_csv(self, node, sep=','):
+    def _node_to_csv(self, node, sep=',', raw=False):
         '''
         print a node to csv
         @node: the node to consider
+        @sep: CSV separator character
+        @raw: print raw size rather than human readable
         '''
         if not node:
             return ''
@@ -300,13 +302,15 @@ class Noder:
             out.append(node.type)   # type
             out.append('')          # fake full path
             sz = self._rec_size(node, store=False)
-            out.append(utils.human(sz))  # size
+            out.append(utils.size_to_str(sz, raw=raw))  # size
             out.append(utils.epoch_to_str(node.ts))  # indexed_at
             out.append('')  # fake maccess
             out.append('')  # fake md5
             out.append(str(len(node.children)))  # nbfiles
-            out.append(utils.human(node.free))  # fake free_space
-            out.append(utils.human(node.total))  # fake total_space
+            # fake free_space
+            out.append(utils.size_to_str(node.free, raw=raw))
+            # fake total_space
+            out.append(utils.size_to_str(node.total, raw=raw))
             out.append(node.attr)  # meta
         else:
             # handle other nodes
@@ -317,7 +321,7 @@ class Noder:
             fullpath = os.path.join(storage.name, parents)
             out.append(fullpath.replace('"', '""'))  # full path
 
-            out.append(utils.human(node.size))  # size
+            out.append(utils.size_to_str(node.size, raw=raw))  # size
             out.append(utils.epoch_to_str(storage.ts))  # indexed_at
             if self._has_attr(node, 'maccess'):
                 out.append(utils.epoch_to_str(node.maccess))  # maccess
@@ -341,7 +345,7 @@ class Noder:
 
     def _print_node(self, node, pre='', withpath=False,
                     withdepth=False, withstorage=False,
-                    recalcparent=False):
+                    recalcparent=False, raw=False):
         '''
         print a node
         @node: the node to print
@@ -350,6 +354,7 @@ class Noder:
         @withdepth: print the node depth info
         @withstorage: print the node storage it belongs to
         @recalcparent: get relpath from tree instead of relpath field
+        @raw: print raw size rather than human readable
         '''
         if node.type == self.TYPE_TOP:
             # top node
@@ -368,7 +373,8 @@ class Noder:
             attr = ''
             if node.md5:
                 attr = ', md5:{}'.format(node.md5)
-            compl = 'size:{}{}'.format(utils.human(node.size), attr)
+            sz = utils.size_to_str(node.size, raw=raw)
+            compl = 'size:{}{}'.format(sz, attr)
             if withstorage:
                 compl += ', storage:{}'.format(Logger.bold(storage.name))
             Logger.file(pre, name, compl)
@@ -388,14 +394,14 @@ class Noder:
                 storage = self._get_storage(node)
             attr = []
             if node.size:
-                attr.append(['totsize', utils.human(node.size)])
+                attr.append(['totsize', utils.size_to_str(node.size, raw=raw)])
             if withstorage:
                 attr.append(['storage', Logger.bold(storage.name)])
             Logger.dir(pre, name, depth=depth, attr=attr)
         elif node.type == self.TYPE_STORAGE:
             # node of type storage
-            hf = utils.human(node.free)
-            ht = utils.human(node.total)
+            hf = utils.size_to_str(node.free, raw=raw)
+            ht = utils.size_to_str(node.total, raw=raw)
             nbchildren = len(node.children)
             freepercent = '{:.1f}%'.format(
                 node.free * 100 / node.total
@@ -408,7 +414,7 @@ class Noder:
             ds = ''
             # the children size
             sz = self._rec_size(node, store=False)
-            sz = utils.human(sz)
+            sz = utils.size_to_str(sz, raw=raw)
             ds = 'totsize:' + '{}'.format(sz)
             # format the output
             name = '{}'.format(node.name)
@@ -430,28 +436,29 @@ class Noder:
             Logger.err('bad node encountered: {}'.format(node))
 
     def print_tree(self, node, style=anytree.ContRoundStyle(),
-                   fmt='native', header=False):
+                   fmt='native', header=False, raw=False):
         '''
         print the tree similar to unix tool "tree"
         @node: start node
         @style: when fmt=native, defines the tree style
         @fmt: output format
         @header: when fmt=csv, print the header
+        @raw: print the raw size rather than human readable
         '''
         if fmt == 'native':
             rend = anytree.RenderTree(node, childiter=self._sort_tree)
             for pre, fill, node in rend:
-                self._print_node(node, pre=pre, withdepth=True)
+                self._print_node(node, pre=pre, withdepth=True, raw=raw)
         elif fmt == 'csv':
-            self._to_csv(node, with_header=header)
+            self._to_csv(node, with_header=header, raw=raw)
 
-    def _to_csv(self, node, with_header=False):
+    def _to_csv(self, node, with_header=False, raw=False):
         '''print the tree to csv'''
         rend = anytree.RenderTree(node, childiter=self._sort_tree)
         if with_header:
             Logger.out(self.CSV_HEADER)
         for _, _, node in rend:
-            self._node_to_csv(node)
+            self._node_to_csv(node, raw=raw)
 
     def to_dot(self, node, path='tree.dot'):
         '''export to dot for graphing'''
@@ -465,7 +472,7 @@ class Noder:
     def find_name(self, root, key,
                   script=False, directory=False,
                   startpath=None, parentfromtree=False,
-                  fmt='native'):
+                  fmt='native', raw=False):
         '''
         find files based on their names
         @script: output script
@@ -494,9 +501,10 @@ class Noder:
                 self._print_node(f, withpath=True,
                                  withdepth=True,
                                  withstorage=True,
-                                 recalcparent=parentfromtree)
+                                 recalcparent=parentfromtree,
+                                 raw=raw)
             elif fmt == 'csv':
-                self._node_to_csv(f)
+                self._node_to_csv(f, raw=raw)
 
             if parentfromtree:
                 paths.append(self._get_parents(f))
@@ -519,7 +527,7 @@ class Noder:
     ###############################################################
     # climbing
     ###############################################################
-    def walk(self, root, path, rec=False, fmt='native'):
+    def walk(self, root, path, rec=False, fmt='native', raw=False):
         '''
         walk the tree for ls based on names
         @root: start node
@@ -538,7 +546,7 @@ class Noder:
 
             if rec:
                 # print the entire tree
-                self.print_tree(found[0].parent, fmt=fmt)
+                self.print_tree(found[0].parent, fmt=fmt, raw=raw)
                 return found
 
             # sort found nodes
@@ -547,18 +555,19 @@ class Noder:
             # print the parent
             if fmt == 'native':
                 self._print_node(found[0].parent,
-                                 withpath=False, withdepth=True)
+                                 withpath=False, withdepth=True, raw=raw)
             elif fmt == 'csv':
-                self._node_to_csv(found[0].parent)
+                self._node_to_csv(found[0].parent, raw=raw)
 
             # print all found nodes
             for f in found:
                 if fmt == 'native':
                     self._print_node(f, withpath=False,
                                      pre='- ',
-                                     withdepth=True)
+                                     withdepth=True,
+                                     raw=raw)
                 elif fmt == 'csv':
-                    self._node_to_csv(f)
+                    self._node_to_csv(f, raw=raw)
 
         except anytree.resolver.ChildResolverError:
             pass

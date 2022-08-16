@@ -37,11 +37,11 @@ def md5sum(path):
     return None
 
 
-def human(size):
-    '''human readable size'''
+def size_to_str(size, raw=True):
+    '''convert size to string, optionally human readable'''
     div = 1024.
     suf = ['B', 'K', 'M', 'G', 'T', 'P']
-    if size < div:
+    if raw or size < div:
         return '{}'.format(size)
     for i in suf:
         if size < div:
