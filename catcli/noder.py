@@ -9,6 +9,7 @@ import os
 import anytree
 import shutil
 import time
+from pyfzf.pyfzf import FzfPrompt
 
 # local imports
 from . import __version__ as VERSION
@@ -435,10 +436,10 @@ class Noder:
         else:
             Logger.err('bad node encountered: {}'.format(node))
 
-    def print_tree(self, node, style=anytree.ContRoundStyle(),
+    def print_tree(self, top, node, style=anytree.ContRoundStyle(),
                    fmt='native', header=False, raw=False):
         '''
-        print the tree similar to unix tool "tree"
+        print the tree in different format
         @node: start node
         @style: when fmt=native, defines the tree style
         @fmt: output format
@@ -446,11 +447,16 @@ class Noder:
         @raw: print the raw size rather than human readable
         '''
         if fmt == 'native':
+            # "tree" style
             rend = anytree.RenderTree(node, childiter=self._sort_tree)
             for pre, fill, node in rend:
                 self._print_node(node, pre=pre, withdepth=True, raw=raw)
         elif fmt == 'csv':
+            # csv output
             self._to_csv(node, with_header=header, raw=raw)
+        elif fmt.startswith('fzf'):
+            # flat
+            self._to_fzf(top, node)
 
     def _to_csv(self, node, with_header=False, raw=False):
         '''print the tree to csv'''
@@ -459,6 +465,41 @@ class Noder:
             Logger.out(self.CSV_HEADER)
         for _, _, node in rend:
             self._node_to_csv(node, raw=raw)
+
+    def _fzf_prompt(self, strings):
+        # prompt with fzf
+        fzf = FzfPrompt()
+        selected = fzf.prompt(strings)
+        return selected
+
+    def _to_fzf(self, top, node, fmt):
+        """
+        print node to fzf
+        @top: top node
+        @node: node to start with
+        @fmt: output format for selected nodes
+        """
+        rend = anytree.RenderTree(node, childiter=self._sort_tree)
+        nodes = dict()
+        # construct node names list
+        for _, _, node in rend:
+            if not node:
+                continue
+            parents = self._get_parents(node)
+            storage = self._get_storage(node)
+            fullpath = os.path.join(storage.name, parents)
+            nodes[fullpath] = node
+        # prompt with fzf
+        self._fzf_prompt(nodes.keys())
+        # print the resulting tree
+        subfmt = fmt.replace('fzf-', '')
+        for path in paths:
+            if not path:
+                continue
+            if path not in nodes:
+                continue
+            node = nodes[path]
+            self.print_tree(top, node, fmt=subfmt)
 
     def to_dot(self, node, path='tree.dot'):
         '''export to dot for graphing'''
@@ -469,25 +510,34 @@ class Noder:
     ###############################################################
     # searching
     ###############################################################
-    def find_name(self, root, key,
+    def find_name(self, top, key,
                   script=False, directory=False,
                   startpath=None, parentfromtree=False,
                   fmt='native', raw=False):
         '''
         find files based on their names
+        @top: top node
+        @key: term to search for
         @script: output script
         @directory: only search for directories
         @startpath: node to start with
         @parentfromtree: get path from parent instead of stored relpath
         @fmt: output format
+        @raw: raw size output
         '''
         self._debug('searching for \"{}\"'.format(key))
-        start = root
+        if not key:
+            # nothing to search for
+            return None
+        start = top
         if startpath:
-            start = self.get_node(root, startpath)
-        self.term = key
-        found = anytree.findall(start, filter_=self._find_name)
-        paths = []
+            start = self.get_node(top, startpath)
+        found = anytree.findall(start, filter_=self._callback_find_name(key))
+        self._debug(f'found {len(found)} node(s)')
+
+        # compile found nodes
+        paths = dict()
+        nodes = []
         for f in found:
             if f.type == self.TYPE_STORAGE:
                 # ignore storage nodes
@@ -495,58 +545,74 @@ class Noder:
             if directory and f.type != self.TYPE_DIR:
                 # ignore non directory
                 continue
+            nodes.append(f)
 
-            # print the node
-            if fmt == 'native':
-                self._print_node(f, withpath=True,
+            if parentfromtree:
+                paths[self._get_parents(f)] = f
+            else:
+                paths[f.relpath] = f
+
+        if fmt == 'native':
+            for n in nodes:
+                self._print_node(n, withpath=True,
                                  withdepth=True,
                                  withstorage=True,
                                  recalcparent=parentfromtree,
                                  raw=raw)
-            elif fmt == 'csv':
-                self._node_to_csv(f, raw=raw)
-
-            if parentfromtree:
-                paths.append(self._get_parents(f))
-            else:
-                paths.append(f.relpath)
+        elif fmt == 'csv':
+            for n in nodes:
+                self._node_to_csv(n, raw=raw)
+        elif fmt.startswith('fzf'):
+            selected = self._fzf_prompt(paths)
+            newpaths = dict()
+            subfmt = fmt.replace('fzf-', '')
+            for s in selected:
+                if s not in paths:
+                    continue
+                newpaths[s] = paths[s]
+                self.print_tree(top, newpaths[s], fmt=subfmt)
+            paths = newpaths
 
         if script:
-            tmp = ['${source}/' + x for x in paths]
+            tmp = ['${source}/' + x for x in paths.keys()]
             cmd = 'op=file; source=/media/mnt; $op {}'.format(' '.join(tmp))
             Logger.info(cmd)
 
         return found
 
-    def _find_name(self, node):
+    def _callback_find_name(self, term):
         '''callback for finding files'''
-        if self.term.lower() in node.name.lower():
-            return True
-        return False
+        def find_name(node):
+            if term.lower() in node.name.lower():
+                return True
+            return False
+        return find_name
 
     ###############################################################
     # climbing
     ###############################################################
-    def walk(self, root, path, rec=False, fmt='native', raw=False):
+    def walk(self, top, path, rec=False, fmt='native',
+             raw=False):
         '''
         walk the tree for ls based on names
-        @root: start node
+        @top: start node
         @rec: recursive walk
         @fmt: output format
+        @raw: print raw size
         '''
         self._debug('walking path: \"{}\"'.format(path))
 
         r = anytree.resolver.Resolver('name')
         found = []
         try:
-            found = r.glob(root, path)
+            found = r.glob(top, path)
             if len(found) < 1:
                 # nothing found
                 return []
 
             if rec:
                 # print the entire tree
-                self.print_tree(found[0].parent, fmt=fmt, raw=raw)
+                self.print_tree(top, found[0].parent, fmt=fmt, raw=raw)
                 return found
 
             # sort found nodes
@@ -558,6 +624,8 @@ class Noder:
                                  withpath=False, withdepth=True, raw=raw)
             elif fmt == 'csv':
                 self._node_to_csv(found[0].parent, raw=raw)
+            elif fmt == 'fzf':
+                pass
 
             # print all found nodes
             for f in found:
@@ -568,6 +636,8 @@ class Noder:
                                      raw=raw)
                 elif fmt == 'csv':
                     self._node_to_csv(f, raw=raw)
+                elif fmt == 'fzf':
+                    self._to_fzf(top, f)
 
         except anytree.resolver.ChildResolverError:
             pass
@@ -637,6 +707,8 @@ class Noder:
     def _get_parents(self, node):
         '''get all parents recursively'''
         if node.type == self.TYPE_STORAGE:
+            return ''
+        if node.type == self.TYPE_TOP:
             return ''
         parent = self._get_parents(node.parent)
         if parent:

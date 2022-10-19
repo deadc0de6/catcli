@@ -76,7 +76,7 @@ class TestIndexing(unittest.TestCase):
         self.assertTrue(nod.md5 == f4_md5)
 
         # print catalog
-        noder.print_tree(top)
+        noder.print_tree(top, top)
 
         # add some files and directories
         new1 = create_rnd_file(d1, 'newf1')
@@ -118,7 +118,7 @@ class TestIndexing(unittest.TestCase):
 
         # print catalog
         # print(read_from_file(catalogpath))
-        noder.print_tree(top)
+        noder.print_tree(top, top)
 
         # explore the top node to find all nodes
         self.assertTrue(len(top.children) == 1)

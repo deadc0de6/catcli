@@ -27,6 +27,7 @@ CATALOGPATH = '{}.catalog'.format(NAME)
 GRAPHPATH = '/tmp/{}.dot'.format(NAME)
 SEPARATOR = '/'
 WILD = '*'
+FORMATS = ['native', 'csv', 'fzf-native', 'fzf-csv']
 
 BANNER = """ +-+-+-+-+-+-+
  |c|a|t|c|l|i|
@@ -37,8 +38,8 @@ USAGE = """
 
 Usage:
     {1} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
-    {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] <term>
-    {1} tree   [--catalog=<path>] [--format=<fmt>] [-aBCVSsH] [<path>]
+    {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
+    {1} tree   [--catalog=<path>] [-aBCVSsH] [<path>]
     {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
     {1} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
     {1} rm     [--catalog=<path>] [-BCfV] <storage>
@@ -174,14 +175,15 @@ def cmd_find(args, noder, top):
     startpath = args['--path']
     fmt = args['--format']
     raw = args['--raw-size']
-    return noder.find_name(top, args['<term>'], script=args['--script'],
+    script = args['--script']
+    search_for = args['<term>']
+    return noder.find_name(top, search_for, script=script,
                            startpath=startpath, directory=directory,
                            parentfromtree=fromtree, fmt=fmt, raw=raw)
 
 
 def cmd_tree(args, noder, top):
     path = args['<path>']
-    fmt = args['--format']
     hdr = args['--header']
     raw = args['--raw-size']
 
@@ -192,7 +194,7 @@ def cmd_tree(args, noder, top):
 
     if node:
         # print the tree
-        noder.print_tree(node, fmt=fmt, header=hdr, raw=raw)
+        noder.print_tree(top, node, header=hdr, raw=raw)
 
 
 def cmd_graph(args, noder, top):
@@ -240,6 +242,14 @@ def banner():
     Logger.out_err("")
 
 
+def print_supported_formats():
+    print('"native"     : native format')
+    print('"csv"        : CSV format')
+    print('               {}'.format(Noder.CSV_HEADER))
+    print('"fzf-native" : fzf with native output for selected entries')
+    print('"fzf-csv"    : fzf with native output for selected entries')
+
+
 def main():
     args = docopt(USAGE, version=VERSION)
 
@@ -248,15 +258,14 @@ def main():
         return True
 
     if args['print_supported_formats']:
-        print('"native": native format')
-        print('"csv"   : CSV format')
-        print('          {}'.format(Noder.CSV_HEADER))
+        print_supported_formats()
         return True
 
     # check format
     fmt = args['--format']
-    if fmt != 'native' and fmt != 'csv':
+    if fmt not in FORMATS:
         Logger.err('bad format: {}'.format(fmt))
+        print_supported_formats()
         return False
 
     if args['--verbose']:
