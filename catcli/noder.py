@@ -529,6 +529,7 @@ class Noder:
         @fmt: output format
         @raw: raw size output
         """
+        ## TODO error with fzf
         self._debug(f'searching for \"{key}\"')
         if not key:
             # nothing to search for
@@ -603,7 +604,7 @@ class Noder:
     def walk(self, top, path, rec=False, fmt='native',
              raw=False):
         """
-        walk the tree for ls based on names
+        walk the tree for "ls" based on names
         @top: start node
         @rec: recursive walk
         @fmt: output format
@@ -614,6 +615,7 @@ class Noder:
         resolv = anytree.resolver.Resolver('name')
         found = []
         try:
+            # resolve the path in the tree
             found = resolv.glob(top, path)
             if len(found) < 1:
                 # nothing found

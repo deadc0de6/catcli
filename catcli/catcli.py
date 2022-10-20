@@ -39,8 +39,8 @@ USAGE = f"""
 Usage:
     {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
     {NAME} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
-    {NAME} tree   [--catalog=<path>] [-aBCVSs] [<path>]
     {NAME} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
+    {NAME} tree   [--catalog=<path>] [-aBCVSs] [<path>]
     {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
     {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
     {NAME} rename [--catalog=<path>] [-BCfV] <storage> <name>
@@ -152,9 +152,13 @@ def cmd_ls(args, noder, top):
         path += SEPARATOR
     if not path.endswith(WILD):
         path += WILD
+
+    fmt = args['--format']
+    if fmt.startswith('fzf'):
+        raise Exception('fzf is not supported in ls')
     found = noder.walk(top, path,
                        rec=args['--recursive'],
-                       fmt=args['--format'],
+                       fmt=fmt,
                        raw=args['--raw-size'])
     if not found:
         path = args['<path>']
@@ -308,24 +312,28 @@ def main():
     catalog.set_metanode(meta)
 
     # parse command
-    if args['index']:
-        cmd_index(args, noder, catalog, top)
-    if args['update']:
-        cmd_update(args, noder, catalog, top)
-    elif args['find']:
-        cmd_find(args, noder, top)
-    elif args['tree']:
-        cmd_tree(args, noder, top)
-    elif args['ls']:
-        cmd_ls(args, noder, top)
-    elif args['rm']:
-        cmd_rm(args, noder, catalog, top)
-    elif args['graph']:
-        cmd_graph(args, noder, top)
-    elif args['rename']:
-        cmd_rename(args, catalog, top)
-    elif args['edit']:
-        cmd_edit(args, noder, catalog, top)
+    try:
+        if args['index']:
+            cmd_index(args, noder, catalog, top)
+        if args['update']:
+            cmd_update(args, noder, catalog, top)
+        elif args['find']:
+            cmd_find(args, noder, top)
+        elif args['tree']:
+            cmd_tree(args, noder, top)
+        elif args['ls']:
+            cmd_ls(args, noder, top)
+        elif args['rm']:
+            cmd_rm(args, noder, catalog, top)
+        elif args['graph']:
+            cmd_graph(args, noder, top)
+        elif args['rename']:
+            cmd_rename(args, catalog, top)
+        elif args['edit']:
+            cmd_edit(args, noder, catalog, top)
+    except Exception as exc:
+        Logger.out_err('ERROR ' + str(exc))
+        return False
 
     return True
 

@@ -14,7 +14,7 @@ from catcli.logger import Logger
 class Walker:
     """a filesystem walker"""
 
-    MAXLINE = 80 - 15
+    MAXLINELEN = 80 - 15
 
     def __init__(self, noder, usehash=True, debug=False,
                  logpath=None):
@@ -166,8 +166,8 @@ class Walker:
             # clean
             Logger.progr(' ' * 80)
             return
-        if len(string) > self.MAXLINE:
-            string = string[:self.MAXLINE] + '...'
+        if len(string) > self.MAXLINELEN:
+            string = string[:self.MAXLINELEN] + '...'
         Logger.progr(f'indexing: {string:80}')
 
     def _log2file(self, string):
