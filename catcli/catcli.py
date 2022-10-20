@@ -27,7 +27,7 @@ CATALOGPATH = f'{NAME}.catalog'
 GRAPHPATH = f'/tmp/{NAME}.dot'
 SEPARATOR = '/'
 WILD = '*'
-FORMATS = ['native', 'csv', 'fzf-native', 'fzf-csv']
+FORMATS = ['native', 'csv', 'csv-with-header', 'fzf-native', 'fzf-csv']
 
 BANNER = f""" +-+-+-+-+-+-+
  |c|a|t|c|l|i|
@@ -39,7 +39,7 @@ USAGE = f"""
 Usage:
     {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
     {NAME} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
-    {NAME} tree   [--catalog=<path>] [-aBCVSsH] [<path>]
+    {NAME} tree   [--catalog=<path>] [-aBCVSs] [<path>]
     {NAME} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
     {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
     {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
@@ -62,7 +62,6 @@ Options:
     -d --directory      Only directory [default: False].
     -F --format=<fmt>   Print format, see command \"print_supported_formats\" [default: native].
     -f --force          Do not ask when updating the catalog [default: False].
-    -H --header         Print header on CSV format [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -n --no-subsize     Do not store size of directories [default: False].
     -P --parent         Ignore stored relpath [default: True].
@@ -193,7 +192,6 @@ def cmd_find(args, noder, top):
 def cmd_tree(args, noder, top):
     """tree action"""
     path = args['<path>']
-    hdr = args['--header']
     raw = args['--raw-size']
 
     # find node to start with
@@ -203,7 +201,7 @@ def cmd_tree(args, noder, top):
 
     if node:
         # print the tree
-        noder.print_tree(top, node, header=hdr, raw=raw)
+        noder.print_tree(top, node, raw=raw)
 
 
 def cmd_graph(args, noder, top):

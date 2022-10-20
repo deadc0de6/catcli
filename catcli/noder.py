@@ -439,14 +439,12 @@ class Noder:
 
     def print_tree(self, top, node,
                    fmt='native',
-                   header=False,
                    raw=False):
         """
         print the tree in different format
         @node: start node
         @style: when fmt=native, defines the tree style
         @fmt: output format
-        @header: when fmt=csv, print the header
         @raw: print the raw size rather than human readable
         """
         if fmt == 'native':
@@ -457,15 +455,17 @@ class Noder:
         elif fmt == 'csv':
             # csv output
             self._to_csv(node, with_header=header, raw=raw)
+        elif fmt == 'csv-with-header':
+            # csv output
+            Logger.out(self.CSV_HEADER)
+            self._to_csv(node, with_header=header, raw=raw)
         elif fmt.startswith('fzf'):
             # flat
             self._to_fzf(top, node, fmt)
 
-    def _to_csv(self, node, with_header=False, raw=False):
+    def _to_csv(self, node, raw=False):
         """print the tree to csv"""
         rend = anytree.RenderTree(node, childiter=self._sort_tree)
-        if with_header:
-            Logger.out(self.CSV_HEADER)
         for _, _, item in rend:
             self._node_to_csv(item, raw=raw)
 
@@ -563,9 +563,12 @@ class Noder:
                                  withstorage=True,
                                  recalcparent=parentfromtree,
                                  raw=raw)
-        elif fmt == 'csv':
+        elif fmt.startswith('csv'):
+            if fmt == 'csv-with-header':
+                Logger.out(self.CSV_HEADER)
             for item in nodes:
                 self._node_to_csv(item, raw=raw)
+
         elif fmt.startswith('fzf'):
             selected = self._fzf_prompt(paths)
             newpaths = {}
@@ -627,19 +630,21 @@ class Noder:
             if fmt == 'native':
                 self._print_node(found[0].parent,
                                  withpath=False, withdepth=True, raw=raw)
-            elif fmt == 'csv':
+            elif fmt.startswith('csv'):
                 self._node_to_csv(found[0].parent, raw=raw)
             elif fmt.startswith('fzf'):
                 pass
 
             # print all found nodes
+            if fmt == 'csv-with-header':
+                Logger.out(self.CSV_HEADER)
             for item in found:
                 if fmt == 'native':
                     self._print_node(item, withpath=False,
                                      pre='- ',
                                      withdepth=True,
                                      raw=raw)
-                elif fmt == 'csv':
+                elif fmt.startswith('csv'):
                     self._node_to_csv(item, raw=raw)
                 elif fmt.startswith('fzf'):
                     self._to_fzf(top, item, fmt)
