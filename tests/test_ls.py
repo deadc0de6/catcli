@@ -14,8 +14,10 @@ from tests.helpers import get_fakecatalog, clean
 
 
 class TestWalking(unittest.TestCase):
+    """test ls"""
 
     def test_ls(self):
+        """test ls"""
         # init
         path = 'fake'
         self.addCleanup(clean, path)
@@ -56,6 +58,7 @@ class TestWalking(unittest.TestCase):
 
 
 def main():
+    """entry point"""
     unittest.main()
 
 

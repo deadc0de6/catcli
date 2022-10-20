@@ -21,32 +21,32 @@ TMPSUFFIX = '.catcli'
 
 
 def get_rnd_string(length):
-    '''Get a random string of specific length '''
+    """Get a random string of specific length """
     alpha = string.ascii_uppercase + string.digits
     return ''.join(random.choice(alpha) for _ in range(length))
 
 
 def md5sum(path):
-    '''calculate md5 sum of a file'''
-    p = os.path.realpath(path)
-    if not os.path.exists(p):
+    """calculate md5 sum of a file"""
+    rpath = os.path.realpath(path)
+    if not os.path.exists(rpath):
         return None
     try:
-        with open(p, mode='rb') as f:
-            d = hashlib.md5()
+        with open(rpath, mode='rb') as file:
+            val = hashlib.md5()
             while True:
-                buf = f.read(4096)
+                buf = file.read(4096)
                 if not buf:
                     break
-                d.update(buf)
-            return d.hexdigest()
+                val.update(buf)
+            return val.hexdigest()
     except PermissionError:
         pass
     return None
 
 
 def clean(path):
-    '''Delete file or folder.'''
+    """Delete file or folder."""
     if not os.path.exists(path):
         return
     if os.path.islink(path):
@@ -58,10 +58,12 @@ def clean(path):
 
 
 def edit_file(path, newcontent):
+    """edit file content"""
     return write_to_file(path, newcontent)
 
 
 def unix_tree(path):
+    """print using unix tree tool"""
     if not os.path.exists(path):
         return
     # cmd = ['tree', path]
@@ -75,7 +77,7 @@ def unix_tree(path):
 
 
 def create_tree():
-    ''' create a random tree of files and directories '''
+    """ create a random tree of files and directories """
     dirpath = get_tempdir()
     # create 3 files
     create_rnd_file(dirpath, get_rnd_string(5))
@@ -83,13 +85,13 @@ def create_tree():
     create_rnd_file(dirpath, get_rnd_string(5))
 
     # create 2 directories
-    d1 = create_dir(dirpath, get_rnd_string(3))
-    d2 = create_dir(dirpath, get_rnd_string(3))
+    dir1 = create_dir(dirpath, get_rnd_string(3))
+    dir2 = create_dir(dirpath, get_rnd_string(3))
 
     # fill directories
-    create_rnd_file(d1, get_rnd_string(4))
-    create_rnd_file(d1, get_rnd_string(4))
-    create_rnd_file(d2, get_rnd_string(6))
+    create_rnd_file(dir1, get_rnd_string(4))
+    create_rnd_file(dir1, get_rnd_string(4))
+    create_rnd_file(dir2, get_rnd_string(6))
 
     return dirpath
 
@@ -99,12 +101,12 @@ def create_tree():
 
 
 def get_tempdir():
-    '''Get a temporary directory '''
+    """Get a temporary directory """
     return tempfile.mkdtemp(suffix=TMPSUFFIX)
 
 
 def create_dir(path, dirname):
-    '''Create a directory '''
+    """Create a directory """
     fpath = os.path.join(path, dirname)
     if not os.path.exists(fpath):
         os.mkdir(fpath)
@@ -112,7 +114,7 @@ def create_dir(path, dirname):
 
 
 def create_rnd_file(path, filename, content=None):
-    '''Create the file filename in path with random content if None '''
+    """Create the file filename in path with random content if None """
     if not content:
         content = get_rnd_string(100)
     fpath = os.path.join(path, filename)
@@ -120,23 +122,25 @@ def create_rnd_file(path, filename, content=None):
 
 
 def write_to_file(path, content):
-    with open(path, 'w') as f:
-        f.write(content)
+    """write content to file"""
+    with open(path, 'w', encoding='UTF-8') as file:
+        file.write(content)
     return path
 
 
 def read_from_file(path):
+    """read file content"""
     if not os.path.exists(path):
         return ''
-    with open(path, 'r') as f:
-        content = f.read()
+    with open(path, 'r', encoding='UTF-8') as file:
+        content = file.read()
     return content
 
 
 ############################################################
 # fake tree in json
 ############################################################
-FAKECATALOG = '''
+FAKECATALOG = """
 {
   "children": [
     {
@@ -214,9 +218,9 @@ FAKECATALOG = '''
   "name": "top",
   "type": "top"
 }
-'''
+"""
 
 
 def get_fakecatalog():
-    # catalog constructed through test_index
+    """catalog constructed through test_index"""
     return FAKECATALOG

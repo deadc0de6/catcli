@@ -13,8 +13,22 @@ pycodestyle tests/
 pyflakes catcli/
 pyflakes tests/
 
-pylint catcli/
-pylint tests/
+# R0914: Too many local variables
+# R0913: Too many arguments
+# R0912: Too many branches
+# R0915: Too many statements
+pylint \
+  --disable=R0914 \
+  --disable=R0913 \
+  --disable=R0912 \
+  --disable=R0915 \
+  catcli/
+pylint \
+  --disable=W0212 \
+  --disable=R0914 \
+  --disable=R0915 \
+  --disable=R0801 \
+  tests/
 
 nosebin="nose2"
 PYTHONPATH=catcli ${nosebin} --with-coverage --coverage=catcli

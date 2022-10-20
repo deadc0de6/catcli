@@ -16,8 +16,10 @@ from tests.helpers import clean, get_fakecatalog
 
 
 class TestGraph(unittest.TestCase):
+    """test graph"""
 
     def test_graph(self):
+        """test graph"""
         # init
         path = 'fake'
         gpath = tempfile.gettempdir() + os.sep + 'graph.dot'
@@ -38,6 +40,7 @@ class TestGraph(unittest.TestCase):
 
 
 def main():
+    """entry point"""
     unittest.main()
 
 

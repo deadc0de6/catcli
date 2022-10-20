@@ -14,8 +14,10 @@ from tests.helpers import clean, get_fakecatalog
 
 
 class TestRm(unittest.TestCase):
+    """test rm"""
 
     def test_rm(self):
+        """test rm"""
         # init
         path = 'fake'
         self.addCleanup(clean, path)
@@ -48,6 +50,7 @@ class TestRm(unittest.TestCase):
 
 
 def main():
+    """entry point"""
     unittest.main()
 
 

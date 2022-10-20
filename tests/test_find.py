@@ -14,8 +14,10 @@ from tests.helpers import get_fakecatalog
 
 
 class TestFind(unittest.TestCase):
+    """test find"""
 
     def test_find(self):
+        """test find"""
         # init
         catalog = Catalog('fake', force=True, debug=False)
         top = catalog._restore_json(get_fakecatalog())
@@ -38,6 +40,7 @@ class TestFind(unittest.TestCase):
 
 
 def main():
+    """entry point"""
     unittest.main()
 
 

@@ -14,7 +14,7 @@ import datetime
 from docopt import docopt
 
 # local imports
-from . import __version__ as VERSION
+from .version import __version__ as VERSION
 from .logger import Logger
 from .catalog import Catalog
 from .walker import Walker
@@ -77,9 +77,10 @@ Options:
 
 
 def cmd_index(args, noder, catalog, top):
+    """index action"""
     path = args['<path>']
     name = args['<name>']
-    hash = args['--hash']
+    usehash = args['--hash']
     debug = args['--verbose']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
@@ -97,7 +98,7 @@ def cmd_index(args, noder, catalog, top):
         node.parent = None
 
     start = datetime.datetime.now()
-    walker = Walker(noder, hash=hash, debug=debug)
+    walker = Walker(noder, usehash=usehash, debug=debug)
     attr = noder.format_storage_attr(args['--meta'])
     root = noder.storage_node(name, path, parent=top, attr=attr)
     _, cnt = walker.index(path, root, name)
@@ -111,9 +112,10 @@ def cmd_index(args, noder, catalog, top):
 
 
 def cmd_update(args, noder, catalog, top):
+    """update action"""
     path = args['<path>']
     name = args['<name>']
-    hash = args['--hash']
+    usehash = args['--hash']
     logpath = args['--lpath']
     debug = args['--verbose']
     subsize = not args['--no-subsize']
@@ -125,7 +127,7 @@ def cmd_update(args, noder, catalog, top):
         Logger.err(f'storage named \"{name}\" does not exist')
         return
     start = datetime.datetime.now()
-    walker = Walker(noder, hash=hash, debug=debug,
+    walker = Walker(noder, usehash=usehash, debug=debug,
                     logpath=logpath)
     cnt = walker.reindex(path, root, top)
     if subsize:
@@ -138,6 +140,7 @@ def cmd_update(args, noder, catalog, top):
 
 
 def cmd_ls(args, noder, top):
+    """ls action"""
     path = args['<path>']
     if not path:
         path = SEPARATOR
@@ -161,6 +164,7 @@ def cmd_ls(args, noder, top):
 
 
 def cmd_rm(args, noder, catalog, top):
+    """rm action"""
     name = args['<storage>']
     node = noder.get_storage_node(top, name)
     if node:
@@ -173,6 +177,7 @@ def cmd_rm(args, noder, catalog, top):
 
 
 def cmd_find(args, noder, top):
+    """find action"""
     fromtree = args['--parent']
     directory = args['--directory']
     startpath = args['--path']
@@ -186,6 +191,7 @@ def cmd_find(args, noder, top):
 
 
 def cmd_tree(args, noder, top):
+    """tree action"""
     path = args['<path>']
     hdr = args['--header']
     raw = args['--raw-size']
@@ -201,6 +207,7 @@ def cmd_tree(args, noder, top):
 
 
 def cmd_graph(args, noder, top):
+    """graph action"""
     path = args['<path>']
     if not path:
         path = GRAPHPATH
@@ -208,7 +215,8 @@ def cmd_graph(args, noder, top):
     Logger.info(f'create graph with \"{cmd}\" (you need graphviz)')
 
 
-def cmd_rename(args, noder, catalog, top):
+def cmd_rename(args, catalog, top):
+    """rename action"""
     storage = args['<storage>']
     new = args['<name>']
     storages = list(x.name for x in top.children)
@@ -216,14 +224,15 @@ def cmd_rename(args, noder, catalog, top):
         node = next(filter(lambda x: x.name == storage, top.children))
         node.name = new
         if catalog.save(top):
-            m = f'Storage \"{storage}\" renamed to \"{new}\"'
-            Logger.info(m)
+            msg = f'Storage \"{storage}\" renamed to \"{new}\"'
+            Logger.info(msg)
     else:
         Logger.err(f'Storage named \"{storage}\" does not exist')
     return top
 
 
 def cmd_edit(args, noder, catalog, top):
+    """edit action"""
     storage = args['<storage>']
     storages = list(x.name for x in top.children)
     if storage in storages:
@@ -241,11 +250,13 @@ def cmd_edit(args, noder, catalog, top):
 
 
 def banner():
+    """print banner"""
     Logger.out_err(BANNER)
     Logger.out_err("")
 
 
 def print_supported_formats():
+    """print all supported formats to stdout"""
     print('"native"     : native format')
     print('"csv"        : CSV format')
     print(f'               {Noder.CSV_HEADER}')
@@ -254,6 +265,7 @@ def print_supported_formats():
 
 
 def main():
+    """entry point"""
     args = docopt(USAGE, version=VERSION)
 
     if args['help'] or args['--help']:
@@ -313,7 +325,7 @@ def main():
     elif args['graph']:
         cmd_graph(args, noder, top)
     elif args['rename']:
-        cmd_rename(args, noder, catalog, top)
+        cmd_rename(args, catalog, top)
     elif args['edit']:
         cmd_edit(args, noder, catalog, top)
 
@@ -321,7 +333,6 @@ def main():
 
 
 if __name__ == '__main__':
-    '''entry point'''
     if main():
         sys.exit(0)
     sys.exit(1)

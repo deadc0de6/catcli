@@ -16,8 +16,10 @@ from tests.helpers import get_tempdir, create_rnd_file, clean, \
 
 
 class TestIndexing(unittest.TestCase):
+    """test index"""
 
     def test_index(self):
+        """test index"""
         # init
         workingdir = get_tempdir()
         catalogpath = create_rnd_file(workingdir, 'catalog.json', content='')
@@ -27,18 +29,18 @@ class TestIndexing(unittest.TestCase):
         self.addCleanup(clean, dirpath)
 
         # create 3 files
-        f1 = create_rnd_file(dirpath, get_rnd_string(5))
-        f2 = create_rnd_file(dirpath, get_rnd_string(5))
-        f3 = create_rnd_file(dirpath, get_rnd_string(5))
+        file1 = create_rnd_file(dirpath, get_rnd_string(5))
+        file2 = create_rnd_file(dirpath, get_rnd_string(5))
+        file3 = create_rnd_file(dirpath, get_rnd_string(5))
 
         # create 2 directories
-        d1 = create_dir(dirpath, get_rnd_string(3))
-        d2 = create_dir(dirpath, get_rnd_string(3))
+        dir1 = create_dir(dirpath, get_rnd_string(3))
+        dir2 = create_dir(dirpath, get_rnd_string(3))
 
         # fill directories with files
-        _ = create_rnd_file(d1, get_rnd_string(4))
-        _ = create_rnd_file(d1, get_rnd_string(4))
-        _ = create_rnd_file(d2, get_rnd_string(6))
+        _ = create_rnd_file(dir1, get_rnd_string(4))
+        _ = create_rnd_file(dir1, get_rnd_string(4))
+        _ = create_rnd_file(dir2, get_rnd_string(6))
 
         noder = Noder()
         top = noder.new_top_node()
@@ -61,20 +63,21 @@ class TestIndexing(unittest.TestCase):
 
         # ensures files and directories are in
         names = [x.name for x in storage.children]
-        self.assertTrue(os.path.basename(f1) in names)
-        self.assertTrue(os.path.basename(f2) in names)
-        self.assertTrue(os.path.basename(f3) in names)
-        self.assertTrue(os.path.basename(d1) in names)
-        self.assertTrue(os.path.basename(d2) in names)
+        self.assertTrue(os.path.basename(file1) in names)
+        self.assertTrue(os.path.basename(file2) in names)
+        self.assertTrue(os.path.basename(file3) in names)
+        self.assertTrue(os.path.basename(dir1) in names)
+        self.assertTrue(os.path.basename(dir2) in names)
 
         for node in storage.children:
-            if node.name == os.path.basename(d1):
+            if node.name == os.path.basename(dir1):
                 self.assertTrue(len(node.children) == 2)
-            elif node.name == os.path.basename(d2):
+            elif node.name == os.path.basename(dir2):
                 self.assertTrue(len(node.children) == 1)
 
 
 def main():
+    """entry point"""
     unittest.main()
 
 

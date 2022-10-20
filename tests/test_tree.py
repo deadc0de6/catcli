@@ -14,8 +14,10 @@ from tests.helpers import clean, get_fakecatalog
 
 
 class TestTree(unittest.TestCase):
+    """Test the tree"""
 
     def test_tree(self):
+        """test the tree"""
         # init
         path = 'fake'
         self.addCleanup(clean, path)
@@ -37,6 +39,7 @@ class TestTree(unittest.TestCase):
 
 
 def main():
+    """entry point"""
     unittest.main()
 
 

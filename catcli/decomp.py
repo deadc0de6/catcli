@@ -11,6 +11,7 @@ import zipfile
 
 
 class Decomp:
+    """decompressor"""
 
     def __init__(self):
         self.ext = {
@@ -28,26 +29,26 @@ class Decomp:
             'zip': self._zip}
 
     def get_formats(self):
-        '''return list of supported extensions'''
+        """return list of supported extensions"""
         return list(self.ext.keys())
 
     def get_names(self, path):
-        '''get tree of compressed archive'''
+        """get tree of compressed archive"""
         ext = os.path.splitext(path)[1][1:].lower()
-        if ext in list(self.ext.keys()):
+        if ext in list(self.ext):
             return self.ext[ext](path)
         return None
 
     def _tar(self, path):
-        '''return list of file names in tar'''
+        """return list of file names in tar"""
         if not tarfile.is_tarfile(path):
             return None
-        tar = tarfile.open(path, "r")
-        return tar.getnames()
+        with tarfile.open(path, "r") as tar:
+            return tar.getnames()
 
     def _zip(self, path):
-        '''return list of file names in zip'''
+        """return list of file names in zip"""
         if not zipfile.is_zipfile(path):
             return None
-        z = zipfile.ZipFile(path)
-        return z.namelist()
+        with zipfile.ZipFile(path) as file:
+            return file.namelist()

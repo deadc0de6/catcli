@@ -11,54 +11,57 @@ from anytree.exporter import JsonExporter
 from anytree.importer import JsonImporter
 
 # local imports
-import catcli.utils as utils
+from catcli.utils import ask
 from catcli.logger import Logger
 
 
 class Catalog:
+    """the catalog"""
 
-    def __init__(self, path, pickle=False, debug=False, force=False):
-        '''
+    def __init__(self, path, usepickle=False, debug=False, force=False):
+        """
         @path: catalog path
-        @pickle: use pickle
+        @usepickle: use pickle
         @debug: debug mode
         @force: force overwrite if exists
-        '''
+        """
         self.path = path
         self.debug = debug
         self.force = force
         self.metanode = None
-        self.pickle = pickle
+        self.pickle = usepickle
 
     def set_metanode(self, metanode):
-        '''remove the metanode until tree is re-written'''
+        """remove the metanode until tree is re-written"""
         self.metanode = metanode
         self.metanode.parent = None
 
     def restore(self):
-        '''restore the catalog'''
+        """restore the catalog"""
         if not self.path:
             return None
         if not os.path.exists(self.path):
             return None
         if self.pickle:
             return self._restore_pickle()
-        return self._restore_json(open(self.path, 'r').read())
+        with open(self.path, 'r', encoding='UTF-8') as file:
+            content = file.read()
+        return self._restore_json(content)
 
     def save(self, node):
-        '''save the catalog'''
+        """save the catalog"""
         if not self.path:
             Logger.err('Path not defined')
             return False
-        d = os.path.dirname(self.path)
-        if d and not os.path.exists(d):
-            os.makedirs(d)
+        directory = os.path.dirname(self.path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
         elif os.path.exists(self.path) and not self.force:
-            if not utils.ask(f'Update catalog \"{self.path}\"'):
+            if not ask(f'Update catalog \"{self.path}\"'):
                 Logger.info('Catalog not saved')
                 return False
-        if d and not os.path.exists(d):
-            Logger.err(f'Cannot write to \"{d}\"')
+        if directory and not os.path.exists(directory):
+            Logger.err(f'Cannot write to \"{directory}\"')
             return False
         if self.metanode:
             self.metanode.parent = node
@@ -72,28 +75,30 @@ class Catalog:
         Logger.debug(text)
 
     def _save_pickle(self, node):
-        '''pickle the catalog'''
-        pickle.dump(node, open(self.path, 'wb'))
+        """pickle the catalog"""
+        with open(self.path, 'wb') as file:
+            pickle.dump(node, file)
         self._debug(f'Catalog saved to pickle \"{self.path}\"')
         return True
 
     def _restore_pickle(self):
-        '''restore the pickled tree'''
-        root = pickle.load(open(self.path, 'rb'))
-        m = f'Catalog imported from pickle \"{self.path}\"'
-        self._debug(m)
+        """restore the pickled tree"""
+        with open(self.path, 'rb') as file:
+            root = pickle.load(file)
+        msg = f'Catalog imported from pickle \"{self.path}\"'
+        self._debug(msg)
         return root
 
     def _save_json(self, node):
-        '''export the catalog in json'''
+        """export the catalog in json"""
         exp = JsonExporter(indent=2, sort_keys=True)
-        with open(self.path, 'w') as f:
-            exp.write(node, f)
+        with open(self.path, 'w', encoding='UTF-8') as file:
+            exp.write(node, file)
         self._debug(f'Catalog saved to json \"{self.path}\"')
         return True
 
     def _restore_json(self, string):
-        '''restore the tree from json'''
+        """restore the tree from json"""
         imp = JsonImporter()
         root = imp.import_(string)
         self._debug(f'Catalog imported from json \"{self.path}\"')

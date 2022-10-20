@@ -3,12 +3,12 @@ author: deadc0de6 (https://github.com/deadc0de6)
 Copyright (c) 2017, deadc0de6
 """
 
+# pylint: disable=C0415
 import sys
-
-__version__ = '0.8.7'
 
 
 def main():
+    """entry point"""
     import catcli.catcli
     if catcli.catcli.main():
         sys.exit(0)
