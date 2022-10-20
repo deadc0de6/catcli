@@ -19,7 +19,7 @@ def md5sum(path):
     '''calculate md5 sum of a file'''
     p = os.path.realpath(path)
     if not os.path.exists(p):
-        Logger.err('\nmd5sum - file does not exist: {}'.format(p))
+        Logger.err(f'\nmd5sum - file does not exist: {p}')
         return None
     try:
         with open(p, mode='rb') as f:
@@ -33,7 +33,7 @@ def md5sum(path):
     except PermissionError:
         pass
     except OSError as e:
-        Logger.err('md5sum error: {}'.format(e))
+        Logger.err(f'md5sum error: {e}')
     return None
 
 
@@ -42,12 +42,13 @@ def size_to_str(size, raw=True):
     div = 1024.
     suf = ['B', 'K', 'M', 'G', 'T', 'P']
     if raw or size < div:
-        return '{}'.format(size)
+        return f'{size}'
     for i in suf:
         if size < div:
-            return '{:.1f}{}'.format(size, i)
+            return f'{size:.1f}{i}'
         size = size / div
-    return '{:.1f}{}'.format(size, suf[-1])
+    sufix = suf[-1]
+    return f'{size:.1f}{sufix}'
 
 
 def epoch_to_str(epoch):
@@ -61,7 +62,7 @@ def epoch_to_str(epoch):
 
 def ask(question):
     '''ask the user what to do'''
-    resp = input('{} [y|N] ? '.format(question))
+    resp = input(f'{question} [y|N] ? ')
     return resp.lower() == 'y'
 
 

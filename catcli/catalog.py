@@ -54,11 +54,11 @@ class Catalog:
         if d and not os.path.exists(d):
             os.makedirs(d)
         elif os.path.exists(self.path) and not self.force:
-            if not utils.ask('Update catalog \"{}\"'.format(self.path)):
+            if not utils.ask(f'Update catalog \"{self.path}\"'):
                 Logger.info('Catalog not saved')
                 return False
         if d and not os.path.exists(d):
-            Logger.err('Cannot write to \"{}\"'.format(d))
+            Logger.err(f'Cannot write to \"{d}\"')
             return False
         if self.metanode:
             self.metanode.parent = node
@@ -74,13 +74,13 @@ class Catalog:
     def _save_pickle(self, node):
         '''pickle the catalog'''
         pickle.dump(node, open(self.path, 'wb'))
-        self._debug('Catalog saved to pickle \"{}\"'.format(self.path))
+        self._debug(f'Catalog saved to pickle \"{self.path}\"')
         return True
 
     def _restore_pickle(self):
         '''restore the pickled tree'''
         root = pickle.load(open(self.path, 'rb'))
-        m = 'Catalog imported from pickle \"{}\"'.format(self.path)
+        m = f'Catalog imported from pickle \"{self.path}\"'
         self._debug(m)
         return root
 
@@ -89,12 +89,12 @@ class Catalog:
         exp = JsonExporter(indent=2, sort_keys=True)
         with open(self.path, 'w') as f:
             exp.write(node, f)
-        self._debug('Catalog saved to json \"{}\"'.format(self.path))
+        self._debug(f'Catalog saved to json \"{self.path}\"')
         return True
 
     def _restore_json(self, string):
         '''restore the tree from json'''
         imp = JsonImporter()
         root = imp.import_(string)
-        self._debug('Catalog imported from json \"{}\"'.format(self.path))
+        self._debug(f'Catalog imported from json \"{self.path}\"')
         return root

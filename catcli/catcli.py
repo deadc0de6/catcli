@@ -23,36 +23,36 @@ from .utils import ask, edit
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
-CATALOGPATH = '{}.catalog'.format(NAME)
-GRAPHPATH = '/tmp/{}.dot'.format(NAME)
+CATALOGPATH = f'{NAME}.catalog'
+GRAPHPATH = f'/tmp/{NAME}.dot'
 SEPARATOR = '/'
 WILD = '*'
 FORMATS = ['native', 'csv', 'fzf-native', 'fzf-csv']
 
-BANNER = """ +-+-+-+-+-+-+
+BANNER = f""" +-+-+-+-+-+-+
  |c|a|t|c|l|i|
- +-+-+-+-+-+-+ v{}""".format(VERSION)
+ +-+-+-+-+-+-+ v{VERSION}"""
 
-USAGE = """
-{0}
+USAGE = f"""
+{BANNER}
 
 Usage:
-    {1} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
-    {1} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
-    {1} tree   [--catalog=<path>] [-aBCVSsH] [<path>]
-    {1} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
-    {1} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
-    {1} rm     [--catalog=<path>] [-BCfV] <storage>
-    {1} rename [--catalog=<path>] [-BCfV] <storage> <name>
-    {1} edit   [--catalog=<path>] [-BCfV] <storage>
-    {1} graph  [--catalog=<path>] [-BCV] [<path>]
-    {1} print_supported_formats
-    {1} help
-    {1} --help
-    {1} --version
+    {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
+    {NAME} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
+    {NAME} tree   [--catalog=<path>] [-aBCVSsH] [<path>]
+    {NAME} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
+    {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
+    {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
+    {NAME} rename [--catalog=<path>] [-BCfV] <storage> <name>
+    {NAME} edit   [--catalog=<path>] [-BCfV] <storage>
+    {NAME} graph  [--catalog=<path>] [-BCV] [<path>]
+    {NAME} print_supported_formats
+    {NAME} help
+    {NAME} --help
+    {NAME} --version
 
 Options:
-    --catalog=<path>    Path to the catalog [default: {2}].
+    --catalog=<path>    Path to the catalog [default: {CATALOGPATH}].
     --meta=<meta>       Additional attribute to store [default: ].
     -a --archive        Handle archive file [default: False].
     -B --no-banner      Do not display the banner [default: False].
@@ -73,7 +73,7 @@ Options:
     -V --verbose        Be verbose [default: False].
     -v --version        Show version.
     -h --help           Show this screen.
-""".format(BANNER, NAME, CATALOGPATH)  # nopep8
+"""  # nopep8
 
 
 def cmd_index(args, noder, catalog, top):
@@ -83,12 +83,12 @@ def cmd_index(args, noder, catalog, top):
     debug = args['--verbose']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
-        Logger.err('\"{}\" does not exist'.format(path))
+        Logger.err(f'\"{path}\" does not exist')
         return
     if name in noder.get_storage_names(top):
         try:
-            if not ask('Overwrite storage \"{}\"'.format(name)):
-                Logger.err('storage named \"{}\" already exist'.format(name))
+            if not ask(f'Overwrite storage \"{name}\"'):
+                Logger.err(f'storage named \"{name}\" already exist')
                 return
         except KeyboardInterrupt:
             Logger.err('aborted')
@@ -104,7 +104,8 @@ def cmd_index(args, noder, catalog, top):
     if subsize:
         noder.rec_size(root)
     stop = datetime.datetime.now()
-    Logger.info('Indexed {} file(s) in {}'.format(cnt, stop - start))
+    diff = stop - start
+    Logger.info(f'Indexed {cnt} file(s) in {diff}')
     if cnt > 0:
         catalog.save(top)
 
@@ -117,11 +118,11 @@ def cmd_update(args, noder, catalog, top):
     debug = args['--verbose']
     subsize = not args['--no-subsize']
     if not os.path.exists(path):
-        Logger.err('\"{}\" does not exist'.format(path))
+        Logger.err(f'\"{path}\" does not exist')
         return
     root = noder.get_storage_node(top, name, path=path)
     if not root:
-        Logger.err('storage named \"{}\" does not exist'.format(name))
+        Logger.err(f'storage named \"{name}\" does not exist')
         return
     start = datetime.datetime.now()
     walker = Walker(noder, hash=hash, debug=debug,
@@ -130,7 +131,8 @@ def cmd_update(args, noder, catalog, top):
     if subsize:
         noder.rec_size(root)
     stop = datetime.datetime.now()
-    Logger.info('updated {} file(s) in {}'.format(cnt, stop - start))
+    diff = stop - start
+    Logger.info(f'updated {cnt} file(s) in {diff}')
     if cnt > 0:
         catalog.save(top)
 
@@ -141,7 +143,7 @@ def cmd_ls(args, noder, top):
         path = SEPARATOR
     if not path.startswith(SEPARATOR):
         path = SEPARATOR + path
-    pre = '{}{}'.format(SEPARATOR, noder.TOPNAME)
+    pre = f'{SEPARATOR}{noder.TOPNAME}'
     if not path.startswith(pre):
         path = pre + path
     if not path.endswith(SEPARATOR):
@@ -153,7 +155,8 @@ def cmd_ls(args, noder, top):
                        fmt=args['--format'],
                        raw=args['--raw-size'])
     if not found:
-        Logger.err('\"{}\": nothing found'.format(args['<path>']))
+        path = args['<path>']
+        Logger.err(f'\"{path}\": nothing found')
     return found
 
 
@@ -163,9 +166,9 @@ def cmd_rm(args, noder, catalog, top):
     if node:
         node.parent = None
         if catalog.save(top):
-            Logger.info('Storage \"{}\" removed'.format(name))
+            Logger.info(f'Storage \"{name}\" removed')
     else:
-        Logger.err('Storage named \"{}\" does not exist'.format(name))
+        Logger.err(f'Storage named \"{name}\" does not exist')
     return top
 
 
@@ -202,7 +205,7 @@ def cmd_graph(args, noder, top):
     if not path:
         path = GRAPHPATH
     cmd = noder.to_dot(top, path)
-    Logger.info('create graph with \"{}\" (you need graphviz)'.format(cmd))
+    Logger.info(f'create graph with \"{cmd}\" (you need graphviz)')
 
 
 def cmd_rename(args, noder, catalog, top):
@@ -213,10 +216,10 @@ def cmd_rename(args, noder, catalog, top):
         node = next(filter(lambda x: x.name == storage, top.children))
         node.name = new
         if catalog.save(top):
-            m = 'Storage \"{}\" renamed to \"{}\"'.format(storage, new)
+            m = f'Storage \"{storage}\" renamed to \"{new}\"'
             Logger.info(m)
     else:
-        Logger.err('Storage named \"{}\" does not exist'.format(storage))
+        Logger.err(f'Storage named \"{storage}\" does not exist')
     return top
 
 
@@ -231,9 +234,9 @@ def cmd_edit(args, noder, catalog, top):
         new = edit(attr)
         node.attr = noder.format_storage_attr(new)
         if catalog.save(top):
-            Logger.info('Storage \"{}\" edited'.format(storage))
+            Logger.info(f'Storage \"{storage}\" edited')
     else:
-        Logger.err('Storage named \"{}\" does not exist'.format(storage))
+        Logger.err(f'Storage named \"{storage}\" does not exist')
     return top
 
 
@@ -245,7 +248,7 @@ def banner():
 def print_supported_formats():
     print('"native"     : native format')
     print('"csv"        : CSV format')
-    print('               {}'.format(Noder.CSV_HEADER))
+    print(f'               {Noder.CSV_HEADER}')
     print('"fzf-native" : fzf with native output for selected entries')
     print('"fzf-csv"    : fzf with native output for selected entries')
 
@@ -264,7 +267,7 @@ def main():
     # check format
     fmt = args['--format']
     if fmt not in FORMATS:
-        Logger.err('bad format: {}'.format(fmt))
+        Logger.err(f'bad format: {fmt}')
         print_supported_formats()
         return False
 

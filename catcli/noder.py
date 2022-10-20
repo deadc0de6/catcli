@@ -6,16 +6,16 @@ Class that represents a node in the catalog tree
 """
 
 import os
-import anytree
 import shutil
 import time
+import anytree
 from pyfzf.pyfzf import FzfPrompt
 
 # local imports
-from . import __version__ as VERSION
 import catcli.utils as utils
 from catcli.logger import Logger
 from catcli.decomp import Decomp
+from . import __version__ as VERSION
 
 '''
 There are 4 types of node:
@@ -83,7 +83,7 @@ class Noder:
             return r.get(top, p)
         except anytree.resolver.ChildResolverError:
             if not quiet:
-                Logger.err('No node at path \"{}\"'.format(p))
+                Logger.err(f'No node at path \"{p}\"')
             return None
 
     def get_node_if_changed(self, top, path, treepath):
@@ -110,16 +110,16 @@ class Noder:
         # maccess changed
         old_maccess = node.maccess
         if float(maccess) != float(old_maccess):
-            self._debug('\tchange: maccess changed for \"{}\"'.format(path))
+            self._debug(f'\tchange: maccess changed for \"{path}\"')
             return node, True
         # test hash
         if self.hash and node.md5:
             md5 = self._get_hash(path)
             if md5 != node.md5:
-                m = '\tchange: checksum changed for \"{}\"'.format(path)
+                m = f'\tchange: checksum changed for \"{path}\"'
                 self._debug(m)
                 return node, True
-        self._debug('\tchange: no change for \"{}\"'.format(path))
+        self._debug(f'\tchange: no change for \"{path}\"')
         return node, False
 
     def _rec_size(self, node, store=True):
@@ -128,9 +128,9 @@ class Noder:
         @store: store the size in the node
         '''
         if node.type == self.TYPE_FILE:
-            self._debug('getting node size for \"{}\"'.format(node.name))
+            self._debug(f'getting node size for \"{node.name}\"')
             return node.size
-        m = 'getting node size recursively for \"{}\"'.format(node.name)
+        m = f'getting node size recursively for \"{node.name}\"'
         self._debug(m)
         size = 0
         for i in node.children:
@@ -202,13 +202,13 @@ class Noder:
     def file_node(self, name, path, parent, storagepath):
         '''create a new node representing a file'''
         if not os.path.exists(path):
-            Logger.err('File \"{}\" does not exist'.format(path))
+            Logger.err(f'File \"{path}\" does not exist')
             return None
         path = os.path.abspath(path)
         try:
             st = os.lstat(path)
         except OSError as e:
-            Logger.err('OSError: {}'.format(e))
+            Logger.err(f'OSError: {e}')
             return None
         md5 = None
         if self.hash:
@@ -221,11 +221,11 @@ class Noder:
         if self.arc:
             ext = os.path.splitext(path)[1][1:]
             if ext.lower() in self.decomp.get_formats():
-                self._debug('{} is an archive'.format(path))
+                self._debug(f'{path} is an archive')
                 names = self.decomp.get_names(path)
                 self.list_to_tree(n, names)
             else:
-                self._debug('{} is NOT an archive'.format(path))
+                self._debug(f'{path} is NOT an archive')
         return n
 
     def dir_node(self, name, path, parent, storagepath):
@@ -359,7 +359,7 @@ class Noder:
         '''
         if node.type == self.TYPE_TOP:
             # top node
-            Logger.out('{}{}'.format(pre, node.name))
+            Logger.out(f'{pre}{node.name}')
         elif node.type == self.TYPE_FILE:
             # node of type file
             name = node.name
@@ -373,11 +373,12 @@ class Noder:
                 storage = self._get_storage(node)
             attr = ''
             if node.md5:
-                attr = ', md5:{}'.format(node.md5)
+                attr = f', md5:{node.md5}'
             sz = utils.size_to_str(node.size, raw=raw)
-            compl = 'size:{}{}'.format(sz, attr)
+            compl = f'size:{sz}{attr}'
             if withstorage:
-                compl += ', storage:{}'.format(Logger.bold(storage.name))
+                content = Logger.bold(storage.name)
+                compl += f', storage:{content}'
             Logger.file(pre, name, compl)
         elif node.type == self.TYPE_DIR:
             # node of type directory
@@ -404,37 +405,37 @@ class Noder:
             hf = utils.size_to_str(node.free, raw=raw)
             ht = utils.size_to_str(node.total, raw=raw)
             nbchildren = len(node.children)
-            freepercent = '{:.1f}%'.format(
-                node.free * 100 / node.total
-            )
+            pcent = node.free * 100 / node.total
+            freepercent = f'{pcent:.1f}%'
             # get the date
             dt = ''
             if self._has_attr(node, 'ts'):
                 dt = 'date:'
-                dt += '{}'.format(utils.epoch_to_str(node.ts))
+                dt += utils.epoch_to_str(node.ts)
             ds = ''
             # the children size
             sz = self._rec_size(node, store=False)
             sz = utils.size_to_str(sz, raw=raw)
-            ds = 'totsize:' + '{}'.format(sz)
+            ds = 'totsize:' + f'{sz}'
             # format the output
-            name = '{}'.format(node.name)
+            name = node.name
             args = [
-                'nbfiles:' + '{}'.format(nbchildren),
+                'nbfiles:' + f'{nbchildren}',
                 ds,
-                'free:{}'.format(freepercent),
-                'du:' + '{}/{}'.format(hf, ht),
+                f'free:{freepercent}',
+                'du:' + f'{hf}/{ht}',
                 dt]
+            argsstring = ' | '.join(args)
             Logger.storage(pre,
                            name,
-                           '{}'.format(' | '.join(args)),
+                           argsstring,
                            node.attr)
         elif node.type == self.TYPE_ARC:
             # archive node
             if self.arc:
                 Logger.arc(pre, node.name, node.archive)
         else:
-            Logger.err('bad node encountered: {}'.format(node))
+            Logger.err(f'bad node encountered: {node}')
 
     def print_tree(self, top, node, style=anytree.ContRoundStyle(),
                    fmt='native', header=False, raw=False):
@@ -490,7 +491,7 @@ class Noder:
             fullpath = os.path.join(storage.name, parents)
             nodes[fullpath] = node
         # prompt with fzf
-        self._fzf_prompt(nodes.keys())
+        paths = self._fzf_prompt(nodes.keys())
         # print the resulting tree
         subfmt = fmt.replace('fzf-', '')
         for path in paths:
@@ -504,8 +505,8 @@ class Noder:
     def to_dot(self, node, path='tree.dot'):
         '''export to dot for graphing'''
         anytree.exporter.DotExporter(node).to_dotfile(path)
-        Logger.info('dot file created under \"{}\"'.format(path))
-        return 'dot {} -T png -o /tmp/tree.png'.format(path)
+        Logger.info(f'dot file created under \"{path}\"')
+        return f'dot {path} -T png -o /tmp/tree.png'
 
     ###############################################################
     # searching
@@ -525,7 +526,7 @@ class Noder:
         @fmt: output format
         @raw: raw size output
         '''
-        self._debug('searching for \"{}\"'.format(key))
+        self._debug(f'searching for \"{key}\"')
         if not key:
             # nothing to search for
             return None
@@ -533,7 +534,8 @@ class Noder:
         if startpath:
             start = self.get_node(top, startpath)
         found = anytree.findall(start, filter_=self._callback_find_name(key))
-        self._debug(f'found {len(found)} node(s)')
+        nb = len(found)
+        self._debug(f'found {nb} node(s)')
 
         # compile found nodes
         paths = dict()
@@ -575,7 +577,8 @@ class Noder:
 
         if script:
             tmp = ['${source}/' + x for x in paths.keys()]
-            cmd = 'op=file; source=/media/mnt; $op {}'.format(' '.join(tmp))
+            tmpstr = ' '.join(tmp)
+            cmd = f'op=file; source=/media/mnt; $op {tmpstr}'
             Logger.info(cmd)
 
         return found
@@ -600,7 +603,7 @@ class Noder:
         @fmt: output format
         @raw: print raw size
         '''
-        self._debug('walking path: \"{}\"'.format(path))
+        self._debug(f'walking path: \"{path}\"')
 
         r = anytree.resolver.Resolver('name')
         found = []
@@ -676,22 +679,22 @@ class Noder:
         '''sorting a list of items'''
         return sorted(items, key=self._sort, reverse=self.sortsize)
 
-    def _sort(self, x):
+    def _sort(self, lst):
         '''sort a list'''
         if self.sortsize:
-            return self._sort_size(x)
-        return self._sort_fs(x)
+            return self._sort_size(lst)
+        return self._sort_fs(lst)
 
-    def _sort_fs(self, n):
+    def _sort_fs(self, node):
         '''sorting nodes dir first and alpha'''
-        return (n.type, n.name.lstrip('\.').lower())
+        return (node.type, node.name.lstrip('\.').lower())
 
-    def _sort_size(self, n):
+    def _sort_size(self, node):
         '''sorting nodes by size'''
         try:
-            if not n.size:
+            if not node.size:
                 return 0
-            return n.size
+            return node.size
         except AttributeError:
             return 0
 

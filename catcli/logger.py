@@ -49,40 +49,38 @@ class Logger:
         '''print a storage node'''
         end = ''
         if attr:
-            end = ' {}({}){}'.format(Logger.GRAY, attr, Logger.RESET)
-        s = '{}{}{}{}:'.format(pre, Logger.UND, Logger.STORAGE, Logger.RESET)
-        s += ' {}{}{}{}\n'.format(Logger.PURPLE,
-                                  Logger.fix_badchars(name),
-                                  Logger.RESET, end)
-        s += '  {}{}{}'.format(Logger.GRAY, args, Logger.RESET)
-        sys.stdout.write('{}\n'.format(s))
+            end = f' {Logger.GRAY}({attr}){Logger.RESET}'
+        s = f'{pre}{Logger.UND}{Logger.STORAGE}{Logger.RESET}:'
+        s += ' ' + Logger.PURPLE + Logger.fix_badchars(name) + \
+            Logger.RESET + end + '\n'
+        s += f'  {Logger.GRAY}{args}{Logger.RESET}'
+        sys.stdout.write(f'{s}\n')
 
     def file(pre, name, attr):
         '''print a file node'''
-        s = '{}{}'.format(pre, Logger.fix_badchars(name))
-        s += ' {}[{}]{}'.format(Logger.GRAY, attr, Logger.RESET)
-        sys.stdout.write('{}\n'.format(s))
+        nobad = Logger.fix_badchars(name)
+        s = f'{pre}{nobad}'
+        s += f' {Logger.GRAY}[{attr}]{Logger.RESET}'
+        sys.stdout.write(f'{s}\n')
 
     def dir(pre, name, depth='', attr=None):
         '''print a directory node'''
         end = []
         if depth != '':
-            end.append('{}:{}'.format(Logger.NBFILES, depth))
+            end.append(f'{Logger.NBFILES}:{depth}')
         if attr:
-            end.append(' '.join(['{}:{}'.format(x, y) for x, y in attr]))
+            end.append(' '.join([f'{x}:{y}' for x, y in attr]))
         if end:
-            end = ' [{}]'.format(', '.join(end))
-        s = '{}{}{}{}'.format(pre, Logger.BLUE,
-                              Logger.fix_badchars(name), Logger.RESET)
-        s += '{}{}{}'.format(Logger.GRAY, end, Logger.RESET)
-        sys.stdout.write('{}\n'.format(s))
+            endstring = ', '.join(end)
+            end = f' [{endstring}]'
+        s = pre + Logger.BLUE + Logger.fix_badchars(name) + Logger.RESET
+        s += f'{Logger.GRAY}{end}{Logger.RESET}'
+        sys.stdout.write(f'{s}\n')
 
     def arc(pre, name, archive):
-        s = '{}{}{}{}'.format(pre, Logger.YELLOW,
-                              Logger.fix_badchars(name), Logger.RESET)
-        s += ' {}[{}:{}]{}'.format(Logger.GRAY, Logger.ARCHIVE,
-                                   archive, Logger.RESET)
-        sys.stdout.write('{}\n'.format(s))
+        s = pre + Logger.YELLOW + Logger.fix_badchars(name) + Logger.RESET
+        s += f' {Logger.GRAY}[{Logger.ARCHIVE}:{archive}]{Logger.RESET}'
+        sys.stdout.write(f'{s}\n')
 
     ######################################################################
     # generic output
@@ -90,40 +88,40 @@ class Logger:
     def out(string):
         '''to stdout no color'''
         string = Logger.fix_badchars(string)
-        sys.stdout.write('{}\n'.format(string))
+        sys.stdout.write(f'{string}\n')
 
     def out_err(string):
         '''to stderr no color'''
         string = Logger.fix_badchars(string)
-        sys.stderr.write('{}\n'.format(string))
+        sys.stderr.write(f'{string}\n')
 
     def debug(string):
         '''to stderr no color'''
         string = Logger.fix_badchars(string)
-        sys.stderr.write('[DBG] {}\n'.format(string))
+        sys.stderr.write(f'[DBG] {string}\n')
 
     def info(string):
         '''to stdout in color'''
         string = Logger.fix_badchars(string)
-        s = '{}{}{}'.format(Logger.MAGENTA, string, Logger.RESET)
-        sys.stdout.write('{}\n'.format(s))
+        s = f'{Logger.MAGENTA}{string}{Logger.RESET}'
+        sys.stdout.write(f'{s}\n')
 
     def err(string):
         '''to stderr in RED'''
         string = Logger.fix_badchars(string)
-        s = '{}{}{}'.format(Logger.RED, string, Logger.RESET)
-        sys.stderr.write('{}\n'.format(s))
+        s = f'{Logger.RED}{string}{Logger.RESET}'
+        sys.stderr.write(f'{s}\n')
 
     def progr(string):
         '''print progress'''
         string = Logger.fix_badchars(string)
-        sys.stderr.write('{}\r'.format(string))
+        sys.stderr.write(f'{string}\r')
         sys.stderr.flush()
 
     def bold(string):
         '''make it bold'''
         string = Logger.fix_badchars(string)
-        return '{}{}{}'.format(Logger.BOLD, string, Logger.RESET)
+        return f'{Logger.BOLD}{string}{Logger.RESET}'
 
     def flog(path, string, append=True):
         string = Logger.fix_badchars(string)
