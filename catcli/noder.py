@@ -404,6 +404,7 @@ class Noder:
             # node of type storage
             szfree = size_to_str(node.free, raw=raw)
             sztotal = size_to_str(node.total, raw=raw)
+            szused = size_to_str(node.total - node.free, raw=raw)
             nbchildren = len(node.children)
             pcent = node.free * 100 / node.total
             freepercent = f'{pcent:.1f}%'
@@ -423,7 +424,7 @@ class Noder:
                 'nbfiles:' + f'{nbchildren}',
                 disksize,
                 f'free:{freepercent}',
-                'du:' + f'{szfree}/{sztotal}',
+                'du:' + f'{szused}/{sztotal}',
                 timestamp]
             argsstring = ' | '.join(args)
             Logger.storage(pre,
