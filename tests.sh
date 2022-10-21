@@ -17,11 +17,13 @@ pyflakes tests/
 # R0913: Too many arguments
 # R0912: Too many branches
 # R0915: Too many statements
+# R0911: Too many return statements
 pylint \
   --disable=R0914 \
   --disable=R0913 \
   --disable=R0912 \
   --disable=R0915 \
+  --disable=R0911 \
   catcli/
 pylint \
   --disable=W0212 \
