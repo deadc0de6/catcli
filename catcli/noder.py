@@ -402,7 +402,6 @@ class Noder:
             Logger.dir(pre, name, depth=depth, attr=attr)
         elif node.type == self.TYPE_STORAGE:
             # node of type storage
-            szfree = size_to_str(node.free, raw=raw)
             sztotal = size_to_str(node.total, raw=raw)
             szused = size_to_str(node.total - node.free, raw=raw)
             nbchildren = len(node.children)
@@ -438,7 +437,7 @@ class Noder:
         else:
             Logger.err(f'bad node encountered: {node}')
 
-    def print_tree(self, top, node,
+    def print_tree(self, node,
                    fmt='native',
                    raw=False):
         """
@@ -455,14 +454,11 @@ class Noder:
                 self._print_node(thenode, pre=pre, withdepth=True, raw=raw)
         elif fmt == 'csv':
             # csv output
-            self._to_csv(node, with_header=header, raw=raw)
+            self._to_csv(node, raw=raw)
         elif fmt == 'csv-with-header':
             # csv output
             Logger.out(self.CSV_HEADER)
-            self._to_csv(node, with_header=header, raw=raw)
-        elif fmt.startswith('fzf'):
-            # flat
-            self._to_fzf(top, node, fmt)
+            self._to_csv(node, raw=raw)
 
     def _to_csv(self, node, raw=False):
         """print the tree to csv"""
@@ -476,10 +472,9 @@ class Noder:
         selected = fzf.prompt(strings)
         return selected
 
-    def _to_fzf(self, top, node, fmt):
+    def _to_fzf(self, node, fmt):
         """
         print node to fzf
-        @top: top node
         @node: node to start with
         @fmt: output format for selected nodes
         """
@@ -503,7 +498,7 @@ class Noder:
             if path not in nodes:
                 continue
             rend = nodes[path]
-            self.print_tree(top, rend, fmt=subfmt)
+            self.print_tree(rend, fmt=subfmt)
 
     def to_dot(self, node, path='tree.dot'):
         """export to dot for graphing"""
@@ -529,72 +524,81 @@ class Noder:
         @fmt: output format
         @raw: raw size output
         """
-        ## TODO error with fzf
         self._debug(f'searching for \"{key}\"')
-        if not key:
-            # nothing to search for
-            return None
+
+        # search for nodes based on path
         start = top
         if startpath:
             start = self.get_node(top, startpath)
-        found = anytree.findall(start, filter_=self._callback_find_name(key))
+        filterfunc = self._callback_find_name(key, directory)
+        found = anytree.findall(start, filter_=filterfunc)
         nbfound = len(found)
         self._debug(f'found {nbfound} node(s)')
 
         # compile found nodes
         paths = {}
-        nodes = []
         for item in found:
-            if item.type == self.TYPE_STORAGE:
-                # ignore storage nodes
-                continue
-            if directory and item.type != self.TYPE_DIR:
-                # ignore non directory
-                continue
-            nodes.append(item)
-
+            item = self._sanitize(item)
             if parentfromtree:
                 paths[self._get_parents(item)] = item
             else:
                 paths[item.relpath] = item
 
-        if fmt == 'native':
-            for item in nodes:
-                self._print_node(item, withpath=True,
-                                 withdepth=True,
-                                 withstorage=True,
-                                 recalcparent=parentfromtree,
-                                 raw=raw)
-        elif fmt.startswith('csv'):
-            if fmt == 'csv-with-header':
-                Logger.out(self.CSV_HEADER)
-            for item in nodes:
-                self._node_to_csv(item, raw=raw)
-
-        elif fmt.startswith('fzf'):
-            selected = self._fzf_prompt(paths)
+        # handle fzf mode
+        if fmt.startswith('fzf'):
+            selected = self._fzf_prompt(paths.keys())
             newpaths = {}
             subfmt = fmt.replace('fzf-', '')
             for item in selected:
                 if item not in paths:
                     continue
                 newpaths[item] = paths[item]
-                self.print_tree(top, newpaths[item], fmt=subfmt)
+                self.print_tree(newpaths[item], fmt=subfmt)
             paths = newpaths
+        else:
+            if fmt == 'native':
+                for _, item in paths.items():
+                    self._print_node(item, withpath=True,
+                                     withdepth=True,
+                                     withstorage=True,
+                                     recalcparent=parentfromtree,
+                                     raw=raw)
+            elif fmt.startswith('csv'):
+                if fmt == 'csv-with-header':
+                    Logger.out(self.CSV_HEADER)
+                for _, item in paths.items():
+                    self._node_to_csv(item, raw=raw)
 
+        # execute script if any
         if script:
             tmp = ['${source}/' + x for x in paths]
             tmpstr = ' '.join(tmp)
             cmd = f'op=file; source=/media/mnt; $op {tmpstr}'
             Logger.info(cmd)
 
-        return found
-
-    def _callback_find_name(self, term):
+    def _callback_find_name(self, term, directory):
         """callback for finding files"""
         def find_name(node):
+            if node.type == self.TYPE_STORAGE:
+                # ignore storage nodes
+                return False
+            if node.type == self.TYPE_TOP:
+                # ignore top nodes
+                return False
+            if node.type == self.TYPE_META:
+                # ignore meta nodes
+                return False
+            if directory and node.type != self.TYPE_DIR:
+                # ignore non directory
+                return False
+
+            # filter
+            if not term:
+                return True
             if term.lower() in node.name.lower():
                 return True
+
+            # ignore
             return False
         return find_name
 
@@ -623,7 +627,7 @@ class Noder:
 
             if rec:
                 # print the entire tree
-                self.print_tree(top, found[0].parent, fmt=fmt, raw=raw)
+                self.print_tree(found[0].parent, fmt=fmt, raw=raw)
                 return found
 
             # sort found nodes
@@ -650,7 +654,7 @@ class Noder:
                 elif fmt.startswith('csv'):
                     self._node_to_csv(item, raw=raw)
                 elif fmt.startswith('fzf'):
-                    self._to_fzf(top, item, fmt)
+                    self._to_fzf(item, fmt)
 
         except anytree.resolver.ChildResolverError:
             pass
@@ -731,6 +735,14 @@ class Noder:
     def _get_hash(self, path):
         """return md5 hash of node"""
         return md5sum(path)
+
+    def _sanitize(self, node):
+        """sanitize node string"""
+        node.name = node.name.encode('utf-8',
+                                     errors='ignore').decode('utf-8')
+        node.relpath = node.relpath.encode('utf-8',
+                                           errors='ignore').decode('utf-8')
+        return node
 
     def _debug(self, string):
         """print debug"""

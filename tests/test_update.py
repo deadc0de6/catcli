@@ -78,7 +78,7 @@ class TestUpdate(unittest.TestCase):
         self.assertTrue(nod.md5 == f4_md5)
 
         # print catalog
-        noder.print_tree(top, top)
+        noder.print_tree(top)
 
         # add some files and directories
         new1 = create_rnd_file(dir1, 'newf1')
@@ -120,7 +120,7 @@ class TestUpdate(unittest.TestCase):
 
         # print catalog
         # print(read_from_file(catalogpath))
-        noder.print_tree(top, top)
+        noder.print_tree(top)
 
         # explore the top node to find all nodes
         self.assertTrue(len(top.children) == 1)

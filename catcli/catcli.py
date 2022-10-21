@@ -20,6 +20,7 @@ from .catalog import Catalog
 from .walker import Walker
 from .noder import Noder
 from .utils import ask, edit
+from .exceptions import BadFormatException, CatcliException
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
@@ -33,6 +34,7 @@ BANNER = f""" +-+-+-+-+-+-+
  |c|a|t|c|l|i|
  +-+-+-+-+-+-+ v{VERSION}"""
 
+# TODO add grep format for output
 USAGE = f"""
 {BANNER}
 
@@ -155,7 +157,7 @@ def cmd_ls(args, noder, top):
 
     fmt = args['--format']
     if fmt.startswith('fzf'):
-        raise Exception('fzf is not supported in ls')
+        raise BadFormatException('fzf is not supported in ls, use find')
     found = noder.walk(top, path,
                        rec=args['--recursive'],
                        fmt=fmt,
@@ -188,9 +190,9 @@ def cmd_find(args, noder, top):
     raw = args['--raw-size']
     script = args['--script']
     search_for = args['<term>']
-    return noder.find_name(top, search_for, script=script,
-                           startpath=startpath, directory=directory,
-                           parentfromtree=fromtree, fmt=fmt, raw=raw)
+    noder.find_name(top, search_for, script=script,
+                    startpath=startpath, directory=directory,
+                    parentfromtree=fromtree, fmt=fmt, raw=raw)
 
 
 def cmd_tree(args, noder, top):
@@ -261,9 +263,9 @@ def print_supported_formats():
     """print all supported formats to stdout"""
     print('"native"     : native format')
     print('"csv"        : CSV format')
-    print(f'               {Noder.CSV_HEADER}')
-    print('"fzf-native" : fzf with native output for selected entries')
-    print('"fzf-csv"    : fzf with native output for selected entries')
+    print(f'              {Noder.CSV_HEADER}')
+    print('"fzf-native" : fzf to native (only for find)')
+    print('"fzf-csv"    : fzf to csv (only for find)')
 
 
 def main():
@@ -331,7 +333,7 @@ def main():
             cmd_rename(args, catalog, top)
         elif args['edit']:
             cmd_edit(args, noder, catalog, top)
-    except Exception as exc:
+    except CatcliException as exc:
         Logger.out_err('ERROR ' + str(exc))
         return False
 
