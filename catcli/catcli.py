@@ -42,7 +42,6 @@ Usage:
     {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
     {NAME} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
     {NAME} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
-    {NAME} tree   [--catalog=<path>] [-aBCVSs] [<path>]
     {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
     {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
     {NAME} rename [--catalog=<path>] [-BCfV] <storage> <name>
@@ -198,21 +197,6 @@ def cmd_find(args, noder, top):
                            parentfromtree=fromtree, fmt=fmt, raw=raw)
 
 
-def cmd_tree(args, noder, top):
-    """tree action"""
-    path = args['<path>']
-    raw = args['--raw-size']
-
-    # find node to start with
-    node = top
-    if path:
-        node = noder.get_node(top, path)
-
-    if node:
-        # print the tree
-        noder.print_tree(top, node, raw=raw)
-
-
 def cmd_graph(args, noder, top):
     """graph action"""
     path = args['<path>']
@@ -331,11 +315,6 @@ def main():
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
             cmd_find(args, noder, top)
-        elif args['tree']:
-            if not catalog.exists():
-                Logger.err(f'no such catalog: {catalog_path}')
-                return False
-            cmd_tree(args, noder, top)
         elif args['ls']:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')

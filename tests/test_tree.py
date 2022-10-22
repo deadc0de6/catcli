@@ -7,7 +7,7 @@ Basic unittest for tree
 
 import unittest
 
-from catcli.catcli import cmd_tree
+from catcli.catcli import cmd_ls
 from catcli.noder import Noder
 from catcli.catalog import Catalog
 from tests.helpers import clean, get_fakecatalog
@@ -32,10 +32,11 @@ class TestTree(unittest.TestCase):
             '--format': 'native',
             '--header': False,
             '--raw-size': False,
+            '--recursive': True,
         }
 
         # print tree and wait for any errors
-        cmd_tree(args, noder, top)
+        cmd_ls(args, noder, top)
 
 
 def main():
