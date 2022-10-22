@@ -16,6 +16,7 @@ from docopt import docopt
 # local imports
 from .version import __version__ as VERSION
 from .logger import Logger
+from .colors import Colors
 from .catalog import Catalog
 from .walker import Walker
 from .noder import Noder
@@ -257,8 +258,8 @@ def cmd_edit(args, noder, catalog, top):
 
 def banner():
     """print banner"""
-    Logger.out_err(BANNER)
-    Logger.out_err("")
+    Logger.stderr_nocolor(BANNER)
+    Logger.stderr_nocolor("")
 
 
 def print_supported_formats():
@@ -298,7 +299,7 @@ def main():
 
     # set colors
     if args['--no-color']:
-        Logger.no_color()
+        Colors.no_color()
 
     # init noder
     noder = Noder(debug=args['--verbose'], sortsize=args['--sortsize'],
@@ -336,7 +337,7 @@ def main():
         elif args['edit']:
             cmd_edit(args, noder, catalog, top)
     except CatcliException as exc:
-        Logger.out_err('ERROR ' + str(exc))
+        Logger.stderr_nocolor('ERROR ' + str(exc))
         return False
 
     return True

@@ -14,6 +14,7 @@ from pyfzf.pyfzf import FzfPrompt
 # local imports
 from catcli.utils import size_to_str, epoch_to_str, md5sum, fix_badchars
 from catcli.logger import Logger
+from catcli.nodeprinter import NodePrinter
 from catcli.decomp import Decomp
 from catcli.version import __version__ as VERSION
 from catcli.exceptions import CatcliException
@@ -343,11 +344,11 @@ class Noder:
 
         line = sep.join(['"' + o + '"' for o in out])
         if len(line) > 0:
-            Logger.out(line)
+            Logger.stdout_nocolor(line)
 
-    def _print_node(self, node, pre='', withpath=False,
-                    withdepth=False, withstorage=False,
-                    recalcparent=False, raw=False):
+    def _print_node_native(self, node, pre='', withpath=False,
+                           withdepth=False, withstorage=False,
+                           recalcparent=False, raw=False):
         """
         print a node
         @node: the node to print
@@ -360,7 +361,7 @@ class Noder:
         """
         if node.type == self.TYPE_TOP:
             # top node
-            Logger.out(f'{pre}{node.name}')
+            Logger.stdout_nocolor(f'{pre}{node.name}')
         elif node.type == self.TYPE_FILE:
             # node of type file
             name = node.name
@@ -378,9 +379,9 @@ class Noder:
             size = size_to_str(node.size, raw=raw)
             compl = f'size:{size}{attr}'
             if withstorage:
-                content = Logger.bold(storage.name)
+                content = Logger.get_bold_text(storage.name)
                 compl += f', storage:{content}'
-            Logger.file(pre, name, compl)
+            NodePrinter.print_file_native(pre, name, compl)
         elif node.type == self.TYPE_DIR:
             # node of type directory
             name = node.name
@@ -399,8 +400,8 @@ class Noder:
             if node.size:
                 attr.append(['totsize', size_to_str(node.size, raw=raw)])
             if withstorage:
-                attr.append(['storage', Logger.bold(storage.name)])
-            Logger.dir(pre, name, depth=depth, attr=attr)
+                attr.append(['storage', Logger.get_bold_text(storage.name)])
+            NodePrinter.print_dir_native(pre, name, depth=depth, attr=attr)
         elif node.type == self.TYPE_STORAGE:
             # node of type storage
             sztotal = size_to_str(node.total, raw=raw)
@@ -427,14 +428,14 @@ class Noder:
                 'du:' + f'{szused}/{sztotal}',
                 timestamp]
             argsstring = ' | '.join(args)
-            Logger.storage(pre,
-                           name,
-                           argsstring,
-                           node.attr)
+            NodePrinter.print_storage_native(pre,
+                                             name,
+                                             argsstring,
+                                             node.attr)
         elif node.type == self.TYPE_ARC:
             # archive node
             if self.arc:
-                Logger.arc(pre, node.name, node.archive)
+                NodePrinter.print_archive_native(pre, node.name, node.archive)
         else:
             Logger.err(f'bad node encountered: {node}')
 
@@ -452,13 +453,14 @@ class Noder:
             # "tree" style
             rend = anytree.RenderTree(node, childiter=self._sort_tree)
             for pre, _, thenode in rend:
-                self._print_node(thenode, pre=pre, withdepth=True, raw=raw)
+                self._print_node_native(thenode, pre=pre,
+                                        withdepth=True, raw=raw)
         elif fmt == 'csv':
             # csv output
             self._to_csv(node, raw=raw)
         elif fmt == 'csv-with-header':
             # csv output
-            Logger.out(self.CSV_HEADER)
+            Logger.stdout_nocolor(self.CSV_HEADER)
             self._to_csv(node, raw=raw)
 
     def _to_csv(self, node, raw=False):
@@ -560,14 +562,14 @@ class Noder:
         else:
             if fmt == 'native':
                 for _, item in paths.items():
-                    self._print_node(item, withpath=True,
-                                     withdepth=True,
-                                     withstorage=True,
-                                     recalcparent=parentfromtree,
-                                     raw=raw)
+                    self._print_node_native(item, withpath=True,
+                                            withdepth=True,
+                                            withstorage=True,
+                                            recalcparent=parentfromtree,
+                                            raw=raw)
             elif fmt.startswith('csv'):
                 if fmt == 'csv-with-header':
-                    Logger.out(self.CSV_HEADER)
+                    Logger.stdout_nocolor(self.CSV_HEADER)
                 for _, item in paths.items():
                     self._node_to_csv(item, raw=raw)
 
@@ -643,8 +645,10 @@ class Noder:
 
             # print the parent
             if fmt == 'native':
-                self._print_node(found[0].parent,
-                                 withpath=False, withdepth=True, raw=raw)
+                self._print_node_native(found[0].parent,
+                                        withpath=False,
+                                        withdepth=True,
+                                        raw=raw)
             elif fmt.startswith('csv'):
                 self._node_to_csv(found[0].parent, raw=raw)
             elif fmt.startswith('fzf'):
@@ -652,13 +656,13 @@ class Noder:
 
             # print all found nodes
             if fmt == 'csv-with-header':
-                Logger.out(self.CSV_HEADER)
+                Logger.stdout_nocolor(self.CSV_HEADER)
             for item in found:
                 if fmt == 'native':
-                    self._print_node(item, withpath=False,
-                                     pre='- ',
-                                     withdepth=True,
-                                     raw=raw)
+                    self._print_node_native(item, withpath=False,
+                                            pre='- ',
+                                            withdepth=True,
+                                            raw=raw)
                 elif fmt.startswith('csv'):
                     self._node_to_csv(item, raw=raw)
                 elif fmt.startswith('fzf'):

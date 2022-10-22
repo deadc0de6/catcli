@@ -175,4 +175,4 @@ class Walker:
         if not self.lpath:
             return
         line = f'{string}\n'
-        Logger.flog(self.lpath, line, append=True)
+        Logger.log_to_file(self.lpath, line, append=True)
