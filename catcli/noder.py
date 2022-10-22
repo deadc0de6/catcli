@@ -609,16 +609,19 @@ class Noder:
     ###############################################################
     # climbing
     ###############################################################
-    def walk(self, top, path, rec=False, fmt='native',
+    def walk(self, top, path,
+             rec=False,
+             fmt='native',
              raw=False):
         """
         walk the tree for "ls" based on names
-        @top: start node
+        @top: top node
+        @path: path to search for
         @rec: recursive walk
         @fmt: output format
         @raw: print raw size
         """
-        self._debug(f'walking path: \"{path}\"')
+        self._debug(f'walking path: \"{path}\" from {top}')
 
         resolv = anytree.resolver.Resolver('name')
         found = []
@@ -627,6 +630,7 @@ class Noder:
             found = resolv.glob(top, path)
             if len(found) < 1:
                 # nothing found
+                self._debug('nothing found')
                 return []
 
             if rec:

@@ -146,11 +146,14 @@ def cmd_ls(args, noder, top):
         path = SEPARATOR
     if not path.startswith(SEPARATOR):
         path = SEPARATOR + path
+    # prepend with top node path
     pre = f'{SEPARATOR}{noder.TOPNAME}'
     if not path.startswith(pre):
         path = pre + path
+    # ensure ends with a separator
     if not path.endswith(SEPARATOR):
         path += SEPARATOR
+    # add wild card
     if not path.endswith(WILD):
         path += WILD
 
@@ -262,7 +265,7 @@ def print_supported_formats():
     """print all supported formats to stdout"""
     print('"native"     : native format')
     print('"csv"        : CSV format')
-    print(f'              {Noder.CSV_HEADER}')
+    print(f'               {Noder.CSV_HEADER}')
     print('"fzf-native" : fzf to native (only for find)')
     print('"fzf-csv"    : fzf to csv (only for find)')
 
