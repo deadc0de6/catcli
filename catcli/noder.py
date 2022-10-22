@@ -159,7 +159,8 @@ class Noder:
     ###############################################################
     # public helpers
     ###############################################################
-    def format_storage_attr(self, attr):
+    @staticmethod
+    def format_storage_attr(attr):
         """format the storage attr for saving"""
         if not attr:
             return ''
@@ -232,7 +233,8 @@ class Noder:
                                parent=parent, size=0, md5=None,
                                archive=archive)
 
-    def _new_generic_node(self, name, nodetype, relpath, parent,
+    @staticmethod
+    def _new_generic_node(name, nodetype, relpath, parent,
                           size=None, md5=None, maccess=None):
         """generic node creation"""
         return anytree.AnyNode(name=name, type=nodetype, relpath=relpath,
@@ -474,7 +476,8 @@ class Noder:
         for _, _, item in rend:
             self._node_to_csv(item, raw=raw)
 
-    def _fzf_prompt(self, strings):
+    @staticmethod
+    def _fzf_prompt(strings):
         # prompt with fzf
         fzf = FzfPrompt()
         selected = fzf.prompt(strings)
@@ -508,7 +511,8 @@ class Noder:
             rend = nodes[path]
             self.print_tree(rend, fmt=subfmt)
 
-    def to_dot(self, node, path='tree.dot'):
+    @staticmethod
+    def to_dot(node, path='tree.dot'):
         """export to dot for graphing"""
         anytree.exporter.DotExporter(node).to_dotfile(path)
         Logger.info(f'dot file created under \"{path}\"')
