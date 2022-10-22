@@ -609,7 +609,7 @@ class Noder:
         return find_name
 
     ###############################################################
-    # climbing
+    # ls
     ###############################################################
     def walk(self, top, path,
              rec=False,
@@ -731,6 +731,7 @@ class Noder:
         return node.ancestors[1]
 
     def _has_attr(self, node, attr):
+        """return True if node has attr as attribute"""
         return attr in node.__dict__.keys()
 
     def _get_parents(self, node):
@@ -753,7 +754,7 @@ class Noder:
             return None
 
     def _sanitize(self, node):
-        """sanitize node string"""
+        """sanitize node strings"""
         node.name = fix_badchars(node.name)
         node.relpath = fix_badchars(node.relpath)
         return node
