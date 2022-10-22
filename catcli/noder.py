@@ -57,7 +57,8 @@ class Noder:
         if self.arc:
             self.decomp = Decomp()
 
-    def get_storage_names(self, top):
+    @staticmethod
+    def get_storage_names(top):
         """return a list of all storage names"""
         return [x.name for x in list(top.children)]
 
@@ -79,7 +80,8 @@ class Noder:
             found.ts = int(time.time())
         return found
 
-    def get_node(self, top, path, quiet=False):
+    @staticmethod
+    def get_node(top, path, quiet=False):
         """get the node by internal tree path"""
         resolv = anytree.resolver.Resolver('name')
         try:
@@ -272,7 +274,8 @@ class Noder:
                 cnt += 1
         return cnt
 
-    def flag(self, node):
+    @staticmethod
+    def flag(node):
         """flag a node"""
         node.flag = True
 
@@ -713,11 +716,13 @@ class Noder:
             return self._sort_size(lst)
         return self._sort_fs(lst)
 
-    def _sort_fs(self, node):
+    @staticmethod
+    def _sort_fs(node):
         """sorting nodes dir first and alpha"""
         return (node.type, node.name.lstrip('.').lower())
 
-    def _sort_size(self, node):
+    @staticmethod
+    def _sort_size(node):
         """sorting nodes by size"""
         try:
             if not node.size:
@@ -732,7 +737,8 @@ class Noder:
             return node
         return node.ancestors[1]
 
-    def _has_attr(self, node, attr):
+    @staticmethod
+    def _has_attr(node, attr):
         """return True if node has attr as attribute"""
         return attr in node.__dict__.keys()
 
@@ -747,7 +753,8 @@ class Noder:
             return os.sep.join([parent, node.name])
         return node.name
 
-    def _get_hash(self, path):
+    @staticmethod
+    def _get_hash(path):
         """return md5 hash of node"""
         try:
             return md5sum(path)
@@ -755,7 +762,8 @@ class Noder:
             Logger.err(str(exc))
             return None
 
-    def _sanitize(self, node):
+    @staticmethod
+    def _sanitize(node):
         """sanitize node strings"""
         node.name = fix_badchars(node.name)
         node.relpath = fix_badchars(node.relpath)

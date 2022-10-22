@@ -39,14 +39,16 @@ class Decomp:
             return self.ext[ext](path)
         return None
 
-    def _tar(self, path):
+    @staticmethod
+    def _tar(path):
         """return list of file names in tar"""
         if not tarfile.is_tarfile(path):
             return None
         with tarfile.open(path, "r") as tar:
             return tar.getnames()
 
-    def _zip(self, path):
+    @staticmethod
+    def _zip(path):
         """return list of file names in zip"""
         if not zipfile.is_zipfile(path):
             return None
