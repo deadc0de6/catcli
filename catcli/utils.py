@@ -12,15 +12,17 @@ import subprocess
 import datetime
 
 # local imports
-from catcli.logger import Logger
+from catcli.exceptions import CatcliException
 
 
 def md5sum(path):
-    """calculate md5 sum of a file"""
+    """
+    calculate md5 sum of a file
+    may raise exception
+    """
     rpath = os.path.realpath(path)
     if not os.path.exists(rpath):
-        Logger.err(f'\nmd5sum - file does not exist: {rpath}')
-        return None
+        raise CatcliException(f'md5sum - file does not exist: {rpath}')
     try:
         with open(rpath, mode='rb') as file:
             hashv = hashlib.md5()
@@ -33,7 +35,7 @@ def md5sum(path):
     except PermissionError:
         pass
     except OSError as exc:
-        Logger.err(f'md5sum error: {exc}')
+        raise CatcliException(f'md5sum error: {exc}') from exc
     return None
 
 
@@ -77,3 +79,8 @@ def edit(string):
         file.seek(0)
         new = file.read()
     return new.decode('utf-8')
+
+
+def fix_badchars(string):
+    """fix none utf-8 chars in string"""
+    return string.encode('utf-8', 'ignore').decode('utf-8')

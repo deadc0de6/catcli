@@ -7,6 +7,9 @@ Logging helper
 
 import sys
 
+# local imports
+from catcli.utils import fix_badchars
+
 
 class Logger:
     """log to stdout/stderr"""
@@ -42,11 +45,6 @@ class Logger:
         Logger.BOLD = ''
         Logger.UND = ''
 
-    @classmethod
-    def fix_badchars(cls, line):
-        """fix none utf-8 chars in line"""
-        return line.encode('utf-8', 'ignore').decode('utf-8')
-
     ######################################################################
     # node specific output
     ######################################################################
@@ -57,7 +55,7 @@ class Logger:
         if attr:
             end = f' {Logger.GRAY}({attr}){Logger.RESET}'
         out = f'{pre}{Logger.UND}{Logger.STORAGE}{Logger.RESET}:'
-        out += ' ' + Logger.PURPLE + Logger.fix_badchars(name) + \
+        out += ' ' + Logger.PURPLE + fix_badchars(name) + \
             Logger.RESET + end + '\n'
         out += f'  {Logger.GRAY}{args}{Logger.RESET}'
         sys.stdout.write(f'{out}\n')
@@ -65,7 +63,7 @@ class Logger:
     @classmethod
     def file(cls, pre, name, attr):
         """print a file node"""
-        nobad = Logger.fix_badchars(name)
+        nobad = fix_badchars(name)
         out = f'{pre}{nobad}'
         out += f' {Logger.GRAY}[{attr}]{Logger.RESET}'
         sys.stdout.write(f'{out}\n')
@@ -81,14 +79,14 @@ class Logger:
         if end:
             endstring = ', '.join(end)
             end = f' [{endstring}]'
-        out = pre + Logger.BLUE + Logger.fix_badchars(name) + Logger.RESET
+        out = pre + Logger.BLUE + fix_badchars(name) + Logger.RESET
         out += f'{Logger.GRAY}{end}{Logger.RESET}'
         sys.stdout.write(f'{out}\n')
 
     @classmethod
     def arc(cls, pre, name, archive):
         """archive to stdout"""
-        out = pre + Logger.YELLOW + Logger.fix_badchars(name) + Logger.RESET
+        out = pre + Logger.YELLOW + fix_badchars(name) + Logger.RESET
         out += f' {Logger.GRAY}[{Logger.ARCHIVE}:{archive}]{Logger.RESET}'
         sys.stdout.write(f'{out}\n')
 
@@ -98,52 +96,52 @@ class Logger:
     @classmethod
     def out(cls, string):
         """to stdout no color"""
-        string = Logger.fix_badchars(string)
+        string = fix_badchars(string)
         sys.stdout.write(f'{string}\n')
 
     @classmethod
     def out_err(cls, string):
         """to stderr no color"""
-        string = Logger.fix_badchars(string)
+        string = fix_badchars(string)
         sys.stderr.write(f'{string}\n')
 
     @classmethod
     def debug(cls, string):
         """to stderr no color"""
-        string = Logger.fix_badchars(string)
+        string = fix_badchars(string)
         sys.stderr.write(f'[DBG] {string}\n')
 
     @classmethod
     def info(cls, string):
         """to stdout in color"""
-        string = Logger.fix_badchars(string)
+        string = fix_badchars(string)
         out = f'{Logger.MAGENTA}{string}{Logger.RESET}'
         sys.stdout.write(f'{out}\n')
 
     @classmethod
     def err(cls, string):
         """to stderr in RED"""
-        string = Logger.fix_badchars(string)
+        string = fix_badchars(string)
         out = f'{Logger.RED}{string}{Logger.RESET}'
         sys.stderr.write(f'{out}\n')
 
     @classmethod
     def progr(cls, string):
         """print progress"""
-        string = Logger.fix_badchars(string)
+        string = fix_badchars(string)
         sys.stderr.write(f'{string}\r')
         sys.stderr.flush()
 
     @classmethod
     def bold(cls, string):
         """make it bold"""
-        string = Logger.fix_badchars(string)
+        string = fix_badchars(string)
         return f'{Logger.BOLD}{string}{Logger.RESET}'
 
     @classmethod
     def flog(cls, path, string, append=True):
         """log and fix bad chars"""
-        string = Logger.fix_badchars(string)
+        string = fix_badchars(string)
         mode = 'w'
         if append:
             mode = 'a'

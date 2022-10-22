@@ -12,10 +12,11 @@ import anytree
 from pyfzf.pyfzf import FzfPrompt
 
 # local imports
-from catcli.utils import size_to_str, epoch_to_str, md5sum
+from catcli.utils import size_to_str, epoch_to_str, md5sum, fix_badchars
 from catcli.logger import Logger
 from catcli.decomp import Decomp
 from catcli.version import __version__ as VERSION
+from catcli.exceptions import CatcliException
 
 
 class Noder:
@@ -115,7 +116,7 @@ class Noder:
         # test hash
         if self.hash and node.md5:
             md5 = self._get_hash(path)
-            if md5 != node.md5:
+            if md5 and md5 != node.md5:
                 msg = f'\tchange: checksum changed for \"{path}\"'
                 self._debug(msg)
                 return node, True
@@ -523,6 +524,7 @@ class Noder:
         @parentfromtree: get path from parent instead of stored relpath
         @fmt: output format
         @raw: raw size output
+        returns the found nodes
         """
         self._debug(f'searching for \"{key}\"')
 
@@ -575,6 +577,8 @@ class Noder:
             tmpstr = ' '.join(tmp)
             cmd = f'op=file; source=/media/mnt; $op {tmpstr}'
             Logger.info(cmd)
+
+        return list(paths.values())
 
     def _callback_find_name(self, term, directory):
         """callback for finding files"""
@@ -734,14 +738,16 @@ class Noder:
 
     def _get_hash(self, path):
         """return md5 hash of node"""
-        return md5sum(path)
+        try:
+            return md5sum(path)
+        except CatcliException as exc:
+            Logger.err(str(exc))
+            return None
 
     def _sanitize(self, node):
         """sanitize node string"""
-        node.name = node.name.encode('utf-8',
-                                     errors='ignore').decode('utf-8')
-        node.relpath = node.relpath.encode('utf-8',
-                                           errors='ignore').decode('utf-8')
+        node.name = fix_badchars(node.name)
+        node.relpath = fix_badchars(node.relpath)
         return node
 
     def _debug(self, string):

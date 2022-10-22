@@ -34,7 +34,6 @@ BANNER = f""" +-+-+-+-+-+-+
  |c|a|t|c|l|i|
  +-+-+-+-+-+-+ v{VERSION}"""
 
-# TODO add grep format for output
 USAGE = f"""
 {BANNER}
 
@@ -190,9 +189,9 @@ def cmd_find(args, noder, top):
     raw = args['--raw-size']
     script = args['--script']
     search_for = args['<term>']
-    noder.find_name(top, search_for, script=script,
-                    startpath=startpath, directory=directory,
-                    parentfromtree=fromtree, fmt=fmt, raw=raw)
+    return noder.find_name(top, search_for, script=script,
+                           startpath=startpath, directory=directory,
+                           parentfromtree=fromtree, fmt=fmt, raw=raw)
 
 
 def cmd_tree(args, noder, top):

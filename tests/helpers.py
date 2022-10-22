@@ -123,7 +123,7 @@ def create_rnd_file(path, filename, content=None):
 
 def write_to_file(path, content):
     """write content to file"""
-    with open(path, 'w', encoding='UTF-8') as file:
+    with open(path, 'w', encoding='utf-8') as file:
         file.write(content)
     return path
 
@@ -132,7 +132,7 @@ def read_from_file(path):
     """read file content"""
     if not os.path.exists(path):
         return ''
-    with open(path, 'r', encoding='UTF-8') as file:
+    with open(path, 'r', encoding='utf-8') as file:
         content = file.read()
     return content
 
