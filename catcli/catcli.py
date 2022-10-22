@@ -193,7 +193,7 @@ def cmd_find(args, noder, top):
     script = args['--script']
     search_for = args['<term>']
     return noder.find_name(top, search_for, script=script,
-                           startpath=startpath, directory=directory,
+                           startpath=startpath, only_dir=directory,
                            parentfromtree=fromtree, fmt=fmt, raw=raw)
 
 

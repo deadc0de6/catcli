@@ -515,7 +515,7 @@ class Noder:
     # searching
     ###############################################################
     def find_name(self, top, key,
-                  script=False, directory=False,
+                  script=False, only_dir=False,
                   startpath=None, parentfromtree=False,
                   fmt='native', raw=False):
         """
@@ -536,7 +536,7 @@ class Noder:
         start = top
         if startpath:
             start = self.get_node(top, startpath)
-        filterfunc = self._callback_find_name(key, directory)
+        filterfunc = self._callback_find_name(key, only_dir)
         found = anytree.findall(start, filter_=filterfunc)
         nbfound = len(found)
         self._debug(f'found {nbfound} node(s)')
@@ -584,7 +584,7 @@ class Noder:
 
         return list(paths.values())
 
-    def _callback_find_name(self, term, directory):
+    def _callback_find_name(self, term, only_dir):
         """callback for finding files"""
         def find_name(node):
             if node.type == self.TYPE_STORAGE:
@@ -596,7 +596,7 @@ class Noder:
             if node.type == self.TYPE_META:
                 # ignore meta nodes
                 return False
-            if directory and node.type != self.TYPE_DIR:
+            if only_dir and node.type != self.TYPE_DIR:
                 # ignore non directory
                 return False
 
