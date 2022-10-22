@@ -30,14 +30,16 @@ class Noder:
     * "file" node representing a file
     """
 
-    TOPNAME = 'top'
-    METANAME = 'meta'
+    NAME_TOP = 'top'
+    NAME_META = 'meta'
+
     TYPE_TOP = 'top'
     TYPE_FILE = 'file'
     TYPE_DIR = 'dir'
     TYPE_ARC = 'arc'
     TYPE_STORAGE = 'storage'
     TYPE_META = 'meta'
+
     CSV_HEADER = ('name,type,path,size,indexed_at,'
                   'maccess,md5,nbfiles,free_space,'
                   'total_space,meta')
@@ -124,7 +126,7 @@ class Noder:
         self._debug(f'\tchange: no change for \"{path}\"')
         return node, False
 
-    def _rec_size(self, node, store=True):
+    def rec_size(self, node, store=True):
         """
         recursively traverse tree and return size
         @store: store the size in the node
@@ -137,12 +139,12 @@ class Noder:
         size = 0
         for i in node.children:
             if node.type == self.TYPE_DIR:
-                size = self._rec_size(i, store=store)
+                size = self.rec_size(i, store=store)
                 if store:
                     i.size = size
                 size += size
             if node.type == self.TYPE_STORAGE:
-                size = self._rec_size(i, store=store)
+                size = self.rec_size(i, store=store)
                 if store:
                     i.size = size
                 size += size
@@ -151,10 +153,6 @@ class Noder:
         if store:
             node.size = size
         return size
-
-    def rec_size(self, node):
-        """recursively traverse tree and store dir size"""
-        return self._rec_size(node, store=True)
 
     ###############################################################
     # public helpers
@@ -173,35 +171,13 @@ class Noder:
         self.hash = val
 
     ###############################################################
-    # node creationg
+    # node creation
     ###############################################################
     def new_top_node(self):
         """create a new top node"""
-        return anytree.AnyNode(name=self.TOPNAME, type=self.TYPE_TOP)
+        return anytree.AnyNode(name=self.NAME_TOP, type=self.TYPE_TOP)
 
-    def update_metanode(self, top):
-        """create or update meta node information"""
-        meta = self._get_meta_node(top)
-        epoch = int(time.time())
-        if not meta:
-            attr = {}
-            attr['created'] = epoch
-            attr['created_version'] = VERSION
-            meta = anytree.AnyNode(name=self.METANAME, type=self.TYPE_META,
-                                   attr=attr)
-        meta.attr['access'] = epoch
-        meta.attr['access_version'] = VERSION
-        return meta
-
-    def _get_meta_node(self, top):
-        """return the meta node if any"""
-        try:
-            return next(filter(lambda x: x.type == self.TYPE_META,
-                        top.children))
-        except StopIteration:
-            return None
-
-    def file_node(self, name, path, parent, storagepath):
+    def new_file_node(self, name, path, parent, storagepath):
         """create a new node representing a file"""
         if not os.path.exists(path):
             Logger.err(f'File \"{path}\" does not exist')
@@ -218,8 +194,9 @@ class Noder:
         relpath = os.sep.join([storagepath, name])
 
         maccess = os.path.getmtime(path)
-        node = self._node(name, self.TYPE_FILE, relpath, parent,
-                          size=stat.st_size, md5=md5, maccess=maccess)
+        node = self._new_generic_node(name, self.TYPE_FILE, relpath, parent,
+                                      size=stat.st_size, md5=md5,
+                                      maccess=maccess)
         if self.arc:
             ext = os.path.splitext(path)[1][1:]
             if ext.lower() in self.decomp.get_formats():
@@ -230,13 +207,60 @@ class Noder:
                 self._debug(f'{path} is NOT an archive')
         return node
 
-    def dir_node(self, name, path, parent, storagepath):
+    def new_dir_node(self, name, path, parent, storagepath):
         """create a new node representing a directory"""
         path = os.path.abspath(path)
         relpath = os.sep.join([storagepath, name])
         maccess = os.path.getmtime(path)
-        return self._node(name, self.TYPE_DIR, relpath,
-                          parent, maccess=maccess)
+        return self._new_generic_node(name, self.TYPE_DIR, relpath,
+                                      parent, maccess=maccess)
+
+    def new_storage_node(self, name, path, parent, attr=None):
+        """create a new node representing a storage"""
+        path = os.path.abspath(path)
+        free = shutil.disk_usage(path).free
+        total = shutil.disk_usage(path).total
+        epoch = int(time.time())
+        return anytree.AnyNode(name=name, type=self.TYPE_STORAGE, free=free,
+                               total=total, parent=parent, attr=attr, ts=epoch)
+
+    def new_archive_node(self, name, path, parent, archive):
+        """create a new node for archive data"""
+        return anytree.AnyNode(name=name, type=self.TYPE_ARC, relpath=path,
+                               parent=parent, size=0, md5=None,
+                               archive=archive)
+
+    def _new_generic_node(self, name, nodetype, relpath, parent,
+                          size=None, md5=None, maccess=None):
+        """generic node creation"""
+        return anytree.AnyNode(name=name, type=nodetype, relpath=relpath,
+                               parent=parent, size=size,
+                               md5=md5, maccess=maccess)
+
+    ###############################################################
+    # node management
+    ###############################################################
+    def update_metanode(self, top):
+        """create or update meta node information"""
+        meta = self._get_meta_node(top)
+        epoch = int(time.time())
+        if not meta:
+            attr = {}
+            attr['created'] = epoch
+            attr['created_version'] = VERSION
+            meta = anytree.AnyNode(name=self.NAME_META, type=self.TYPE_META,
+                                   attr=attr)
+        meta.attr['access'] = epoch
+        meta.attr['access_version'] = VERSION
+        return meta
+
+    def _get_meta_node(self, top):
+        """return the meta node if any"""
+        try:
+            return next(filter(lambda x: x.type == self.TYPE_META,
+                        top.children))
+        except StopIteration:
+            return None
 
     def clean_not_flagged(self, top):
         """remove any node not flagged and clean flags"""
@@ -261,28 +285,6 @@ class Noder:
         del node.flag
         return False
 
-    def storage_node(self, name, path, parent, attr=None):
-        """create a new node representing a storage"""
-        path = os.path.abspath(path)
-        free = shutil.disk_usage(path).free
-        total = shutil.disk_usage(path).total
-        epoch = int(time.time())
-        return anytree.AnyNode(name=name, type=self.TYPE_STORAGE, free=free,
-                               total=total, parent=parent, attr=attr, ts=epoch)
-
-    def archive_node(self, name, path, parent, archive):
-        """crete a new node for archive data"""
-        return anytree.AnyNode(name=name, type=self.TYPE_ARC, relpath=path,
-                               parent=parent, size=0, md5=None,
-                               archive=archive)
-
-    def _node(self, name, nodetype, relpath, parent,
-              size=None, md5=None, maccess=None):
-        """generic node creation"""
-        return anytree.AnyNode(name=name, type=nodetype, relpath=relpath,
-                               parent=parent, size=size,
-                               md5=md5, maccess=maccess)
-
     ###############################################################
     # printing
     ###############################################################
@@ -304,7 +306,7 @@ class Noder:
             out.append(node.name)   # name
             out.append(node.type)   # type
             out.append('')          # fake full path
-            size = self._rec_size(node, store=False)
+            size = self.rec_size(node, store=False)
             out.append(size_to_str(size, raw=raw))  # size
             out.append(epoch_to_str(node.ts))  # indexed_at
             out.append('')  # fake maccess
@@ -416,7 +418,7 @@ class Noder:
                 timestamp += epoch_to_str(node.ts)
             disksize = ''
             # the children size
-            size = self._rec_size(node, store=False)
+            size = self.rec_size(node, store=False)
             size = size_to_str(size, raw=raw)
             disksize = 'totsize:' + f'{size}'
             # format the output
@@ -477,7 +479,7 @@ class Noder:
 
     def _to_fzf(self, node, fmt):
         """
-        print node to fzf
+        fzf prompt with list and print selected node(s)
         @node: node to start with
         @fmt: output format for selected nodes
         """
@@ -611,12 +613,12 @@ class Noder:
     ###############################################################
     # ls
     ###############################################################
-    def walk(self, top, path,
+    def list(self, top, path,
              rec=False,
              fmt='native',
              raw=False):
         """
-        walk the tree for "ls" based on names
+        list nodes for "ls"
         @top: top node
         @path: path to search for
         @rec: recursive walk
@@ -679,15 +681,15 @@ class Noder:
         """add an entry to the tree"""
         entries = name.rstrip(os.sep).split(os.sep)
         if len(entries) == 1:
-            self.archive_node(name, name, top, top.name)
+            self.new_archive_node(name, name, top, top.name)
             return
         sub = os.sep.join(entries[:-1])
         nodename = entries[-1]
         try:
             parent = resolv.get(top, sub)
-            parent = self.archive_node(nodename, name, parent, top.name)
+            parent = self.new_archive_node(nodename, name, parent, top.name)
         except anytree.resolver.ChildResolverError:
-            self.archive_node(nodename, name, top, top.name)
+            self.new_archive_node(nodename, name, top, top.name)
 
     def list_to_tree(self, parent, names):
         """convert list of files to a tree"""

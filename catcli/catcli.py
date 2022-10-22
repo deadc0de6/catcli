@@ -101,10 +101,10 @@ def cmd_index(args, noder, catalog, top):
     start = datetime.datetime.now()
     walker = Walker(noder, usehash=usehash, debug=debug)
     attr = noder.format_storage_attr(args['--meta'])
-    root = noder.storage_node(name, path, parent=top, attr=attr)
+    root = noder.new_storage_node(name, path, parent=top, attr=attr)
     _, cnt = walker.index(path, root, name)
     if subsize:
-        noder.rec_size(root)
+        noder.rec_size(root, store=True)
     stop = datetime.datetime.now()
     diff = stop - start
     Logger.info(f'Indexed {cnt} file(s) in {diff}')
@@ -132,7 +132,7 @@ def cmd_update(args, noder, catalog, top):
                     logpath=logpath)
     cnt = walker.reindex(path, root, top)
     if subsize:
-        noder.rec_size(root)
+        noder.rec_size(root, store=True)
     stop = datetime.datetime.now()
     diff = stop - start
     Logger.info(f'updated {cnt} file(s) in {diff}')
@@ -148,7 +148,7 @@ def cmd_ls(args, noder, top):
     if not path.startswith(SEPARATOR):
         path = SEPARATOR + path
     # prepend with top node path
-    pre = f'{SEPARATOR}{noder.TOPNAME}'
+    pre = f'{SEPARATOR}{noder.NAME_TOP}'
     if not path.startswith(pre):
         path = pre + path
     # ensure ends with a separator
@@ -161,7 +161,7 @@ def cmd_ls(args, noder, top):
     fmt = args['--format']
     if fmt.startswith('fzf'):
         raise BadFormatException('fzf is not supported in ls, use find')
-    found = noder.walk(top, path,
+    found = noder.list(top, path,
                        rec=args['--recursive'],
                        fmt=fmt,
                        raw=args['--raw-size'])
@@ -305,7 +305,8 @@ def main():
     noder = Noder(debug=args['--verbose'], sortsize=args['--sortsize'],
                   arc=args['--archive'])
     # init catalog
-    catalog = Catalog(args['--catalog'], debug=args['--verbose'],
+    catalog_path = args['--catalog']
+    catalog = Catalog(catalog_path, debug=args['--verbose'],
                       force=args['--force'])
     # init top node
     top = catalog.restore()
@@ -321,20 +322,44 @@ def main():
         if args['index']:
             cmd_index(args, noder, catalog, top)
         if args['update']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
             cmd_update(args, noder, catalog, top)
         elif args['find']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
             cmd_find(args, noder, top)
         elif args['tree']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
             cmd_tree(args, noder, top)
         elif args['ls']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
             cmd_ls(args, noder, top)
         elif args['rm']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
             cmd_rm(args, noder, catalog, top)
         elif args['graph']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
             cmd_graph(args, noder, top)
         elif args['rename']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
             cmd_rename(args, catalog, top)
         elif args['edit']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
             cmd_edit(args, noder, catalog, top)
     except CatcliException as exc:
         Logger.stderr_nocolor('ERROR ' + str(exc))

@@ -36,6 +36,14 @@ class Catalog:
         self.metanode = metanode
         self.metanode.parent = None
 
+    def exists(self):
+        """does catalog exist"""
+        if not self.path:
+            return False
+        if os.path.exists(self.path):
+            return True
+        return False
+
     def restore(self):
         """restore the catalog"""
         if not self.path:
