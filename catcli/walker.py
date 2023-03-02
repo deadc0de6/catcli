@@ -12,61 +12,62 @@ from catcli.logger import Logger
 
 
 class Walker:
+    """a filesystem walker"""
 
-    MAXLINE = 80 - 15
+    MAXLINELEN = 80 - 15
 
-    def __init__(self, noder, hash=True, debug=False,
+    def __init__(self, noder, usehash=True, debug=False,
                  logpath=None):
-        '''
+        """
         @noder: the noder to use
         @hash: calculate hash of nodes
         @debug: debug mode
         @logpath: path where to log catalog changes on reindex
-        '''
+        """
         self.noder = noder
-        self.hash = hash
-        self.noder.set_hashing(self.hash)
+        self.usehash = usehash
+        self.noder.set_hashing(self.usehash)
         self.debug = debug
         self.lpath = logpath
 
     def index(self, path, parent, name, storagepath=''):
-        '''
+        """
         index a directory and store in tree
         @path: path to index
         @parent: parent node
         @name: this stoarge name
-        '''
-        self._debug('indexing starting at {}'.format(path))
+        """
+        self._debug(f'indexing starting at {path}')
         if not parent:
-            parent = self.noder.dir_node(name, path, parent)
+            parent = self.noder.new_dir_node(name, path, parent)
 
         if os.path.islink(path):
             rel = os.readlink(path)
-            ab = os.path.join(path, rel)
-            if os.path.isdir(ab):
+            abspath = os.path.join(path, rel)
+            if os.path.isdir(abspath):
                 return parent, 0
 
         cnt = 0
         for (root, dirs, files) in os.walk(path):
-            for f in files:
-                self._debug('found file {} under {}'.format(f, path))
-                sub = os.path.join(root, f)
+            for file in files:
+                self._debug(f'found file {file} under {path}')
+                sub = os.path.join(root, file)
                 if not os.path.exists(sub):
                     continue
-                self._progress(f)
-                self._debug('index file {}'.format(sub))
-                n = self.noder.file_node(os.path.basename(f), sub,
-                                         parent, storagepath)
-                if n:
+                self._progress(file)
+                self._debug(f'index file {sub}')
+                node = self.noder.new_file_node(os.path.basename(file), sub,
+                                                parent, storagepath)
+                if node:
                     cnt += 1
-            for d in dirs:
-                self._debug('found dir {} under {}'.format(d, path))
-                base = os.path.basename(d)
-                sub = os.path.join(root, d)
-                self._debug('index directory {}'.format(sub))
+            for adir in dirs:
+                self._debug(f'found dir {adir} under {path}')
+                base = os.path.basename(adir)
+                sub = os.path.join(root, adir)
+                self._debug(f'index directory {sub}')
                 if not os.path.exists(sub):
                     continue
-                dummy = self.noder.dir_node(base, sub, parent, storagepath)
+                dummy = self.noder.new_dir_node(base, sub, parent, storagepath)
                 if not dummy:
                     continue
                 cnt += 1
@@ -80,47 +81,48 @@ class Walker:
         return parent, cnt
 
     def reindex(self, path, parent, top):
-        '''reindex a directory and store in tree'''
+        """reindex a directory and store in tree"""
         cnt = self._reindex(path, parent, top)
         cnt += self.noder.clean_not_flagged(parent)
         return cnt
 
     def _reindex(self, path, parent, top, storagepath=''):
-        '''
+        """
         reindex a directory and store in tree
         @path: directory path to re-index
         @top: top node (storage)
         @storagepath: rel path relative to indexed directory
-        '''
-        self._debug('reindexing starting at {}'.format(path))
+        """
+        self._debug(f'reindexing starting at {path}')
         cnt = 0
         for (root, dirs, files) in os.walk(path):
-            for f in files:
-                self._debug('found file \"{}\" under {}'.format(f, path))
-                sub = os.path.join(root, f)
-                treepath = os.path.join(storagepath, f)
-                reindex, n = self._need_reindex(parent, sub, treepath)
+            for file in files:
+                self._debug(f'found file \"{file}\" under {path}')
+                sub = os.path.join(root, file)
+                treepath = os.path.join(storagepath, file)
+                reindex, node = self._need_reindex(parent, sub, treepath)
                 if not reindex:
-                    self._debug('\tskip file {}'.format(sub))
-                    self.noder.flag(n)
+                    self._debug(f'\tskip file {sub}')
+                    self.noder.flag(node)
                     continue
-                self._log2file('update catalog for \"{}\"'.format(sub))
-                n = self.noder.file_node(os.path.basename(f), sub,
-                                         parent, storagepath)
-                self.noder.flag(n)
+                self._log2file(f'update catalog for \"{sub}\"')
+                node = self.noder.new_file_node(os.path.basename(file), sub,
+                                                parent, storagepath)
+                self.noder.flag(node)
                 cnt += 1
-            for d in dirs:
-                self._debug('found dir \"{}\" under {}'.format(d, path))
-                base = os.path.basename(d)
-                sub = os.path.join(root, d)
-                treepath = os.path.join(storagepath, d)
+            for adir in dirs:
+                self._debug(f'found dir \"{adir}\" under {path}')
+                base = os.path.basename(adir)
+                sub = os.path.join(root, adir)
+                treepath = os.path.join(storagepath, adir)
                 reindex, dummy = self._need_reindex(parent, sub, treepath)
                 if reindex:
-                    self._log2file('update catalog for \"{}\"'.format(sub))
-                    dummy = self.noder.dir_node(base, sub, parent, storagepath)
+                    self._log2file(f'update catalog for \"{sub}\"')
+                    dummy = self.noder.new_dir_node(base, sub,
+                                                    parent, storagepath)
                     cnt += 1
                 self.noder.flag(dummy)
-                self._debug('reindexing deeper under {}'.format(sub))
+                self._debug(f'reindexing deeper under {sub}')
                 nstoragepath = os.sep.join([storagepath, base])
                 if not storagepath:
                     nstoragepath = base
@@ -130,48 +132,48 @@ class Walker:
         return cnt
 
     def _need_reindex(self, top, path, treepath):
-        '''
+        """
         test if node needs re-indexing
         @top: top node (storage)
         @path: abs path to file
         @treepath: rel path from indexed directory
-        '''
+        """
         cnode, changed = self.noder.get_node_if_changed(top, path, treepath)
         if not cnode:
-            self._debug('\t{} does not exist'.format(path))
+            self._debug(f'\t{path} does not exist')
             return True, cnode
         if cnode and not changed:
             # ignore this node
-            self._debug('\t{} has not changed'.format(path))
+            self._debug(f'\t{path} has not changed')
             return False, cnode
         if cnode and changed:
             # remove this node and re-add
-            self._debug('\t{} has changed'.format(path))
-            self._debug('\tremoving node {} for {}'.format(cnode.name, path))
+            self._debug(f'\t{path} has changed')
+            self._debug(f'\tremoving node {cnode.name} for {path}')
             cnode.parent = None
         return True, cnode
 
     def _debug(self, string):
-        '''print to debug'''
+        """print to debug"""
         if not self.debug:
             return
         Logger.debug(string)
 
     def _progress(self, string):
-        '''print progress'''
+        """print progress"""
         if self.debug:
             return
         if not string:
             # clean
-            Logger.progr('{:80}'.format(' '))
+            Logger.progr(' ' * 80)
             return
-        if len(string) > self.MAXLINE:
-            string = string[:self.MAXLINE] + '...'
-        Logger.progr('indexing: {:80}'.format(string))
+        if len(string) > self.MAXLINELEN:
+            string = string[:self.MAXLINELEN] + '...'
+        Logger.progr(f'indexing: {string:80}')
 
     def _log2file(self, string):
-        '''log to file'''
+        """log to file"""
         if not self.lpath:
             return
-        line = '{}\n'.format(string)
-        Logger.flog(self.lpath, line, append=True)
+        line = f'{string}\n'
+        Logger.log_to_file(self.lpath, line, append=True)

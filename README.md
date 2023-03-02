@@ -43,7 +43,7 @@ pip3 install catcli --user
 # index a directory in the catalog
 catcli index --meta='some description' log /var/log
 # display the content
-catcli tree
+catcli ls -r
 # navigate
 catcli ls log
 # find files/directories named '*log*'
@@ -72,7 +72,7 @@ See the [examples](#examples) for an overview of the available features.
   * [Index archive files](#index-archive-files)
   * [Walk indexed files with ls](#walk-indexed-files-with-ls)
   * [Find files](#find-files)
-  * [Display entire tree](#display-entire-tree)
+  * [Display entire hierarchy](#display-entire-hierarchy)
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
   * [Update catalog](#update-catalog)
@@ -121,7 +121,7 @@ and they are all available through the command line interface of catcli.
 
 Five different types of entry are present in a catalog:
 
-  * **top node**: this is the root of the tree
+  * **top node**: this is the root of the hierarchy
   * **storage node**: this represents an indexed storage (a DVD, an external
     hard drive, an USB drive, some arbitrary directory, etc).
   * **dir node**: this is a directory
@@ -177,9 +177,9 @@ Files and directories can be found based on their names
 using the `find` command.
 See the [examples](#examples) for more.
 
-## Display entire tree
+## Display entire hierarchy
 
-The entire catalog can be shown using the `tree` command.
+The entire catalog can be shown using the `ls -r` command.
 Resulting files can be sorted by size using the `-S --sortsize` switch.
 
 See the [examples](#examples) for more.
@@ -267,10 +267,10 @@ $ catcli index --meta='my test directory' tmptest /tmp/test
 
 Catcli creates its catalog file in the current directory as `catcli.catalog`.
 
-Printing the entire catalog as a tree is done with the command `tree`
+Printing the entire catalog as a tree is done with the command `ls -r`
 
 ```
-$ catcli tree
+$ catcli ls -r
 top
 └── storage: tmptest (my test directory) (nbfiles:3, free:3.7G/3.7G, date:2019-01-26 19:59:47)
     ├── a [nbfiles:3, totsize:72]
@@ -390,8 +390,6 @@ $ catcli ls -ar some-name/v0.3.1.zip
    │   └── .travis.yml [archive:v0.3.1.zip]
    └── catcli-0.3.1/ [archive:v0.3.1.zip]
 ```
-
-All commands handle archive files (like `tree` or `find`).
 
 # Contribution
 

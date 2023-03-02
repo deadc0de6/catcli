@@ -7,16 +7,38 @@ cur=$(dirname "$(readlink -f "${0}")")
 # stop on first error
 set -ev
 
+pycodestyle --version
 pycodestyle --ignore=W605 catcli/
 pycodestyle tests/
 
+pyflakes --version
 pyflakes catcli/
 pyflakes tests/
 
-nosebin="nosetests"
+# R0914: Too many local variables
+# R0913: Too many arguments
+# R0912: Too many branches
+# R0915: Too many statements
+# R0911: Too many return statements
+# R0903: Too few public methods
+pylint --version
+pylint \
+  --disable=R0914 \
+  --disable=R0913 \
+  --disable=R0912 \
+  --disable=R0915 \
+  --disable=R0911 \
+  --disable=R0903 \
+  catcli/
+pylint \
+  --disable=W0212 \
+  --disable=R0914 \
+  --disable=R0915 \
+  --disable=R0801 \
+  tests/
 
-PYTHONPATH=catcli ${nosebin} -s --with-coverage --cover-package=catcli
-#PYTHONPATH=catcli ${nosebin} -s
+nosebin="nose2"
+PYTHONPATH=catcli ${nosebin} --with-coverage --coverage=catcli
 
 for t in ${cur}/tests-ng/*; do
   echo "running test \"`basename ${t}`\""
