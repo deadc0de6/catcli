@@ -30,6 +30,7 @@ Features:
   * Store files and directories sizes
   * Store md5 hash of files
   * Ability to update the catalog
+  * Support for `fzf` for finding files
   * Tag your different storages with additional information
   * Export catalog to CSV
 
@@ -175,6 +176,13 @@ See the [examples](#examples) for more.
 
 Files and directories can be found based on their names
 using the `find` command.
+
+`Find` support two formats that allow to use `fzf` for
+searching:
+
+* `--format=fzf-native`: display the result in native format
+* `--format=fzf-csv`: display the result in csv
+
 See the [examples](#examples) for more.
 
 ## Display entire hierarchy
