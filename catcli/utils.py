@@ -15,6 +15,9 @@ import datetime
 from catcli.exceptions import CatcliException
 
 
+SEPARATOR = '/'
+
+
 def md5sum(path):
     """
     calculate md5 sum of a file

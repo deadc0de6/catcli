@@ -21,6 +21,7 @@ from .catalog import Catalog
 from .walker import Walker
 from .noder import Noder
 from .utils import ask, edit
+from .fuser import Fuser
 from .exceptions import BadFormatException, CatcliException
 
 NAME = 'catcli'
@@ -43,6 +44,7 @@ Usage:
     {NAME} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
     {NAME} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
     {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
+    {NAME} mount  [--catalog=<path>] [-V] <mountpoint>
     {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
     {NAME} rename [--catalog=<path>] [-BCfV] <storage> <name>
     {NAME} edit   [--catalog=<path>] [-BCfV] <storage>
@@ -74,6 +76,12 @@ Options:
     -v --version        Show version.
     -h --help           Show this screen.
 """  # nopep8
+
+
+def cmd_mount(args, top, noder):
+    """mount action"""
+    mountpoint = args['<mountpoint>']
+    Fuser(mountpoint, top, noder)
 
 
 def cmd_index(args, noder, catalog, top):
@@ -320,6 +328,11 @@ def main():
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
             cmd_ls(args, noder, top)
+        elif args['mount']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
+            cmd_mount(args, top, noder)
         elif args['rm']:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')

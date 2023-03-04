@@ -21,6 +21,7 @@ pyflakes tests/
 # R0915: Too many statements
 # R0911: Too many return statements
 # R0903: Too few public methods
+# R0801: Similar lines in 2 files
 pylint --version
 pylint \
   --disable=R0914 \
@@ -29,6 +30,7 @@ pylint \
   --disable=R0915 \
   --disable=R0911 \
   --disable=R0903 \
+  --disable=R0801 \
   catcli/
 pylint \
   --disable=W0212 \
