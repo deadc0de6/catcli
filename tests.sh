@@ -22,6 +22,7 @@ pyflakes tests/
 # R0911: Too many return statements
 # R0903: Too few public methods
 # R0801: Similar lines in 2 files
+# R0902: Too many instance attributes
 pylint --version
 pylint \
   --disable=R0914 \
@@ -31,6 +32,7 @@ pylint \
   --disable=R0911 \
   --disable=R0903 \
   --disable=R0801 \
+  --disable=R0902 \
   catcli/
 pylint \
   --disable=W0212 \
@@ -38,6 +40,10 @@ pylint \
   --disable=R0915 \
   --disable=R0801 \
   tests/
+
+mypy \
+  --strict \
+  catcli/
 
 nosebin="nose2"
 PYTHONPATH=catcli ${nosebin} --with-coverage --coverage=catcli
