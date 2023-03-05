@@ -7,11 +7,12 @@ Class that represents the catcli catalog
 
 import os
 import pickle
-import anytree  # type: ignore
+from typing import Optional, Union, Any, cast
 from anytree.exporter import JsonExporter  # type: ignore
 from anytree.importer import JsonImporter  # type: ignore
 
 # local imports
+from catcli.cnode import Node
 from catcli.utils import ask
 from catcli.logger import Logger
 
@@ -32,10 +33,10 @@ class Catalog:
         self.path = path
         self.debug = debug
         self.force = force
-        self.metanode = None
+        self.metanode: Optional[Node] = None
         self.pickle = usepickle
 
-    def set_metanode(self, metanode: anytree.AnyNode) -> None:
+    def set_metanode(self, metanode: Node) -> None:
         """remove the metanode until tree is re-written"""
         self.metanode = metanode
         if self.metanode:
@@ -49,7 +50,7 @@ class Catalog:
             return True
         return False
 
-    def restore(self) -> anytree.AnyNode:
+    def restore(self) -> Optional[Node]:
         """restore the catalog"""
         if not self.path:
             return None
@@ -61,7 +62,7 @@ class Catalog:
             content = file.read()
         return self._restore_json(content)
 
-    def save(self, node: anytree.AnyNode) -> bool:
+    def save(self, node: Node) -> bool:
         """save the catalog"""
         if not self.path:
             Logger.err('Path not defined')
@@ -87,14 +88,14 @@ class Catalog:
             return
         Logger.debug(text)
 
-    def _save_pickle(self, node: anytree.AnyNode) -> bool:
+    def _save_pickle(self, node: Node) -> bool:
         """pickle the catalog"""
         with open(self.path, 'wb') as file:
             pickle.dump(node, file)
         self._debug(f'Catalog saved to pickle \"{self.path}\"')
         return True
 
-    def _restore_pickle(self) -> anytree.AnyNode:
+    def _restore_pickle(self) -> Union[Node, Any]:
         """restore the pickled tree"""
         with open(self.path, 'rb') as file:
             root = pickle.load(file)
@@ -102,7 +103,7 @@ class Catalog:
         self._debug(msg)
         return root
 
-    def _save_json(self, node: anytree.AnyNode) -> bool:
+    def _save_json(self, node: Node) -> bool:
         """export the catalog in json"""
         exp = JsonExporter(indent=2, sort_keys=True)
         with open(self.path, 'w', encoding='UTF-8') as file:
@@ -110,9 +111,9 @@ class Catalog:
         self._debug(f'Catalog saved to json \"{self.path}\"')
         return True
 
-    def _restore_json(self, string: str) -> anytree.AnyNode:
+    def _restore_json(self, string: str) -> Node:
         """restore the tree from json"""
         imp = JsonImporter()
         root = imp.import_(string)
         self._debug(f'Catalog imported from json \"{self.path}\"')
-        return root
+        return cast(Node, root)

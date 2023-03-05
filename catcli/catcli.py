@@ -12,19 +12,20 @@ import sys
 import os
 import datetime
 from typing import Dict, Any, List
-import anytree  # type: ignore
 from docopt import docopt
 
 # local imports
-from .version import __version__ as VERSION
-from .logger import Logger
-from .colors import Colors
-from .catalog import Catalog
-from .walker import Walker
-from .noder import Noder
-from .utils import ask, edit
-from .fuser import Fuser
-from .exceptions import BadFormatException, CatcliException
+from catcli import cnode
+from catcli.version import __version__ as VERSION
+from catcli.logger import Logger
+from catcli.colors import Colors
+from catcli.catalog import Catalog
+from catcli.walker import Walker
+from catcli.cnode import Node
+from catcli.noder import Noder
+from catcli.utils import ask, edit
+from catcli.fuser import Fuser
+from catcli.exceptions import BadFormatException, CatcliException
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
@@ -81,7 +82,7 @@ Options:
 
 
 def cmd_mount(args: Dict[str, Any],
-              top: anytree.AnyNode,
+              top: Node,
               noder: Noder) -> None:
     """mount action"""
     mountpoint = args['<mountpoint>']
@@ -93,7 +94,7 @@ def cmd_mount(args: Dict[str, Any],
 def cmd_index(args: Dict[str, Any],
               noder: Noder,
               catalog: Catalog,
-              top: anytree.AnyNode) -> None:
+              top: Node) -> None:
     """index action"""
     path = args['<path>']
     name = args['<name>']
@@ -116,8 +117,8 @@ def cmd_index(args: Dict[str, Any],
 
     start = datetime.datetime.now()
     walker = Walker(noder, usehash=usehash, debug=debug)
-    attr = noder.format_storage_attr(args['--meta'])
-    root = noder.new_storage_node(name, path, parent=top, attr=attr)
+    attr = noder.attrs_to_string(args['--meta'])
+    root = noder.new_storage_node(name, path, parent=top, attrs=attr)
     _, cnt = walker.index(path, root, name)
     if subsize:
         noder.rec_size(root, store=True)
@@ -131,7 +132,7 @@ def cmd_index(args: Dict[str, Any],
 def cmd_update(args: Dict[str, Any],
                noder: Noder,
                catalog: Catalog,
-               top: anytree.AnyNode) -> None:
+               top: Node) -> None:
     """update action"""
     path = args['<path>']
     name = args['<name>']
@@ -142,7 +143,7 @@ def cmd_update(args: Dict[str, Any],
     if not os.path.exists(path):
         Logger.err(f'\"{path}\" does not exist')
         return
-    root = noder.get_storage_node(top, name, path=path)
+    root = noder.get_storage_node(top, name, newpath=path)
     if not root:
         Logger.err(f'storage named \"{name}\" does not exist')
         return
@@ -161,7 +162,7 @@ def cmd_update(args: Dict[str, Any],
 
 def cmd_ls(args: Dict[str, Any],
            noder: Noder,
-           top: anytree.AnyNode) -> List[anytree.AnyNode]:
+           top: Node) -> List[Node]:
     """ls action"""
     path = args['<path>']
     if not path:
@@ -169,7 +170,7 @@ def cmd_ls(args: Dict[str, Any],
     if not path.startswith(SEPARATOR):
         path = SEPARATOR + path
     # prepend with top node path
-    pre = f'{SEPARATOR}{noder.NAME_TOP}'
+    pre = f'{SEPARATOR}{cnode.NAME_TOP}'
     if not path.startswith(pre):
         path = pre + path
     # ensure ends with a separator
@@ -196,7 +197,7 @@ def cmd_ls(args: Dict[str, Any],
 def cmd_rm(args: Dict[str, Any],
            noder: Noder,
            catalog: Catalog,
-           top: anytree.AnyNode) -> anytree.AnyNode:
+           top: Node) -> Node:
     """rm action"""
     name = args['<storage>']
     node = noder.get_storage_node(top, name)
@@ -211,7 +212,7 @@ def cmd_rm(args: Dict[str, Any],
 
 def cmd_find(args: Dict[str, Any],
              noder: Noder,
-             top: anytree.AnyNode) -> List[anytree.AnyNode]:
+             top: Node) -> List[Node]:
     """find action"""
     fromtree = args['--parent']
     directory = args['--directory']
@@ -231,7 +232,7 @@ def cmd_find(args: Dict[str, Any],
 
 def cmd_graph(args: Dict[str, Any],
               noder: Noder,
-              top: anytree.AnyNode) -> None:
+              top: Node) -> None:
     """graph action"""
     path = args['<path>']
     if not path:
@@ -242,7 +243,7 @@ def cmd_graph(args: Dict[str, Any],
 
 def cmd_rename(args: Dict[str, Any],
                catalog: Catalog,
-               top: anytree.AnyNode) -> None:
+               top: Node) -> None:
     """rename action"""
     storage = args['<storage>']
     new = args['<name>']
@@ -260,7 +261,7 @@ def cmd_rename(args: Dict[str, Any],
 def cmd_edit(args: Dict[str, Any],
              noder: Noder,
              catalog: Catalog,
-             top: anytree.AnyNode) -> None:
+             top: Node) -> None:
     """edit action"""
     storage = args['<storage>']
     storages = list(x.name for x in top.children)
@@ -270,7 +271,7 @@ def cmd_edit(args: Dict[str, Any],
         if not attr:
             attr = ''
         new = edit(attr)
-        node.attr = noder.format_storage_attr(new)
+        node.attr = noder.attrs_to_string(new)
         if catalog.save(top):
             Logger.info(f'Storage \"{storage}\" edited')
     else:

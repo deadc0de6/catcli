@@ -6,10 +6,10 @@ Catcli filesystem indexer
 """
 
 import os
-from typing import Tuple
-import anytree  # type: ignore
+from typing import Tuple, Optional
 
 # local imports
+from catcli.cnode import Node
 from catcli.noder import Noder
 from catcli.logger import Logger
 
@@ -31,12 +31,12 @@ class Walker:
         """
         self.noder = noder
         self.usehash = usehash
-        self.noder.set_hashing(self.usehash)
+        self.noder.do_hashing(self.usehash)
         self.debug = debug
         self.lpath = logpath
 
     def index(self, path: str,
-              parent: str,
+              parent: Node,
               name: str,
               storagepath: str = '') -> Tuple[str, int]:
         """
@@ -89,15 +89,15 @@ class Walker:
         self._progress('')
         return parent, cnt
 
-    def reindex(self, path: str, parent: str, top: str) -> int:
+    def reindex(self, path: str, parent: Node, top: Node) -> int:
         """reindex a directory and store in tree"""
         cnt = self._reindex(path, parent, top)
         cnt += self.noder.clean_not_flagged(parent)
         return cnt
 
     def _reindex(self, path: str,
-                 parent: str,
-                 top: anytree.AnyNode,
+                 parent: Node,
+                 top: Node,
                  storagepath: str = '') -> int:
         """
         reindex a directory and store in tree
@@ -115,13 +115,15 @@ class Walker:
                 reindex, node = self._need_reindex(parent, sub, treepath)
                 if not reindex:
                     self._debug(f'\tskip file {sub}')
-                    self.noder.flag(node)
+                    if node:
+                        node.flag()
                     continue
                 self._log2file(f'update catalog for \"{sub}\"')
                 node = self.noder.new_file_node(os.path.basename(file), sub,
                                                 parent, storagepath)
-                self.noder.flag(node)
-                cnt += 1
+                if node:
+                    node.flag()
+                    cnt += 1
             for adir in dirs:
                 self._debug(f'found dir \"{adir}\" under {path}')
                 base = os.path.basename(adir)
@@ -133,40 +135,42 @@ class Walker:
                     dummy = self.noder.new_dir_node(base, sub,
                                                     parent, storagepath)
                     cnt += 1
-                self.noder.flag(dummy)
+                if dummy:
+                    dummy.flag()
                 self._debug(f'reindexing deeper under {sub}')
                 nstoragepath = os.sep.join([storagepath, base])
                 if not storagepath:
                     nstoragepath = base
-                cnt2 = self._reindex(sub, dummy, top, nstoragepath)
-                cnt += cnt2
+                if dummy:
+                    cnt2 = self._reindex(sub, dummy, top, nstoragepath)
+                    cnt += cnt2
             break
         return cnt
 
     def _need_reindex(self,
-                      top: anytree.AnyNode,
+                      top: Node,
                       path: str,
-                      treepath: str) -> Tuple[bool, anytree.AnyNode]:
+                      treepath: str) -> Tuple[bool, Optional[Node]]:
         """
         test if node needs re-indexing
         @top: top node (storage)
         @path: abs path to file
         @treepath: rel path from indexed directory
         """
-        cnode, changed = self.noder.get_node_if_changed(top, path, treepath)
-        if not cnode:
+        node, changed = self.noder.get_node_if_changed(top, path, treepath)
+        if not node:
             self._debug(f'\t{path} does not exist')
-            return True, cnode
-        if cnode and not changed:
+            return True, node
+        if node and not changed:
             # ignore this node
             self._debug(f'\t{path} has not changed')
-            return False, cnode
-        if cnode and changed:
+            return False, node
+        if node and changed:
             # remove this node and re-add
             self._debug(f'\t{path} has changed')
-            self._debug(f'\tremoving node {cnode.name} for {path}')
-            cnode.parent = None
-        return True, cnode
+            self._debug(f'\tremoving node {node.name} for {path}')
+            node.parent = None
+        return True, node
 
     def _debug(self, string: str) -> None:
         """print to debug"""

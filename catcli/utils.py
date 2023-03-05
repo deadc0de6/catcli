@@ -57,12 +57,12 @@ def size_to_str(size: float,
     return f'{size:.1f}{sufix}'
 
 
-def epoch_to_str(epoch: int) -> str:
+def epoch_to_str(epoch: float) -> str:
     """convert epoch to string"""
     if not epoch:
         return ''
     fmt = '%Y-%m-%d %H:%M:%S'
-    timestamp = datetime.datetime.fromtimestamp(float(epoch))
+    timestamp = datetime.datetime.fromtimestamp(epoch)
     return timestamp.strftime(fmt)
 
 

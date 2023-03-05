@@ -9,10 +9,13 @@ import os
 import logging
 from time import time
 from stat import S_IFDIR, S_IFREG
-from typing import List, Dict, Any
-import anytree  # type: ignore
+from typing import List, Dict, Any, Optional
 import fuse  # type: ignore
-from .noder import Noder
+
+# local imports
+from catcli.noder import Noder
+from catcli import cnode
+from catcli.cnode import Node
 
 
 # build custom logger to log in /tmp
@@ -31,7 +34,7 @@ class Fuser:
     """fuse filesystem mounter"""
 
     def __init__(self, mountpoint: str,
-                 top: anytree.AnyNode,
+                 top: Node,
                  noder: Noder,
                  debug: bool = False):
         """fuse filesystem"""
@@ -47,15 +50,15 @@ class Fuser:
 class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
     """in-memory filesystem for catcli catalog"""
 
-    def __init__(self, top: anytree.AnyNode,
+    def __init__(self, top: Node,
                  noder: Noder):
         """init fuse filesystem"""
         self.top = top
         self.noder = noder
 
-    def _get_entry(self, path: str) -> anytree.AnyNode:
+    def _get_entry(self, path: str) -> Optional[Node]:
         """return the node pointed by path"""
-        pre = f'{SEPARATOR}{self.noder.NAME_TOP}'
+        pre = f'{SEPARATOR}{cnode.NAME_TOP}'
         if not path.startswith(pre):
             path = pre + path
         found = self.noder.list(self.top, path,
@@ -66,9 +69,9 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
             return found[0]
         return None
 
-    def _get_entries(self, path: str) -> List[anytree.AnyNode]:
+    def _get_entries(self, path: str) -> List[Node]:
         """return nodes pointed by path"""
-        pre = f'{SEPARATOR}{self.noder.NAME_TOP}'
+        pre = f'{SEPARATOR}{cnode.NAME_TOP}'
         if not path.startswith(pre):
             path = pre + path
         if not path.endswith(SEPARATOR):
@@ -88,17 +91,17 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
         curt = time()
         mode: Any = S_IFREG
-        if entry.type == Noder.TYPE_ARC:
+        if entry.type == cnode.TYPE_ARC:
             mode = S_IFREG
-        elif entry.type == Noder.TYPE_DIR:
+        elif entry.type == cnode.TYPE_DIR:
             mode = S_IFDIR
-        elif entry.type == Noder.TYPE_FILE:
+        elif entry.type == cnode.TYPE_FILE:
             mode = S_IFREG
-        elif entry.type == Noder.TYPE_STORAGE:
+        elif entry.type == cnode.TYPE_STORAGE:
             mode = S_IFDIR
-        elif entry.type == Noder.TYPE_META:
+        elif entry.type == cnode.TYPE_META:
             mode = S_IFREG
-        elif entry.type == Noder.TYPE_TOP:
+        elif entry.type == cnode.TYPE_TOP:
             mode = S_IFREG
         return {
             'st_mode': (mode),
