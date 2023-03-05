@@ -2,14 +2,15 @@
 author: deadc0de6 (https://github.com/deadc0de6)
 Copyright (c) 2017, deadc0de6
 
-Class that represents a node in the catalog tree
+Class that process nodes in the catalog tree
 """
 
 import os
 import shutil
 import time
-import anytree
-from pyfzf.pyfzf import FzfPrompt
+from typing import List, Union, Tuple, Any, Optional, Dict
+import anytree  # type: ignore
+from pyfzf.pyfzf import FzfPrompt  # type: ignore
 
 # local imports
 from catcli.utils import size_to_str, epoch_to_str, md5sum, fix_badchars
@@ -44,7 +45,9 @@ class Noder:
                   'maccess,md5,nbfiles,free_space,'
                   'total_space,meta')
 
-    def __init__(self, debug=False, sortsize=False, arc=False):
+    def __init__(self, debug: bool = False,
+                 sortsize: bool = False,
+                 arc: bool = False) -> None:
         """
         @debug: debug mode
         @sortsize: sort nodes by size
@@ -58,11 +61,12 @@ class Noder:
             self.decomp = Decomp()
 
     @staticmethod
-    def get_storage_names(top):
+    def get_storage_names(top: anytree.AnyNode) -> List[str]:
         """return a list of all storage names"""
         return [x.name for x in list(top.children)]
 
-    def get_storage_node(self, top, name, path=None):
+    def get_storage_node(self, top: anytree.AnyNode,
+                         name: str, path: str = '') -> anytree.AnyNode:
         """
         return the storage node if any
         if path is submitted, it will update the media info
@@ -81,7 +85,8 @@ class Noder:
         return found
 
     @staticmethod
-    def get_node(top, path, quiet=False):
+    def get_node(top: str, path: str,
+                 quiet: bool = False) -> anytree.AnyNode:
         """get the node by internal tree path"""
         resolv = anytree.resolver.Resolver('name')
         try:
@@ -92,7 +97,10 @@ class Noder:
                 Logger.err(f'No node at path \"{bpath}\"')
             return None
 
-    def get_node_if_changed(self, top, path, treepath):
+    def get_node_if_changed(self,
+                            top: anytree.AnyNode,
+                            path: str,
+                            treepath: str) -> Tuple[anytree.AnyNode, bool]:
         """
         return the node (if any) and if it has changed
         @top: top node (storage)
@@ -128,17 +136,18 @@ class Noder:
         self._debug(f'\tchange: no change for \"{path}\"')
         return node, False
 
-    def rec_size(self, node, store=True):
+    def rec_size(self, node: anytree.AnyNode,
+                 store: bool = True) -> float:
         """
         recursively traverse tree and return size
         @store: store the size in the node
         """
         if node.type == self.TYPE_FILE:
             self._debug(f'getting node size for \"{node.name}\"')
-            return node.size
+            return float(node.size)
         msg = f'getting node size recursively for \"{node.name}\"'
         self._debug(msg)
-        size = 0
+        size: float = 0
         for i in node.children:
             if node.type == self.TYPE_DIR:
                 size = self.rec_size(i, store=store)
@@ -160,7 +169,7 @@ class Noder:
     # public helpers
     ###############################################################
     @staticmethod
-    def format_storage_attr(attr):
+    def format_storage_attr(attr: Union[str, List[str]]) -> str:
         """format the storage attr for saving"""
         if not attr:
             return ''
@@ -169,18 +178,19 @@ class Noder:
         attr = attr.rstrip()
         return attr
 
-    def set_hashing(self, val):
+    def set_hashing(self, val: bool) -> None:
         """hash files when indexing"""
         self.hash = val
 
     ###############################################################
     # node creation
     ###############################################################
-    def new_top_node(self):
+    def new_top_node(self) -> anytree.AnyNode:
         """create a new top node"""
         return anytree.AnyNode(name=self.NAME_TOP, type=self.TYPE_TOP)
 
-    def new_file_node(self, name, path, parent, storagepath):
+    def new_file_node(self, name: str, path: str,
+                      parent: str, storagepath: str) -> anytree.AnyNode:
         """create a new node representing a file"""
         if not os.path.exists(path):
             Logger.err(f'File \"{path}\" does not exist')
@@ -191,14 +201,16 @@ class Noder:
         except OSError as exc:
             Logger.err(f'OSError: {exc}')
             return None
-        md5 = None
+        md5 = ''
         if self.hash:
             md5 = self._get_hash(path)
         relpath = os.sep.join([storagepath, name])
 
         maccess = os.path.getmtime(path)
-        node = self._new_generic_node(name, self.TYPE_FILE, relpath, parent,
-                                      size=stat.st_size, md5=md5,
+        node = self._new_generic_node(name, self.TYPE_FILE,
+                                      relpath, parent,
+                                      size=stat.st_size,
+                                      md5=md5,
                                       maccess=maccess)
         if self.arc:
             ext = os.path.splitext(path)[1][1:]
@@ -210,7 +222,8 @@ class Noder:
                 self._debug(f'{path} is NOT an archive')
         return node
 
-    def new_dir_node(self, name, path, parent, storagepath):
+    def new_dir_node(self, name: str, path: str,
+                     parent: str, storagepath: str) -> anytree.AnyNode:
         """create a new node representing a directory"""
         path = os.path.abspath(path)
         relpath = os.sep.join([storagepath, name])
@@ -218,7 +231,10 @@ class Noder:
         return self._new_generic_node(name, self.TYPE_DIR, relpath,
                                       parent, maccess=maccess)
 
-    def new_storage_node(self, name, path, parent, attr=None):
+    def new_storage_node(self, name: str,
+                         path: str,
+                         parent: str,
+                         attr: Optional[str] = None) -> anytree.AnyNode:
         """create a new node representing a storage"""
         path = os.path.abspath(path)
         free = shutil.disk_usage(path).free
@@ -227,15 +243,19 @@ class Noder:
         return anytree.AnyNode(name=name, type=self.TYPE_STORAGE, free=free,
                                total=total, parent=parent, attr=attr, ts=epoch)
 
-    def new_archive_node(self, name, path, parent, archive):
+    def new_archive_node(self, name: str, path: str,
+                         parent: str, archive: str) -> anytree.AnyNode:
         """create a new node for archive data"""
         return anytree.AnyNode(name=name, type=self.TYPE_ARC, relpath=path,
                                parent=parent, size=0, md5=None,
                                archive=archive)
 
     @staticmethod
-    def _new_generic_node(name, nodetype, relpath, parent,
-                          size=None, md5=None, maccess=None):
+    def _new_generic_node(name: str, nodetype: str,
+                          relpath: str, parent: str,
+                          size: float = 0,
+                          md5: str = '',
+                          maccess: float = 0) -> anytree.AnyNode:
         """generic node creation"""
         return anytree.AnyNode(name=name, type=nodetype, relpath=relpath,
                                parent=parent, size=size,
@@ -244,21 +264,22 @@ class Noder:
     ###############################################################
     # node management
     ###############################################################
-    def update_metanode(self, top):
+    def update_metanode(self, top: anytree.AnyNode) -> anytree.AnyNode:
         """create or update meta node information"""
         meta = self._get_meta_node(top)
         epoch = int(time.time())
         if not meta:
-            attr = {}
+            attr: Dict[str, Any] = {}
             attr['created'] = epoch
             attr['created_version'] = VERSION
-            meta = anytree.AnyNode(name=self.NAME_META, type=self.TYPE_META,
+            meta = anytree.AnyNode(name=self.NAME_META,
+                                   type=self.TYPE_META,
                                    attr=attr)
         meta.attr['access'] = epoch
         meta.attr['access_version'] = VERSION
         return meta
 
-    def _get_meta_node(self, top):
+    def _get_meta_node(self, top: anytree.AnyNode) -> anytree.AnyNode:
         """return the meta node if any"""
         try:
             return next(filter(lambda x: x.type == self.TYPE_META,
@@ -266,7 +287,7 @@ class Noder:
         except StopIteration:
             return None
 
-    def clean_not_flagged(self, top):
+    def clean_not_flagged(self, top: anytree.AnyNode) -> int:
         """remove any node not flagged and clean flags"""
         cnt = 0
         for node in anytree.PreOrderIter(top):
@@ -277,11 +298,11 @@ class Noder:
         return cnt
 
     @staticmethod
-    def flag(node):
+    def flag(node: anytree.AnyNode) -> None:
         """flag a node"""
         node.flag = True
 
-    def _clean(self, node):
+    def _clean(self, node: anytree.AnyNode) -> bool:
         """remove node if not flagged"""
         if not self._has_attr(node, 'flag') or \
                 not node.flag:
@@ -293,7 +314,9 @@ class Noder:
     ###############################################################
     # printing
     ###############################################################
-    def _node_to_csv(self, node, sep=',', raw=False):
+    def _node_to_csv(self, node: anytree.AnyNode,
+                     sep: str = ',',
+                     raw: bool = False) -> None:
         """
         print a node to csv
         @node: the node to consider
@@ -353,9 +376,13 @@ class Noder:
         if len(line) > 0:
             Logger.stdout_nocolor(line)
 
-    def _print_node_native(self, node, pre='', withpath=False,
-                           withdepth=False, withstorage=False,
-                           recalcparent=False, raw=False):
+    def _print_node_native(self, node: anytree.AnyNode,
+                           pre: str = '',
+                           withpath: bool = False,
+                           withdepth: bool = False,
+                           withstorage: bool = False,
+                           recalcparent: bool = False,
+                           raw: bool = False) -> None:
         """
         print a node
         @node: the node to print
@@ -380,11 +407,11 @@ class Noder:
             name = name.lstrip(os.sep)
             if withstorage:
                 storage = self._get_storage(node)
-            attr = ''
+            attr_str = ''
             if node.md5:
-                attr = f', md5:{node.md5}'
+                attr_str = f', md5:{node.md5}'
             size = size_to_str(node.size, raw=raw)
-            compl = f'size:{size}{attr}'
+            compl = f'size:{size}{attr_str}'
             if withstorage:
                 content = Logger.get_bold_text(storage.name)
                 compl += f', storage:{content}'
@@ -398,16 +425,16 @@ class Noder:
                 else:
                     name = node.relpath
             name = name.lstrip(os.sep)
-            depth = ''
+            depth = 0
             if withdepth:
                 depth = len(node.children)
             if withstorage:
                 storage = self._get_storage(node)
-            attr = []
+            attr: List[Tuple[str, str]] = []
             if node.size:
-                attr.append(['totsize', size_to_str(node.size, raw=raw)])
+                attr.append(('totsize', size_to_str(node.size, raw=raw)))
             if withstorage:
-                attr.append(['storage', Logger.get_bold_text(storage.name)])
+                attr.append(('storage', Logger.get_bold_text(storage.name)))
             NodePrinter.print_dir_native(pre, name, depth=depth, attr=attr)
         elif node.type == self.TYPE_STORAGE:
             # node of type storage
@@ -423,9 +450,9 @@ class Noder:
                 timestamp += epoch_to_str(node.ts)
             disksize = ''
             # the children size
-            size = self.rec_size(node, store=False)
-            size = size_to_str(size, raw=raw)
-            disksize = 'totsize:' + f'{size}'
+            recsize = self.rec_size(node, store=False)
+            sizestr = size_to_str(recsize, raw=raw)
+            disksize = 'totsize:' + f'{sizestr}'
             # format the output
             name = node.name
             args = [
@@ -446,9 +473,9 @@ class Noder:
         else:
             Logger.err(f'bad node encountered: {node}')
 
-    def print_tree(self, node,
-                   fmt='native',
-                   raw=False):
+    def print_tree(self, node: anytree.AnyNode,
+                   fmt: str = 'native',
+                   raw: bool = False) -> None:
         """
         print the tree in different format
         @node: start node
@@ -470,20 +497,21 @@ class Noder:
             Logger.stdout_nocolor(self.CSV_HEADER)
             self._to_csv(node, raw=raw)
 
-    def _to_csv(self, node, raw=False):
+    def _to_csv(self, node: anytree.AnyNode,
+                raw: bool = False) -> None:
         """print the tree to csv"""
         rend = anytree.RenderTree(node, childiter=self._sort_tree)
         for _, _, item in rend:
             self._node_to_csv(item, raw=raw)
 
     @staticmethod
-    def _fzf_prompt(strings):
+    def _fzf_prompt(strings: Any) -> Any:
         # prompt with fzf
         fzf = FzfPrompt()
         selected = fzf.prompt(strings)
         return selected
 
-    def _to_fzf(self, node, fmt):
+    def _to_fzf(self, node: anytree.AnyNode, fmt: str) -> None:
         """
         fzf prompt with list and print selected node(s)
         @node: node to start with
@@ -512,7 +540,8 @@ class Noder:
             self.print_tree(rend, fmt=subfmt)
 
     @staticmethod
-    def to_dot(node, path='tree.dot'):
+    def to_dot(node: anytree.AnyNode,
+               path: str = 'tree.dot') -> str:
         """export to dot for graphing"""
         anytree.exporter.DotExporter(node).to_dotfile(path)
         Logger.info(f'dot file created under \"{path}\"')
@@ -521,10 +550,14 @@ class Noder:
     ###############################################################
     # searching
     ###############################################################
-    def find_name(self, top, key,
-                  script=False, only_dir=False,
-                  startpath=None, parentfromtree=False,
-                  fmt='native', raw=False):
+    def find_name(self, top: anytree.AnyNode,
+                  key: str,
+                  script: bool = False,
+                  only_dir: bool = False,
+                  startnode: anytree.AnyNode = None,
+                  parentfromtree: bool = False,
+                  fmt: str = 'native',
+                  raw: bool = False) -> List[anytree.AnyNode]:
         """
         find files based on their names
         @top: top node
@@ -541,8 +574,8 @@ class Noder:
 
         # search for nodes based on path
         start = top
-        if startpath:
-            start = self.get_node(top, startpath)
+        if startnode:
+            start = self.get_node(top, startnode)
         filterfunc = self._callback_find_name(key, only_dir)
         found = anytree.findall(start, filter_=filterfunc)
         nbfound = len(found)
@@ -591,9 +624,9 @@ class Noder:
 
         return list(paths.values())
 
-    def _callback_find_name(self, term, only_dir):
+    def _callback_find_name(self, term: str, only_dir: bool) -> Any:
         """callback for finding files"""
-        def find_name(node):
+        def find_name(node: anytree.AnyNode) -> bool:
             if node.type == self.TYPE_STORAGE:
                 # ignore storage nodes
                 return False
@@ -620,10 +653,11 @@ class Noder:
     ###############################################################
     # ls
     ###############################################################
-    def list(self, top, path,
-             rec=False,
-             fmt='native',
-             raw=False):
+    def list(self, top: anytree.AnyNode,
+             path: str,
+             rec: bool = False,
+             fmt: str = 'native',
+             raw: bool = False) -> List[anytree.AnyNode]:
         """
         list nodes for "ls"
         @top: top node
@@ -684,7 +718,9 @@ class Noder:
     ###############################################################
     # tree creation
     ###############################################################
-    def _add_entry(self, name, top, resolv):
+    def _add_entry(self, name: str,
+                   top: anytree.AnyNode,
+                   resolv: Any) -> None:
         """add an entry to the tree"""
         entries = name.rstrip(os.sep).split(os.sep)
         if len(entries) == 1:
@@ -698,7 +734,7 @@ class Noder:
         except anytree.resolver.ChildResolverError:
             self.new_archive_node(nodename, name, top, top.name)
 
-    def list_to_tree(self, parent, names):
+    def list_to_tree(self, parent: anytree.AnyNode, names: List[str]) -> None:
         """convert list of files to a tree"""
         if not names:
             return
@@ -710,43 +746,44 @@ class Noder:
     ###############################################################
     # diverse
     ###############################################################
-    def _sort_tree(self, items):
+    def _sort_tree(self,
+                   items: List[anytree.AnyNode]) -> List[anytree.AnyNode]:
         """sorting a list of items"""
         return sorted(items, key=self._sort, reverse=self.sortsize)
 
-    def _sort(self, lst):
+    def _sort(self, lst: List[anytree.AnyNode]) -> Any:
         """sort a list"""
         if self.sortsize:
             return self._sort_size(lst)
         return self._sort_fs(lst)
 
     @staticmethod
-    def _sort_fs(node):
+    def _sort_fs(node: anytree.AnyNode) -> Tuple[str, str]:
         """sorting nodes dir first and alpha"""
         return (node.type, node.name.lstrip('.').lower())
 
     @staticmethod
-    def _sort_size(node):
+    def _sort_size(node: anytree.AnyNode) -> float:
         """sorting nodes by size"""
         try:
             if not node.size:
                 return 0
-            return node.size
+            return float(node.size)
         except AttributeError:
             return 0
 
-    def _get_storage(self, node):
+    def _get_storage(self, node: anytree.AnyNode) -> anytree.AnyNode:
         """recursively traverse up to find storage"""
         if node.type == self.TYPE_STORAGE:
             return node
         return node.ancestors[1]
 
     @staticmethod
-    def _has_attr(node, attr):
+    def _has_attr(node: anytree.AnyNode, attr: str) -> bool:
         """return True if node has attr as attribute"""
         return attr in node.__dict__.keys()
 
-    def _get_parents(self, node):
+    def _get_parents(self, node: anytree.AnyNode) -> str:
         """get all parents recursively"""
         if node.type == self.TYPE_STORAGE:
             return ''
@@ -755,25 +792,25 @@ class Noder:
         parent = self._get_parents(node.parent)
         if parent:
             return os.sep.join([parent, node.name])
-        return node.name
+        return str(node.name)
 
     @staticmethod
-    def _get_hash(path):
+    def _get_hash(path: str) -> str:
         """return md5 hash of node"""
         try:
             return md5sum(path)
         except CatcliException as exc:
             Logger.err(str(exc))
-            return None
+            return ''
 
     @staticmethod
-    def _sanitize(node):
+    def _sanitize(node: anytree.AnyNode) -> anytree.AnyNode:
         """sanitize node strings"""
         node.name = fix_badchars(node.name)
         node.relpath = fix_badchars(node.relpath)
         return node
 
-    def _debug(self, string):
+    def _debug(self, string: str) -> None:
         """print debug"""
         if not self.debug:
             return

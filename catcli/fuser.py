@@ -9,7 +9,9 @@ import os
 import logging
 from time import time
 from stat import S_IFDIR, S_IFREG
-import fuse
+from typing import List, Dict, Any
+import anytree  # type: ignore
+import fuse  # type: ignore
 from .noder import Noder
 
 
@@ -26,28 +28,33 @@ SEPARATOR = '/'
 
 
 class Fuser:
-    """fuser filesystem"""
+    """fuse filesystem mounter"""
 
-    def __init__(self, mountpoint, top, noder):
+    def __init__(self, mountpoint: str,
+                 top: anytree.AnyNode,
+                 noder: Noder,
+                 debug: bool = False):
         """fuse filesystem"""
         filesystem = CatcliFilesystem(top, noder)
         fuse.FUSE(filesystem,
                   mountpoint,
-                  foreground=True,
+                  foreground=debug,
                   allow_other=True,
                   nothreads=True,
-                  debug=True)
+                  debug=debug)
 
 
-class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):
+class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
     """in-memory filesystem for catcli catalog"""
 
-    def __init__(self, top, noder):
+    def __init__(self, top: anytree.AnyNode,
+                 noder: Noder):
         """init fuse filesystem"""
         self.top = top
         self.noder = noder
 
-    def _get_entry(self, path):
+    def _get_entry(self, path: str) -> anytree.AnyNode:
+        """return the node pointed by path"""
         pre = f'{SEPARATOR}{self.noder.NAME_TOP}'
         if not path.startswith(pre):
             path = pre + path
@@ -57,9 +64,10 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):
                                 raw=True)
         if found:
             return found[0]
-        return []
+        return None
 
-    def _get_entries(self, path):
+    def _get_entries(self, path: str) -> List[anytree.AnyNode]:
+        """return nodes pointed by path"""
         pre = f'{SEPARATOR}{self.noder.NAME_TOP}'
         if not path.startswith(pre):
             path = pre + path
@@ -73,13 +81,13 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):
                                 raw=True)
         return found
 
-    def _getattr(self, path):
+    def _getattr(self, path: str) -> Dict[str, Any]:
         entry = self._get_entry(path)
         if not entry:
-            return None
+            return {}
 
         curt = time()
-        mode = S_IFREG
+        mode: Any = S_IFREG
         if entry.type == Noder.TYPE_ARC:
             mode = S_IFREG
         elif entry.type == Noder.TYPE_DIR:
@@ -103,7 +111,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):
             'st_gid': os.getgid(),
         }
 
-    def getattr(self, path, _fh=None):
+    def getattr(self, path: str, _fh: Any = None) -> Dict[str, Any]:
         """return attr of file pointed by path"""
         logger.info('getattr path: %s', path)
 
@@ -124,7 +132,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):
         meta = self._getattr(path)
         return meta
 
-    def readdir(self, path, _fh):
+    def readdir(self, path: str, _fh: Any) -> List[str]:
         """read directory content"""
         logger.info('readdir path: %s', path)
         content = ['.', '..']

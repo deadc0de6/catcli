@@ -18,7 +18,7 @@ from catcli.exceptions import CatcliException
 SEPARATOR = '/'
 
 
-def md5sum(path):
+def md5sum(path: str) -> str:
     """
     calculate md5 sum of a file
     may raise exception
@@ -39,10 +39,11 @@ def md5sum(path):
         pass
     except OSError as exc:
         raise CatcliException(f'md5sum error: {exc}') from exc
-    return None
+    return ''
 
 
-def size_to_str(size, raw=True):
+def size_to_str(size: float,
+                raw: bool = True) -> str:
     """convert size to string, optionally human readable"""
     div = 1024.
     suf = ['B', 'K', 'M', 'G', 'T', 'P']
@@ -56,7 +57,7 @@ def size_to_str(size, raw=True):
     return f'{size:.1f}{sufix}'
 
 
-def epoch_to_str(epoch):
+def epoch_to_str(epoch: int) -> str:
     """convert epoch to string"""
     if not epoch:
         return ''
@@ -65,18 +66,18 @@ def epoch_to_str(epoch):
     return timestamp.strftime(fmt)
 
 
-def ask(question):
+def ask(question: str) -> bool:
     """ask the user what to do"""
     resp = input(f'{question} [y|N] ? ')
     return resp.lower() == 'y'
 
 
-def edit(string):
+def edit(string: str) -> str:
     """edit the information with the default EDITOR"""
-    string = string.encode('utf-8')
+    data = string.encode('utf-8')
     editor = os.environ.get('EDITOR', 'vim')
     with tempfile.NamedTemporaryFile(prefix='catcli', suffix='.tmp') as file:
-        file.write(string)
+        file.write(data)
         file.flush()
         subprocess.call([editor, file.name])
         file.seek(0)
@@ -84,6 +85,6 @@ def edit(string):
     return new.decode('utf-8')
 
 
-def fix_badchars(string):
+def fix_badchars(string: str) -> str:
     """fix none utf-8 chars in string"""
     return string.encode('utf-8', 'ignore').decode('utf-8')

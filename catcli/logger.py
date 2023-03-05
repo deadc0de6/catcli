@@ -6,61 +6,75 @@ Logging helper
 """
 
 import sys
+from typing import TypeVar, Type
 
 # local imports
 from catcli.colors import Colors
 from catcli.utils import fix_badchars
 
 
+CLASSTYPE = TypeVar('CLASSTYPE', bound='Logger')
+
+
 class Logger:
     """log to stdout/stderr"""
 
     @classmethod
-    def stdout_nocolor(cls, string):
+    def stdout_nocolor(cls: Type[CLASSTYPE],
+                       string: str) -> None:
         """to stdout no color"""
         string = fix_badchars(string)
         sys.stdout.write(f'{string}\n')
 
     @classmethod
-    def stderr_nocolor(cls, string):
+    def stderr_nocolor(cls: Type[CLASSTYPE],
+                       string: str) -> None:
         """to stderr no color"""
         string = fix_badchars(string)
         sys.stderr.write(f'{string}\n')
 
     @classmethod
-    def debug(cls, string):
+    def debug(cls: Type[CLASSTYPE],
+              string: str) -> None:
         """to stderr no color"""
         cls.stderr_nocolor(f'[DBG] {string}\n')
 
     @classmethod
-    def info(cls, string):
+    def info(cls: Type[CLASSTYPE],
+             string: str) -> None:
         """to stdout in color"""
         string = fix_badchars(string)
         out = f'{Colors.MAGENTA}{string}{Colors.RESET}'
         sys.stdout.write(f'{out}\n')
 
     @classmethod
-    def err(cls, string):
+    def err(cls: Type[CLASSTYPE],
+            string: str) -> None:
         """to stderr in RED"""
         string = fix_badchars(string)
         out = f'{Colors.RED}{string}{Colors.RESET}'
         sys.stderr.write(f'{out}\n')
 
     @classmethod
-    def progr(cls, string):
+    def progr(cls: Type[CLASSTYPE],
+              string: str) -> None:
         """print progress"""
         string = fix_badchars(string)
         sys.stderr.write(f'{string}\r')
         sys.stderr.flush()
 
     @classmethod
-    def get_bold_text(cls, string):
+    def get_bold_text(cls: Type[CLASSTYPE],
+                      string: str) -> str:
         """make it bold"""
         string = fix_badchars(string)
         return f'{Colors.BOLD}{string}{Colors.RESET}'
 
     @classmethod
-    def log_to_file(cls, path, string, append=True):
+    def log_to_file(cls: Type[CLASSTYPE],
+                    path: str,
+                    string: str,
+                    append: bool = True) -> None:
         """log to file"""
         string = fix_badchars(string)
         mode = 'w'

@@ -11,6 +11,8 @@ Catcli command line interface
 import sys
 import os
 import datetime
+from typing import Dict, Any, List
+import anytree  # type: ignore
 from docopt import docopt
 
 # local imports
@@ -78,13 +80,20 @@ Options:
 """  # nopep8
 
 
-def cmd_mount(args, top, noder):
+def cmd_mount(args: Dict[str, Any],
+              top: anytree.AnyNode,
+              noder: Noder) -> None:
     """mount action"""
     mountpoint = args['<mountpoint>']
-    Fuser(mountpoint, top, noder)
+    debug = args['--verbose']
+    Fuser(mountpoint, top, noder,
+          debug=debug)
 
 
-def cmd_index(args, noder, catalog, top):
+def cmd_index(args: Dict[str, Any],
+              noder: Noder,
+              catalog: Catalog,
+              top: anytree.AnyNode) -> None:
     """index action"""
     path = args['<path>']
     name = args['<name>']
@@ -119,7 +128,10 @@ def cmd_index(args, noder, catalog, top):
         catalog.save(top)
 
 
-def cmd_update(args, noder, catalog, top):
+def cmd_update(args: Dict[str, Any],
+               noder: Noder,
+               catalog: Catalog,
+               top: anytree.AnyNode) -> None:
     """update action"""
     path = args['<path>']
     name = args['<name>']
@@ -147,7 +159,9 @@ def cmd_update(args, noder, catalog, top):
         catalog.save(top)
 
 
-def cmd_ls(args, noder, top):
+def cmd_ls(args: Dict[str, Any],
+           noder: Noder,
+           top: anytree.AnyNode) -> List[anytree.AnyNode]:
     """ls action"""
     path = args['<path>']
     if not path:
@@ -168,7 +182,8 @@ def cmd_ls(args, noder, top):
     fmt = args['--format']
     if fmt.startswith('fzf'):
         raise BadFormatException('fzf is not supported in ls, use find')
-    found = noder.list(top, path,
+    found = noder.list(top,
+                       path,
                        rec=args['--recursive'],
                        fmt=fmt,
                        raw=args['--raw-size'])
@@ -178,7 +193,10 @@ def cmd_ls(args, noder, top):
     return found
 
 
-def cmd_rm(args, noder, catalog, top):
+def cmd_rm(args: Dict[str, Any],
+           noder: Noder,
+           catalog: Catalog,
+           top: anytree.AnyNode) -> anytree.AnyNode:
     """rm action"""
     name = args['<storage>']
     node = noder.get_storage_node(top, name)
@@ -191,7 +209,9 @@ def cmd_rm(args, noder, catalog, top):
     return top
 
 
-def cmd_find(args, noder, top):
+def cmd_find(args: Dict[str, Any],
+             noder: Noder,
+             top: anytree.AnyNode) -> List[anytree.AnyNode]:
     """find action"""
     fromtree = args['--parent']
     directory = args['--directory']
@@ -200,12 +220,18 @@ def cmd_find(args, noder, top):
     raw = args['--raw-size']
     script = args['--script']
     search_for = args['<term>']
-    return noder.find_name(top, search_for, script=script,
-                           startpath=startpath, only_dir=directory,
-                           parentfromtree=fromtree, fmt=fmt, raw=raw)
+    found = noder.find_name(top, search_for,
+                            script=script,
+                            startnode=startpath,
+                            only_dir=directory,
+                            parentfromtree=fromtree,
+                            fmt=fmt, raw=raw)
+    return found
 
 
-def cmd_graph(args, noder, top):
+def cmd_graph(args: Dict[str, Any],
+              noder: Noder,
+              top: anytree.AnyNode) -> None:
     """graph action"""
     path = args['<path>']
     if not path:
@@ -214,7 +240,9 @@ def cmd_graph(args, noder, top):
     Logger.info(f'create graph with \"{cmd}\" (you need graphviz)')
 
 
-def cmd_rename(args, catalog, top):
+def cmd_rename(args: Dict[str, Any],
+               catalog: Catalog,
+               top: anytree.AnyNode) -> None:
     """rename action"""
     storage = args['<storage>']
     new = args['<name>']
@@ -227,10 +255,12 @@ def cmd_rename(args, catalog, top):
             Logger.info(msg)
     else:
         Logger.err(f'Storage named \"{storage}\" does not exist')
-    return top
 
 
-def cmd_edit(args, noder, catalog, top):
+def cmd_edit(args: Dict[str, Any],
+             noder: Noder,
+             catalog: Catalog,
+             top: anytree.AnyNode) -> None:
     """edit action"""
     storage = args['<storage>']
     storages = list(x.name for x in top.children)
@@ -245,16 +275,15 @@ def cmd_edit(args, noder, catalog, top):
             Logger.info(f'Storage \"{storage}\" edited')
     else:
         Logger.err(f'Storage named \"{storage}\" does not exist')
-    return top
 
 
-def banner():
+def banner() -> None:
     """print banner"""
     Logger.stderr_nocolor(BANNER)
     Logger.stderr_nocolor("")
 
 
-def print_supported_formats():
+def print_supported_formats() -> None:
     """print all supported formats to stdout"""
     print('"native"     : native format')
     print('"csv"        : CSV format')
@@ -263,7 +292,7 @@ def print_supported_formats():
     print('"fzf-csv"    : fzf to csv (only for find)')
 
 
-def main():
+def main() -> bool:
     """entry point"""
     args = docopt(USAGE, version=VERSION)
 

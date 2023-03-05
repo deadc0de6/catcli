@@ -7,8 +7,9 @@ Class that represents the catcli catalog
 
 import os
 import pickle
-from anytree.exporter import JsonExporter
-from anytree.importer import JsonImporter
+import anytree  # type: ignore
+from anytree.exporter import JsonExporter  # type: ignore
+from anytree.importer import JsonImporter  # type: ignore
 
 # local imports
 from catcli.utils import ask
@@ -18,7 +19,10 @@ from catcli.logger import Logger
 class Catalog:
     """the catalog"""
 
-    def __init__(self, path, usepickle=False, debug=False, force=False):
+    def __init__(self, path: str,
+                 usepickle: bool = False,
+                 debug: bool = False,
+                 force: bool = False) -> None:
         """
         @path: catalog path
         @usepickle: use pickle
@@ -31,12 +35,13 @@ class Catalog:
         self.metanode = None
         self.pickle = usepickle
 
-    def set_metanode(self, metanode):
+    def set_metanode(self, metanode: anytree.AnyNode) -> None:
         """remove the metanode until tree is re-written"""
         self.metanode = metanode
-        self.metanode.parent = None
+        if self.metanode:
+            self.metanode.parent = None
 
-    def exists(self):
+    def exists(self) -> bool:
         """does catalog exist"""
         if not self.path:
             return False
@@ -44,7 +49,7 @@ class Catalog:
             return True
         return False
 
-    def restore(self):
+    def restore(self) -> anytree.AnyNode:
         """restore the catalog"""
         if not self.path:
             return None
@@ -56,7 +61,7 @@ class Catalog:
             content = file.read()
         return self._restore_json(content)
 
-    def save(self, node):
+    def save(self, node: anytree.AnyNode) -> bool:
         """save the catalog"""
         if not self.path:
             Logger.err('Path not defined')
@@ -77,19 +82,19 @@ class Catalog:
             return self._save_pickle(node)
         return self._save_json(node)
 
-    def _debug(self, text):
+    def _debug(self, text: str) -> None:
         if not self.debug:
             return
         Logger.debug(text)
 
-    def _save_pickle(self, node):
+    def _save_pickle(self, node: anytree.AnyNode) -> bool:
         """pickle the catalog"""
         with open(self.path, 'wb') as file:
             pickle.dump(node, file)
         self._debug(f'Catalog saved to pickle \"{self.path}\"')
         return True
 
-    def _restore_pickle(self):
+    def _restore_pickle(self) -> anytree.AnyNode:
         """restore the pickled tree"""
         with open(self.path, 'rb') as file:
             root = pickle.load(file)
@@ -97,7 +102,7 @@ class Catalog:
         self._debug(msg)
         return root
 
-    def _save_json(self, node):
+    def _save_json(self, node: anytree.AnyNode) -> bool:
         """export the catalog in json"""
         exp = JsonExporter(indent=2, sort_keys=True)
         with open(self.path, 'w', encoding='UTF-8') as file:
@@ -105,7 +110,7 @@ class Catalog:
         self._debug(f'Catalog saved to json \"{self.path}\"')
         return True
 
-    def _restore_json(self, string):
+    def _restore_json(self, string: str) -> anytree.AnyNode:
         """restore the tree from json"""
         imp = JsonImporter()
         root = imp.import_(string)

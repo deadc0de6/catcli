@@ -6,8 +6,11 @@ Catcli filesystem indexer
 """
 
 import os
+from typing import Tuple
+import anytree  # type: ignore
 
 # local imports
+from catcli.noder import Noder
 from catcli.logger import Logger
 
 
@@ -16,8 +19,10 @@ class Walker:
 
     MAXLINELEN = 80 - 15
 
-    def __init__(self, noder, usehash=True, debug=False,
-                 logpath=None):
+    def __init__(self, noder: Noder,
+                 usehash: bool = True,
+                 debug: bool = False,
+                 logpath: str = ''):
         """
         @noder: the noder to use
         @hash: calculate hash of nodes
@@ -30,7 +35,10 @@ class Walker:
         self.debug = debug
         self.lpath = logpath
 
-    def index(self, path, parent, name, storagepath=''):
+    def index(self, path: str,
+              parent: str,
+              name: str,
+              storagepath: str = '') -> Tuple[str, int]:
         """
         index a directory and store in tree
         @path: path to index
@@ -39,7 +47,8 @@ class Walker:
         """
         self._debug(f'indexing starting at {path}')
         if not parent:
-            parent = self.noder.new_dir_node(name, path, parent)
+            parent = self.noder.new_dir_node(name, path,
+                                             parent, storagepath)
 
         if os.path.islink(path):
             rel = os.readlink(path)
@@ -77,16 +86,19 @@ class Walker:
                 _, cnt2 = self.index(sub, dummy, base, nstoragepath)
                 cnt += cnt2
             break
-        self._progress(None)
+        self._progress('')
         return parent, cnt
 
-    def reindex(self, path, parent, top):
+    def reindex(self, path: str, parent: str, top: str) -> int:
         """reindex a directory and store in tree"""
         cnt = self._reindex(path, parent, top)
         cnt += self.noder.clean_not_flagged(parent)
         return cnt
 
-    def _reindex(self, path, parent, top, storagepath=''):
+    def _reindex(self, path: str,
+                 parent: str,
+                 top: anytree.AnyNode,
+                 storagepath: str = '') -> int:
         """
         reindex a directory and store in tree
         @path: directory path to re-index
@@ -131,7 +143,10 @@ class Walker:
             break
         return cnt
 
-    def _need_reindex(self, top, path, treepath):
+    def _need_reindex(self,
+                      top: anytree.AnyNode,
+                      path: str,
+                      treepath: str) -> Tuple[bool, anytree.AnyNode]:
         """
         test if node needs re-indexing
         @top: top node (storage)
@@ -153,13 +168,13 @@ class Walker:
             cnode.parent = None
         return True, cnode
 
-    def _debug(self, string):
+    def _debug(self, string: str) -> None:
         """print to debug"""
         if not self.debug:
             return
         Logger.debug(string)
 
-    def _progress(self, string):
+    def _progress(self, string: str) -> None:
         """print progress"""
         if self.debug:
             return
@@ -171,7 +186,7 @@ class Walker:
             string = string[:self.MAXLINELEN] + '...'
         Logger.progr(f'indexing: {string:80}')
 
-    def _log2file(self, string):
+    def _log2file(self, string: str) -> None:
         """log to file"""
         if not self.lpath:
             return
