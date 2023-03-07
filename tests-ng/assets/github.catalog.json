@@ -1,0 +1,61 @@
+{
+  "children": [
+    {
+      "attr": "",
+      "children": [
+        {
+          "maccess": 1666206037.0786593,
+          "md5": null,
+          "name": "FUNDING.yml",
+          "relpath": "/FUNDING.yml",
+          "size": 17,
+          "type": "file"
+        },
+        {
+          "children": [
+            {
+              "maccess": 1666206037.078865,
+              "md5": null,
+              "name": "pypi-release.yml",
+              "relpath": "workflows/pypi-release.yml",
+              "size": 691,
+              "type": "file"
+            },
+            {
+              "maccess": 1677748530.6920426,
+              "md5": null,
+              "name": "testing.yml",
+              "relpath": "workflows/testing.yml",
+              "size": 595,
+              "type": "file"
+            }
+          ],
+          "maccess": 1677748530.691944,
+          "md5": null,
+          "name": "workflows",
+          "relpath": "/workflows",
+          "size": 1190,
+          "type": "dir"
+        }
+      ],
+      "free": 23459602432,
+      "name": "github",
+      "size": 2380,
+      "total": 245107195904,
+      "ts": 1678214993,
+      "type": "storage"
+    },
+    {
+      "attr": {
+        "access": 1678214993,
+        "access_version": "0.8.7",
+        "created": 1678214993,
+        "created_version": "0.8.7"
+      },
+      "name": "meta",
+      "type": "meta"
+    }
+  ],
+  "name": "top",
+  "type": "top"
+}

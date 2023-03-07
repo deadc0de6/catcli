@@ -2,62 +2,85 @@
 # author: deadc0de6 (https://github.com/deadc0de6)
 # Copyright (c) 2021, deadc0de6
 
-cur=$(dirname "$(readlink -f "${0}")")
-cwd=`pwd`
+# exit on first error
+set -e
+
+# get current path
+rl="readlink -f"
+if ! ${rl} "${0}" >/dev/null 2>&1; then
+  rl="realpath"
+
+  if ! hash ${rl}; then
+    echo "\"${rl}\" not found !" && exit 1
+  fi
+fi
+cur=$(dirname "$(${rl} "${0}")")
 
 # pivot
-cd ${cur}/../
-python3 -m catcli.catcli --version
+prev="${cur}/.."
+cd "${prev}"
+
+# coverage
+#export PYTHONPATH=".:${PYTHONPATH}"
+bin="python3 -m catcli.catcli"
+if hash coverage 2>/dev/null; then
+  bin="coverage run -p --source=catcli -m catcli.catcli"
+  #bin="coverage run -p --source=${prev}/catcli -m catcli.catcli"
+fi
+
+echo "current dir: $(pwd)"
+echo "pythonpath: ${PYTHONPATH}"
+echo "bin: ${bin}"
+${bin} --version
+
+# get the helpers
+# shellcheck source=tests-ng/helper
+source "${cur}"/helper
+echo -e "$(tput setaf 6)==> RUNNING $(basename "${BASH_SOURCE[0]}") <==$(tput sgr0)"
 
 ##########################################################
 # the test
 ##########################################################
 
 # create temp dirs
-tmpd=`mktemp -d`
+tmpd=$(mktemp -d)
+clear_on_exit "${tmpd}"
 tmpu="${tmpd}/dir2"
-mkdir -p ${tmpu}
-
-# setup cleaning
-clean() {
-  # clean
-  rm -rf ${tmpd} ${tmpu}
-}
-trap clean EXIT
+mkdir -p "${tmpu}"
 
 catalog="${tmpd}/catalog"
 
-mkdir -p ${tmpd}/dir
-echo "abc" > ${tmpd}/dir/a
+mkdir -p "${tmpd}/dir"
+echo "abc" > "${tmpd}/dir/a"
 
 # index
-python3 -m catcli.catcli -B index --catalog=${catalog} dir ${tmpd}/dir
-python3 -m catcli.catcli -B ls --catalog=${catalog} dir
+${bin} -B index --catalog="${catalog}" dir "${tmpd}/dir"
+${bin} -B ls --catalog="${catalog}" dir
 
 # get attributes
-freeb=`python3 -m catcli.catcli -B ls --catalog=${catalog} dir | grep free: | sed 's/^.*,free:\([^ ]*\).*$/\1/g'`
-dub=`python3 -m catcli.catcli -B ls --catalog=${catalog} dir | grep du: | sed 's/^.*,du:\([^ ]*\).*$/\1/g'`
-dateb=`python3 -m catcli.catcli -B ls --catalog=${catalog} dir | grep date: | sed 's/^.*,date: \(.*\)$/\1/g'`
+freeb=$(${bin} -B ls --catalog="${catalog}" dir | grep free: | sed 's/^.*,free:\([^ ]*\).*$/\1/g')
+dub=$(${bin} -B ls --catalog="${catalog}" dir | grep du: | sed 's/^.*,du:\([^ ]*\).*$/\1/g')
+dateb=$(${bin} -B ls --catalog="${catalog}" dir | grep date: | sed 's/^.*,date: \(.*\)$/\1/g')
 echo "before: free:${freeb} | du:${dub} | date:${dateb}"
 
 # change content
-echo "abc" >> ${tmpd}/dir/a
-echo "abc" > ${tmpd}/dir/b
+echo "abc" >> "${tmpd}/dir/a"
+echo "abc" > "${tmpd}/dir/b"
 
 # move dir
-cp -r ${tmpd}/dir ${tmpu}/
+cp -r "${tmpd}/dir" "${tmpu}/"
 
 # sleep to force date change
 sleep 1
 
 # update
-python3 -m catcli.catcli -B update -f --catalog=${catalog} dir ${tmpu}/dir
-python3 -m catcli.catcli -B ls --catalog=${catalog} dir
+${bin} -B update -f --catalog="${catalog}" dir "${tmpu}/dir"
+${bin} -B ls --catalog="${catalog}" dir
 
 # get new attributes
-freea=`python3 -m catcli.catcli -B ls --catalog=${catalog} dir | grep free: | sed 's/^.*,free:\([^ ]*\).*$/\1/g'`
-dua=`python3 -m catcli.catcli -B ls --catalog=${catalog} dir | grep du: | sed 's/^.*,du:\([^ ]*\).*$/\1/g'`
-datea=`python3 -m catcli.catcli -B ls --catalog=${catalog} dir | grep date: | sed 's/^.*,date: \(.*\)$/\1/g'`
+freea=$(${bin} -B ls --catalog="${catalog}" dir | grep free: | sed 's/^.*,free:\([^ ]*\).*$/\1/g')
+dua=$(${bin} -B ls --catalog="${catalog}" dir | grep du: | sed 's/^.*,du:\([^ ]*\).*$/\1/g')
+datea=$(${bin} -B ls --catalog="${catalog}" dir | grep date: | sed 's/^.*,date: \(.*\)$/\1/g')
 echo "after: free:${freea} | du:${dua} | date:${datea}"
 
 # test they are all different
@@ -65,9 +88,7 @@ echo "after: free:${freea} | du:${dua} | date:${datea}"
 [ "${dub}" = "${dua}" ] && echo "WARNING du didn't change!"
 [ "${dateb}" = "${datea}" ] && echo "WARNING date didn't change!" && exit 1
 
-# pivot back
-cd ${cwd}
-
 # the end
-echo "test \"`basename $0`\" success"
+echo "test \"$(basename "$0")\" success"
+cd "${cur}"
 exit 0
