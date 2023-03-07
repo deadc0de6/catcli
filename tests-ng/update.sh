@@ -63,7 +63,7 @@ echo "after: free:${freea} | du:${dua} | date:${datea}"
 # test they are all different
 [ "${freeb}" = "${freea}" ] && echo "WARNING free didn't change!"
 [ "${dub}" = "${dua}" ] && echo "WARNING du didn't change!"
-[ "${dateb}" = "${datea}" ] && echo "date didn't change!" && exit 1
+[ "${dateb}" = "${datea}" ] && echo "WARNING date didn't change!" && exit 1
 
 # pivot back
 cd ${cwd}
