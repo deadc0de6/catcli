@@ -17,11 +17,11 @@ from docopt import docopt
 # local imports
 from catcli import cnode
 from catcli.version import __version__ as VERSION
+from catcli.cnode import NodeTop, NodeAny
 from catcli.logger import Logger
 from catcli.colors import Colors
 from catcli.catalog import Catalog
 from catcli.walker import Walker
-from catcli.cnode import Node
 from catcli.noder import Noder
 from catcli.utils import ask, edit
 from catcli.fuser import Fuser
@@ -82,7 +82,7 @@ Options:
 
 
 def cmd_mount(args: Dict[str, Any],
-              top: Node,
+              top: NodeTop,
               noder: Noder) -> None:
     """mount action"""
     mountpoint = args['<mountpoint>']
@@ -94,7 +94,7 @@ def cmd_mount(args: Dict[str, Any],
 def cmd_index(args: Dict[str, Any],
               noder: Noder,
               catalog: Catalog,
-              top: Node) -> None:
+              top: NodeTop) -> None:
     """index action"""
     path = args['<path>']
     name = args['<name>']
@@ -117,8 +117,8 @@ def cmd_index(args: Dict[str, Any],
 
     start = datetime.datetime.now()
     walker = Walker(noder, usehash=usehash, debug=debug)
-    attr = noder.attrs_to_string(args['--meta'])
-    root = noder.new_storage_node(name, path, parent=top, attrs=attr)
+    attr = args['--meta']
+    root = noder.new_storage_node(name, path, top, attr)
     _, cnt = walker.index(path, root, name)
     if subsize:
         noder.rec_size(root, store=True)
@@ -132,7 +132,7 @@ def cmd_index(args: Dict[str, Any],
 def cmd_update(args: Dict[str, Any],
                noder: Noder,
                catalog: Catalog,
-               top: Node) -> None:
+               top: NodeTop) -> None:
     """update action"""
     path = args['<path>']
     name = args['<name>']
@@ -162,7 +162,7 @@ def cmd_update(args: Dict[str, Any],
 
 def cmd_ls(args: Dict[str, Any],
            noder: Noder,
-           top: Node) -> List[Node]:
+           top: NodeTop) -> List[NodeAny]:
     """ls action"""
     path = args['<path>']
     if not path:
@@ -197,7 +197,7 @@ def cmd_ls(args: Dict[str, Any],
 def cmd_rm(args: Dict[str, Any],
            noder: Noder,
            catalog: Catalog,
-           top: Node) -> Node:
+           top: NodeTop) -> NodeTop:
     """rm action"""
     name = args['<storage>']
     node = noder.get_storage_node(top, name)
@@ -212,7 +212,7 @@ def cmd_rm(args: Dict[str, Any],
 
 def cmd_find(args: Dict[str, Any],
              noder: Noder,
-             top: Node) -> List[Node]:
+             top: NodeTop) -> List[NodeAny]:
     """find action"""
     fromtree = args['--parent']
     directory = args['--directory']
@@ -232,7 +232,7 @@ def cmd_find(args: Dict[str, Any],
 
 def cmd_graph(args: Dict[str, Any],
               noder: Noder,
-              top: Node) -> None:
+              top: NodeTop) -> None:
     """graph action"""
     path = args['<path>']
     if not path:
@@ -243,7 +243,7 @@ def cmd_graph(args: Dict[str, Any],
 
 def cmd_rename(args: Dict[str, Any],
                catalog: Catalog,
-               top: Node) -> None:
+               top: NodeTop) -> None:
     """rename action"""
     storage = args['<storage>']
     new = args['<name>']
@@ -261,7 +261,7 @@ def cmd_rename(args: Dict[str, Any],
 def cmd_edit(args: Dict[str, Any],
              noder: Noder,
              catalog: Catalog,
-             top: Node) -> None:
+             top: NodeTop) -> None:
     """edit action"""
     storage = args['<storage>']
     storages = list(x.name for x in top.children)

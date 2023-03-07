@@ -6,7 +6,8 @@ Class for printing nodes
 """
 
 import sys
-from typing import TypeVar, Type, Optional, Tuple, List
+from typing import TypeVar, Type, Optional, Tuple, List, \
+    Dict, Any
 
 from catcli.colors import Colors
 from catcli.utils import fix_badchars
@@ -25,7 +26,7 @@ class NodePrinter:
     @classmethod
     def print_storage_native(cls: Type[CLASSTYPE], pre: str,
                              name: str, args: str,
-                             attr: str) -> None:
+                             attr: Dict[str, Any]) -> None:
         """print a storage node"""
         end = ''
         if attr:

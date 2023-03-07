@@ -9,9 +9,9 @@ import os
 from typing import Tuple, Optional
 
 # local imports
-from catcli.cnode import Node
 from catcli.noder import Noder
 from catcli.logger import Logger
+from catcli.cnode import NodeAny, NodeTop
 
 
 class Walker:
@@ -36,7 +36,7 @@ class Walker:
         self.lpath = logpath
 
     def index(self, path: str,
-              parent: Node,
+              parent: NodeAny,
               name: str,
               storagepath: str = '') -> Tuple[str, int]:
         """
@@ -89,15 +89,15 @@ class Walker:
         self._progress('')
         return parent, cnt
 
-    def reindex(self, path: str, parent: Node, top: Node) -> int:
+    def reindex(self, path: str, parent: NodeAny, top: NodeTop) -> int:
         """reindex a directory and store in tree"""
         cnt = self._reindex(path, parent, top)
         cnt += self.noder.clean_not_flagged(parent)
         return cnt
 
     def _reindex(self, path: str,
-                 parent: Node,
-                 top: Node,
+                 parent: NodeAny,
+                 top: NodeTop,
                  storagepath: str = '') -> int:
         """
         reindex a directory and store in tree
@@ -148,9 +148,9 @@ class Walker:
         return cnt
 
     def _need_reindex(self,
-                      top: Node,
+                      top: NodeTop,
                       path: str,
-                      treepath: str) -> Tuple[bool, Optional[Node]]:
+                      treepath: str) -> Tuple[bool, Optional[NodeTop]]:
         """
         test if node needs re-indexing
         @top: top node (storage)

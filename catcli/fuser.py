@@ -14,8 +14,8 @@ import fuse  # type: ignore
 
 # local imports
 from catcli.noder import Noder
+from catcli.cnode import NodeTop, NodeAny
 from catcli import cnode
-from catcli.cnode import Node
 
 
 # build custom logger to log in /tmp
@@ -34,7 +34,7 @@ class Fuser:
     """fuse filesystem mounter"""
 
     def __init__(self, mountpoint: str,
-                 top: Node,
+                 top: NodeTop,
                  noder: Noder,
                  debug: bool = False):
         """fuse filesystem"""
@@ -50,13 +50,13 @@ class Fuser:
 class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
     """in-memory filesystem for catcli catalog"""
 
-    def __init__(self, top: Node,
+    def __init__(self, top: NodeTop,
                  noder: Noder):
         """init fuse filesystem"""
         self.top = top
         self.noder = noder
 
-    def _get_entry(self, path: str) -> Optional[Node]:
+    def _get_entry(self, path: str) -> Optional[NodeAny]:
         """return the node pointed by path"""
         pre = f'{SEPARATOR}{cnode.NAME_TOP}'
         if not path.startswith(pre):
@@ -69,7 +69,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
             return found[0]
         return None
 
-    def _get_entries(self, path: str) -> List[Node]:
+    def _get_entries(self, path: str) -> List[NodeAny]:
         """return nodes pointed by path"""
         pre = f'{SEPARATOR}{cnode.NAME_TOP}'
         if not path.startswith(pre):
@@ -91,17 +91,17 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
         curt = time()
         mode: Any = S_IFREG
-        if entry.type == cnode.TYPE_ARC:
+        if isinstance(entry, cnode.NodeArchived):
             mode = S_IFREG
-        elif entry.type == cnode.TYPE_DIR:
+        elif isinstance(entry, cnode.NodeDir):
             mode = S_IFDIR
-        elif entry.type == cnode.TYPE_FILE:
+        elif isinstance(entry, cnode.NodeFile):
             mode = S_IFREG
-        elif entry.type == cnode.TYPE_STORAGE:
+        elif isinstance(entry, cnode.NodeStorage):
             mode = S_IFDIR
-        elif entry.type == cnode.TYPE_META:
+        elif isinstance(entry, cnode.NodeMeta):
             mode = S_IFREG
-        elif entry.type == cnode.TYPE_TOP:
+        elif isinstance(entry, cnode.NodeTop):
             mode = S_IFREG
         return {
             'st_mode': (mode),
