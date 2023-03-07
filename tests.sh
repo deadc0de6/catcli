@@ -23,6 +23,7 @@ pyflakes tests/
 # R0903: Too few public methods
 # R0801: Similar lines in 2 files
 # R0902: Too many instance attributes
+# R0201: no-self-used
 pylint --version
 pylint \
   --disable=R0914 \
@@ -33,6 +34,8 @@ pylint \
   --disable=R0903 \
   --disable=R0801 \
   --disable=R0902 \
+  --disable=R0201 \
+  --disable=R0022 \
   catcli/
 pylint \
   --disable=W0212 \

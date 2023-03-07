@@ -62,7 +62,7 @@ class Noder:
                          newpath: str = '') -> Node:
         """
         return the storage node if any
-        if path is submitted, it will update the media info
+        if newpath is submitted, it will update the media info
         """
         found = None
         for node in top.children:
