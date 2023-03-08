@@ -49,11 +49,18 @@ clear_on_exit "${tmpd}"
 catalog="${tmpd}/catalog"
 
 # index
-${bin} -B index --catalog="${catalog}" github .github
-
-# diff
+${bin} -B index -c --catalog="${catalog}" github .github
 cat "${catalog}"
-diff "${cur}/assets/github.catalog.json" "${catalog}"
+
+# make sure we still get the same output in native format
+native="${tmpd}/native.txt"
+${bin} -B ls -r -s --format=native --catalog="${catalog}" > "${native}"
+diff -I '^.*| totsize.*$' "${cur}/assets/github.catalog.native.txt" "${native}"
+
+# make sure we still get the same output in csv
+csv="${tmpd}/csv.txt"
+${bin} -B ls -r -s --format=csv --catalog="${catalog}" > "${csv}"
+diff -I '^.*| totsize.*$' "${cur}/assets/github.catalog.csv.txt" "${csv}"
 
 # the end
 echo "test \"$(basename "$0")\" success"

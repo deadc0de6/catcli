@@ -322,11 +322,11 @@ class Noder:
         """
         if not node:
             return
-        if node.type == node.TYPE_TOP:
+        if node.type == nodes.TYPE_TOP:
             return
 
         out = []
-        if node.type == node.TYPE_STORAGE:
+        if node.type == nodes.TYPE_STORAGE:
             # handle storage
             out.append(node.name)   # name
             out.append(node.type)   # type
@@ -357,7 +357,7 @@ class Noder:
                 out.append(epoch_to_str(node.maccess))  # maccess
             else:
                 out.append('')  # fake maccess
-            if node.md5:
+            if self._has_attr(node, 'md5'):
                 out.append(node.md5)  # md5
             else:
                 out.append('')  # fake md5
