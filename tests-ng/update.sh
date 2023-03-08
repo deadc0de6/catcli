@@ -10,7 +10,7 @@ rl="readlink -f"
 if ! ${rl} "${0}" >/dev/null 2>&1; then
   rl="realpath"
 
-  if ! hash ${rl}; then
+  if ! command -v ${rl}; then
     echo "\"${rl}\" not found !" && exit 1
   fi
 fi
@@ -23,7 +23,7 @@ cd "${prev}"
 # coverage
 #export PYTHONPATH=".:${PYTHONPATH}"
 bin="python3 -m catcli.catcli"
-if hash coverage 2>/dev/null; then
+if command -v coverage 2>/dev/null; then
   bin="coverage run -p --source=catcli -m catcli.catcli"
   #bin="coverage run -p --source=${prev}/catcli -m catcli.catcli"
 fi

@@ -76,7 +76,7 @@ done
 
 # check shells
 echo "[+] shellcheck"
-if ! which shellcheck >/dev/null 2>&1; then
+if ! command -v shellcheck >/dev/null 2>&1; then
   echo "Install shellcheck"
   exit 1
 fi
