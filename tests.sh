@@ -11,7 +11,7 @@ set -e
 # pycodestyle
 echo "[+] pycodestyle"
 pycodestyle --version
-pycodestyle --ignore=W605 catcli/
+pycodestyle catcli/
 pycodestyle tests/
 pycodestyle setup.py
 
@@ -29,7 +29,6 @@ pyflakes setup.py
 # R0915: Too many statements
 # R0911: Too many return statements
 # R0903: Too few public methods
-# R0801: Similar lines in 2 files
 # R0902: Too many instance attributes
 # R0201: no-self-used
 echo "[+] pylint"
@@ -41,24 +40,28 @@ pylint -sn \
   --disable=R0915 \
   --disable=R0911 \
   --disable=R0903 \
-  --disable=R0801 \
   --disable=R0902 \
   --disable=R0201 \
   --disable=R0022 \
   catcli/
+
+
+
+# R0801: Similar lines in 2 files
+# W0212: Access to a protected member
+# R0914: Too many local variables
+# R0915: Too many statements
 pylint -sn \
+  --disable=R0801 \
   --disable=W0212 \
   --disable=R0914 \
   --disable=R0915 \
-  --disable=R0801 \
   tests/
 pylint -sn setup.py
 
 # mypy
 echo "[+] mypy"
-mypy \
-  --strict \
-  catcli/
+mypy --strict catcli/
 
 # unittest
 echo "[+] unittests"

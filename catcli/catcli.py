@@ -15,7 +15,6 @@ from typing import Dict, Any, List
 from docopt import docopt
 
 # local imports
-from catcli import nodes
 from catcli.version import __version__ as VERSION
 from catcli.nodes import NodeTop, NodeAny
 from catcli.logger import Logger
@@ -23,7 +22,7 @@ from catcli.colors import Colors
 from catcli.catalog import Catalog
 from catcli.walker import Walker
 from catcli.noder import Noder
-from catcli.utils import ask, edit
+from catcli.utils import ask, edit, path_to_search_all
 from catcli.fuser import Fuser
 from catcli.exceptions import BadFormatException, CatcliException
 
@@ -31,8 +30,6 @@ NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
 CATALOGPATH = f'{NAME}.catalog'
 GRAPHPATH = f'/tmp/{NAME}.dot'
-SEPARATOR = '/'
-WILD = '*'
 FORMATS = ['native', 'csv', 'csv-with-header', 'fzf-native', 'fzf-csv']
 
 BANNER = f""" +-+-+-+-+-+-+
@@ -168,22 +165,7 @@ def cmd_ls(args: Dict[str, Any],
            noder: Noder,
            top: NodeTop) -> List[NodeAny]:
     """ls action"""
-    path = args['<path>']
-    if not path:
-        path = SEPARATOR
-    if not path.startswith(SEPARATOR):
-        path = SEPARATOR + path
-    # prepend with top node path
-    pre = f'{SEPARATOR}{nodes.NAME_TOP}'
-    if not path.startswith(pre):
-        path = pre + path
-    # ensure ends with a separator
-    if not path.endswith(SEPARATOR):
-        path += SEPARATOR
-    # add wild card
-    if not path.endswith(WILD):
-        path += WILD
-
+    path = path_to_search_all(args['<path>'])
     fmt = args['--format']
     if fmt.startswith('fzf'):
         raise BadFormatException('fzf is not supported in ls, use find')

@@ -15,6 +15,7 @@ import fuse  # type: ignore
 # local imports
 from catcli.noder import Noder
 from catcli.nodes import NodeTop, NodeAny
+from catcli.utils import path_to_search_all, path_to_top
 from catcli import nodes
 
 
@@ -24,10 +25,6 @@ logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler('/tmp/fuse-catcli.log')
 fh.setLevel(logging.DEBUG)
 logger.addHandler(fh)
-
-# globals
-WILD = '*'
-SEPARATOR = '/'
 
 
 class Fuser:
@@ -58,9 +55,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
     def _get_entry(self, path: str) -> Optional[NodeAny]:
         """return the node pointed by path"""
-        pre = f'{SEPARATOR}{nodes.NAME_TOP}'
-        if not path.startswith(pre):
-            path = pre + path
+        path = path_to_top(path)
         found = self.noder.list(self.top, path,
                                 rec=False,
                                 fmt='native',
@@ -71,13 +66,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
     def _get_entries(self, path: str) -> List[NodeAny]:
         """return nodes pointed by path"""
-        pre = f'{SEPARATOR}{nodes.NAME_TOP}'
-        if not path.startswith(pre):
-            path = pre + path
-        if not path.endswith(SEPARATOR):
-            path += SEPARATOR
-        if not path.endswith(WILD):
-            path += WILD
+        path = path_to_search_all(path)
         found = self.noder.list(self.top, path,
                                 rec=False,
                                 fmt='native',
@@ -89,27 +78,36 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
         if not entry:
             return {}
 
-        curt = time()
+        maccess = time()
         mode: Any = S_IFREG
+        size: int = 0
         if entry.type == nodes.TYPE_ARCHIVED:
             mode = S_IFREG
+            size = entry.size
         elif entry.type == nodes.TYPE_DIR:
             mode = S_IFDIR
+            size = entry.size
+            maccess = entry.maccess
         elif entry.type == nodes.TYPE_FILE:
             mode = S_IFREG
+            size = entry.size
+            maccess = entry.maccess
         elif entry.type == nodes.TYPE_STORAGE:
             mode = S_IFDIR
+            size = entry.size
+            maccess = entry.ts
         elif entry.type == nodes.TYPE_META:
             mode = S_IFREG
         elif entry.type == nodes.TYPE_TOP:
             mode = S_IFREG
+        mode = mode | 0o777
         return {
-            'st_mode': (mode),
-            'st_nlink': 1,
-            'st_size': 0,
-            'st_ctime': curt,
-            'st_mtime': curt,
-            'st_atime': curt,
+            'st_mode': (mode),  # file type
+            'st_nlink': 1,  # count hard link
+            'st_size': size,
+            'st_ctime': maccess,  # attr last modified
+            'st_mtime': maccess,  # content last modified
+            'st_atime': maccess,  # access time
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
         }
@@ -122,7 +120,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
             # mountpoint
             curt = time()
             meta = {
-                'st_mode': (S_IFDIR),
+                'st_mode': (S_IFDIR | 0o777),
                 'st_nlink': 1,
                 'st_size': 0,
                 'st_ctime': curt,
