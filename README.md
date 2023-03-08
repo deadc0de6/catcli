@@ -24,6 +24,7 @@ Features:
   * Index any directories in a catalog
   * Ability to search for files by name in the catalog
   * Ability to navigate through indexed data à la `ls`
+  * Support for fuse to mount the indexed data as a virtual filesystem
   * Handle archive files (zip, tar, ...) and index their content
   * Save catalog to json for easy versioning with git
   * Command line interface FTW
@@ -73,6 +74,7 @@ See the [examples](#examples) for an overview of the available features.
   * [Index archive files](#index-archive-files)
   * [Walk indexed files with ls](#walk-indexed-files-with-ls)
   * [Find files](#find-files)
+  * [Mount catalog](#mount-catalog)
   * [Display entire hierarchy](#display-entire-hierarchy)
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
@@ -184,6 +186,27 @@ searching:
 * `--format=fzf-csv`: display the result in csv
 
 See the [examples](#examples) for more.
+
+## Mount catalog
+
+The catalog can be mounted with [fuse](https://www.kernel.org/doc/html/next/filesystems/fuse.html)
+and navigate like any filesystem.
+
+```bash
+$ mkdir /tmp/mnt
+$ catcli index -c github .github
+$ catcli mount /tmp/mnt
+$ ls -laR /tmp/mnt
+drwxrwxrwx - user  8 Mar 22:08 github
+
+mnt/github:
+.rwxrwxrwx 17 user 19 Oct  2022 FUNDING.yml
+drwxrwxrwx  - user  2 Mar 10:15 workflows
+
+mnt/github/workflows:
+.rwxrwxrwx 691 user 19 Oct  2022 pypi-release.yml
+.rwxrwxrwx 635 user  8 Mar 21:08 testing.yml
+```
 
 ## Display entire hierarchy
 
