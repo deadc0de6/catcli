@@ -438,7 +438,9 @@ class Noder:
             sztotal = size_to_str(node.total, raw=raw)
             szused = size_to_str(node.total - node.free, raw=raw)
             nbchildren = len(node.children)
-            pcent = node.free * 100 / node.total
+            pcent = 0
+            if node.total > 0:
+                pcent = node.free * 100 / node.total
             freepercent = f'{pcent:.1f}%'
             # get the date
             timestamp = ''
