@@ -13,8 +13,8 @@ import anytree  # type: ignore
 from pyfzf.pyfzf import FzfPrompt  # type: ignore
 
 # local imports
-from catcli import cnode
-from catcli.cnode import NodeAny, NodeStorage, \
+from catcli import nodes
+from catcli.nodes import NodeAny, NodeStorage, \
     NodeTop, NodeFile, NodeArchived, NodeDir, NodeMeta
 from catcli.utils import size_to_str, epoch_to_str, md5sum, fix_badchars
 from catcli.logger import Logger
@@ -67,7 +67,7 @@ class Noder:
         """
         found = None
         for node in top.children:
-            if not isinstance(node, cnode.NodeStorage):
+            if not isinstance(node, nodes.NodeStorage):
                 continue
             if node.name == name:
                 found = node
@@ -138,25 +138,26 @@ class Noder:
         recursively traverse tree and return size
         @store: store the size in the node
         """
-        if isinstance(node, cnode.NodeFile):
+        if isinstance(node, nodes.NodeFile):
             self._debug(f'getting node size for \"{node.name}\"')
             return node.size
         msg = f'getting node size recursively for \"{node.name}\"'
         self._debug(msg)
         size: int = 0
         for i in node.children:
-            if isinstance(node, cnode.NodeDir):
+            if isinstance(node, nodes.NodeDir):
                 size = self.rec_size(i, store=store)
                 if store:
                     i.size = size
                 size += size
-            if isinstance(node, cnode.NodeStorage):
+            if isinstance(node, nodes.NodeStorage):
                 size = self.rec_size(i, store=store)
                 if store:
                     i.size = size
                 size += size
             else:
                 continue
+        self._debug(f'size of {node.name} is {size}')
         if store:
             node.size = size
         return size
@@ -188,7 +189,9 @@ class Noder:
     ###############################################################
     def new_top_node(self) -> NodeTop:
         """create a new top node"""
-        return NodeTop(cnode.NAME_TOP)
+        top = NodeTop(nodes.NAME_TOP)
+        self._debug(f'new top node: {top}')
+        return top
 
     def new_file_node(self, name: str, path: str,
                       parent: NodeAny, storagepath: str) -> Optional[NodeFile]:
@@ -251,7 +254,7 @@ class Noder:
                            total,
                            0,
                            epoch,
-                           attrs,
+                           self.attrs_to_string(attrs),
                            parent=parent)
 
     def new_archive_node(self, name: str, path: str,
@@ -272,19 +275,16 @@ class Noder:
             attrs: Dict[str, Any] = {}
             attrs['created'] = epoch
             attrs['created_version'] = VERSION
-            meta = NodeMeta(name=cnode.NAME_META,
-                            attr=self.attrs_to_string(attrs))
-        if meta.attr:
-            meta.attr += ', '
-        meta.attr += f'access={epoch}'
-        meta.attr += ', '
-        meta.attr += f'access_version={VERSION}'
+            meta = NodeMeta(name=nodes.NAME_META,
+                            attr=attrs)
+        meta.attr['access'] = epoch
+        meta.attr['access_version'] = VERSION
         return meta
 
     def _get_meta_node(self, top: NodeTop) -> Optional[NodeMeta]:
         """return the meta node if any"""
         try:
-            found = next(filter(lambda x: isinstance(x, cnode.NodeMeta),
+            found = next(filter(lambda x: isinstance(x, nodes.NodeMeta),
                          top.children))
             return cast(NodeMeta, found)
         except StopIteration:
@@ -294,7 +294,7 @@ class Noder:
         """remove any node not flagged and clean flags"""
         cnt = 0
         for node in anytree.PreOrderIter(top):
-            if not isinstance(node, (cnode.NodeDir, cnode.NodeFile)):
+            if not isinstance(node, (nodes.NodeDir, nodes.NodeFile)):
                 continue
             if self._clean(node):
                 cnt += 1
@@ -361,7 +361,7 @@ class Noder:
                 out.append(node.md5)  # md5
             else:
                 out.append('')  # fake md5
-            if isinstance(node, cnode.NodeDir):
+            if isinstance(node, nodes.NodeDir):
                 out.append(str(len(node.children)))  # nbfiles
             else:
                 out.append('')  # fake nbfiles
@@ -390,10 +390,10 @@ class Noder:
         @recalcparent: get relpath from tree instead of relpath field
         @raw: print raw size rather than human readable
         """
-        if isinstance(node, cnode.NodeTop):
+        if isinstance(node, nodes.NodeTop):
             # top node
             Logger.stdout_nocolor(f'{pre}{node.name}')
-        elif isinstance(node, cnode.NodeFile):
+        elif isinstance(node, nodes.NodeFile):
             # node of type file
             name = node.name
             if withpath:
@@ -413,7 +413,7 @@ class Noder:
                 content = Logger.get_bold_text(storage.name)
                 compl += f', storage:{content}'
             NodePrinter.print_file_native(pre, name, compl)
-        elif isinstance(node, cnode.NodeDir):
+        elif isinstance(node, nodes.NodeDir):
             # node of type directory
             name = node.name
             if withpath:
@@ -433,7 +433,7 @@ class Noder:
             if withstorage:
                 attr.append(('storage', Logger.get_bold_text(storage.name)))
             NodePrinter.print_dir_native(pre, name, depth=depth, attr=attr)
-        elif isinstance(node, cnode.NodeStorage):
+        elif isinstance(node, nodes.NodeStorage):
             # node of type storage
             sztotal = size_to_str(node.total, raw=raw)
             szused = size_to_str(node.total - node.free, raw=raw)
@@ -463,7 +463,7 @@ class Noder:
                                              name,
                                              argsstring,
                                              node.attr)
-        elif isinstance(node, cnode.NodeArchived):
+        elif isinstance(node, nodes.NodeArchived):
             # archive node
             if self.arc:
                 NodePrinter.print_archive_native(pre, node.name, node.archive)
@@ -515,7 +515,7 @@ class Noder:
         @fmt: output format for selected nodes
         """
         rendered = anytree.RenderTree(node, childiter=self._sort_tree)
-        nodes = {}
+        the_nodes = {}
         # construct node names list
         for _, _, rend in rendered:
             if not rend:
@@ -523,17 +523,17 @@ class Noder:
             parents = self._get_parents(rend)
             storage = self._get_storage(rend)
             fullpath = os.path.join(storage.name, parents)
-            nodes[fullpath] = rend
+            the_nodes[fullpath] = rend
         # prompt with fzf
-        paths = self._fzf_prompt(nodes.keys())
+        paths = self._fzf_prompt(the_nodes.keys())
         # print the resulting tree
         subfmt = fmt.replace('fzf-', '')
         for path in paths:
             if not path:
                 continue
-            if path not in nodes:
+            if path not in the_nodes:
                 continue
-            rend = nodes[path]
+            rend = the_nodes[path]
             self.print_tree(rend, fmt=subfmt)
 
     @staticmethod
@@ -626,16 +626,16 @@ class Noder:
     def _callback_find_name(self, term: str, only_dir: bool) -> Any:
         """callback for finding files"""
         def find_name(node: NodeAny) -> bool:
-            if isinstance(node, cnode.NodeStorage):
+            if isinstance(node, nodes.NodeStorage):
                 # ignore storage nodes
                 return False
-            if isinstance(node, cnode.NodeTop):
+            if isinstance(node, nodes.NodeTop):
                 # ignore top nodes
                 return False
-            if isinstance(node, cnode.NodeMeta):
+            if isinstance(node, nodes.NodeMeta):
                 # ignore meta nodes
                 return False
-            if only_dir and isinstance(node, cnode.NodeDir):
+            if only_dir and isinstance(node, nodes.NodeDir):
                 # ignore non directory
                 return False
 
@@ -773,7 +773,7 @@ class Noder:
 
     def _get_storage(self, node: NodeAny) -> NodeStorage:
         """recursively traverse up to find storage"""
-        if isinstance(node, cnode.NodeStorage):
+        if isinstance(node, nodes.NodeStorage):
             return node
         return cast(NodeStorage, node.ancestors[1])
 
@@ -784,9 +784,9 @@ class Noder:
 
     def _get_parents(self, node: NodeAny) -> str:
         """get all parents recursively"""
-        if isinstance(node, cnode.NodeStorage):
+        if isinstance(node, nodes.NodeStorage):
             return ''
-        if isinstance(node, cnode.NodeTop):
+        if isinstance(node, nodes.NodeTop):
             return ''
         parent = self._get_parents(node.parent)
         if parent:

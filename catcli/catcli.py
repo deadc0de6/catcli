@@ -15,9 +15,9 @@ from typing import Dict, Any, List
 from docopt import docopt
 
 # local imports
-from catcli import cnode
+from catcli import nodes
 from catcli.version import __version__ as VERSION
-from catcli.cnode import NodeTop, NodeAny
+from catcli.nodes import NodeTop, NodeAny
 from catcli.logger import Logger
 from catcli.colors import Colors
 from catcli.catalog import Catalog
@@ -44,8 +44,10 @@ USAGE = f"""
 
 Usage:
     {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
-    {NAME} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
-    {NAME} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
+    {NAME} find   [--catalog=<path>] [--format=<fmt>]
+                  [-aBCbdVsP] [--path=<path>] [<term>]
+    {NAME} index  [--catalog=<path>] [--meta=<meta>...]
+                  [-aBCcfnV] <name> <path>
     {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
     {NAME} mount  [--catalog=<path>] [-V] <mountpoint>
     {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
@@ -66,14 +68,14 @@ Options:
     -C --no-color       Do not output colors [default: False].
     -c --hash           Calculate md5 hash [default: False].
     -d --directory      Only directory [default: False].
-    -F --format=<fmt>   Print format, see command \"print_supported_formats\" [default: native].
+    -F --format=<fmt>   see \"print_supported_formats\" [default: native].
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -n --no-subsize     Do not store size of directories [default: False].
     -P --parent         Ignore stored relpath [default: True].
     -p --path=<path>    Start path.
     -r --recursive      Recursive [default: False].
-    -s --raw-size       Print raw size rather than human readable [default: False].
+    -s --raw-size       Print raw size [default: False].
     -S --sortsize       Sort by size, largest first [default: False].
     -V --verbose        Be verbose [default: False].
     -v --version        Show version.
@@ -113,6 +115,8 @@ def cmd_index(args: Dict[str, Any],
             Logger.err('aborted')
             return
         node = noder.get_storage_node(top, name)
+        Logger.debug(f'top node: {top}')
+        Logger.debug(f'storage node: {node}')
         node.parent = None
 
     start = datetime.datetime.now()
@@ -170,7 +174,7 @@ def cmd_ls(args: Dict[str, Any],
     if not path.startswith(SEPARATOR):
         path = SEPARATOR + path
     # prepend with top node path
-    pre = f'{SEPARATOR}{cnode.NAME_TOP}'
+    pre = f'{SEPARATOR}{nodes.NAME_TOP}'
     if not path.startswith(pre):
         path = pre + path
     # ensure ends with a separator

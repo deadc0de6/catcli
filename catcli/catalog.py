@@ -7,12 +7,12 @@ Class that represents the catcli catalog
 
 import os
 import pickle
-from typing import Optional, Union, Any, cast
+from typing import Optional
 from anytree.exporter import JsonExporter  # type: ignore
 from anytree.importer import JsonImporter  # type: ignore
 
 # local imports
-from catcli.cnode import NodeMeta, NodeTop
+from catcli.nodes import NodeMeta, NodeTop
 from catcli.utils import ask
 from catcli.logger import Logger
 
@@ -88,32 +88,38 @@ class Catalog:
             return
         Logger.debug(text)
 
-    def _save_pickle(self, node: NodeTop) -> bool:
+    def _save_pickle(self, top: NodeTop) -> bool:
         """pickle the catalog"""
         with open(self.path, 'wb') as file:
-            pickle.dump(node, file)
+            pickle.dump(top, file)
         self._debug(f'Catalog saved to pickle \"{self.path}\"')
         return True
 
-    def _restore_pickle(self) -> Union[NodeTop, Any]:
+    def _restore_pickle(self) -> NodeTop:
         """restore the pickled tree"""
         with open(self.path, 'rb') as file:
             root = pickle.load(file)
         msg = f'Catalog imported from pickle \"{self.path}\"'
         self._debug(msg)
-        return root
+        top = NodeTop(root)
+        return top
 
-    def _save_json(self, node: NodeTop) -> bool:
+    def _save_json(self, top: NodeTop) -> bool:
         """export the catalog in json"""
+        Logger.debug(f'saving {top} to json...')
         exp = JsonExporter(indent=2, sort_keys=True)
         with open(self.path, 'w', encoding='UTF-8') as file:
-            exp.write(node, file)
+            exp.write(top, file)
         self._debug(f'Catalog saved to json \"{self.path}\"')
         return True
 
     def _restore_json(self, string: str) -> NodeTop:
         """restore the tree from json"""
         imp = JsonImporter()
+        Logger.debug(f'import from string: {string}')
         root = imp.import_(string)
         self._debug(f'Catalog imported from json \"{self.path}\"')
-        return cast(NodeTop, root)
+        top = NodeTop(root)
+        Logger.debug(f'top imported: {top}')
+        return top
+        # return cast(NodeTop, root)

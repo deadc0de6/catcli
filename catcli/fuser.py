@@ -14,8 +14,8 @@ import fuse  # type: ignore
 
 # local imports
 from catcli.noder import Noder
-from catcli.cnode import NodeTop, NodeAny
-from catcli import cnode
+from catcli.nodes import NodeTop, NodeAny
+from catcli import nodes
 
 
 # build custom logger to log in /tmp
@@ -58,7 +58,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
     def _get_entry(self, path: str) -> Optional[NodeAny]:
         """return the node pointed by path"""
-        pre = f'{SEPARATOR}{cnode.NAME_TOP}'
+        pre = f'{SEPARATOR}{nodes.NAME_TOP}'
         if not path.startswith(pre):
             path = pre + path
         found = self.noder.list(self.top, path,
@@ -71,7 +71,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
     def _get_entries(self, path: str) -> List[NodeAny]:
         """return nodes pointed by path"""
-        pre = f'{SEPARATOR}{cnode.NAME_TOP}'
+        pre = f'{SEPARATOR}{nodes.NAME_TOP}'
         if not path.startswith(pre):
             path = pre + path
         if not path.endswith(SEPARATOR):
@@ -91,17 +91,17 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
         curt = time()
         mode: Any = S_IFREG
-        if isinstance(entry, cnode.NodeArchived):
+        if isinstance(entry, nodes.NodeArchived):
             mode = S_IFREG
-        elif isinstance(entry, cnode.NodeDir):
+        elif isinstance(entry, nodes.NodeDir):
             mode = S_IFDIR
-        elif isinstance(entry, cnode.NodeFile):
+        elif isinstance(entry, nodes.NodeFile):
             mode = S_IFREG
-        elif isinstance(entry, cnode.NodeStorage):
+        elif isinstance(entry, nodes.NodeStorage):
             mode = S_IFDIR
-        elif isinstance(entry, cnode.NodeMeta):
+        elif isinstance(entry, nodes.NodeMeta):
             mode = S_IFREG
-        elif isinstance(entry, cnode.NodeTop):
+        elif isinstance(entry, nodes.NodeTop):
             mode = S_IFREG
         return {
             'st_mode': (mode),

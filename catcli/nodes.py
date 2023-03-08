@@ -10,7 +10,6 @@ from typing import Dict, Any
 from anytree import NodeMixin  # type: ignore
 
 
-_TYPE_BAD = 'badtype'
 _TYPE_TOP = 'top'
 _TYPE_FILE = 'file'
 _TYPE_DIR = 'dir'
@@ -30,10 +29,20 @@ class NodeAny(NodeMixin):  # type: ignore
                  children=None):
         """build generic node"""
         super().__init__()
-        self._flagged = False
         self.parent = parent
         if children:
             self.children = children
+
+    def _to_str(self) -> str:
+        ret = str(self.__class__) + ": " + str(self.__dict__)
+        if self.children:
+            ret += '\n'
+        for child in self.children:
+            ret += '  child => ' + str(child)
+        return ret
+
+    def __str__(self) -> str:
+        return self._to_str()
 
     def flagged(self) -> bool:
         """is flagged"""
@@ -43,12 +52,12 @@ class NodeAny(NodeMixin):  # type: ignore
 
     def flag(self) -> None:
         """flag a node"""
-        self._flagged = True
+        self._flagged = True  # pylint: disable=W0201
 
     def unflag(self) -> None:
         """unflag node"""
-        self._flagged = False
-        del self._flagged
+        self._flagged = False  # pylint: disable=W0201
+        delattr(self, '_flagged')
 
 
 class NodeTop(NodeAny):
@@ -64,6 +73,9 @@ class NodeTop(NodeAny):
         self.parent = None
         if children:
             self.children = children
+
+    def __str__(self) -> str:
+        return self._to_str()
 
 
 class NodeFile(NodeAny):
@@ -89,6 +101,9 @@ class NodeFile(NodeAny):
         if children:
             self.children = children
 
+    def __str__(self) -> str:
+        return self._to_str()
+
 
 class NodeDir(NodeAny):
     """a directory node"""
@@ -110,6 +125,9 @@ class NodeDir(NodeAny):
         self.parent = parent
         if children:
             self.children = children
+
+    def __str__(self) -> str:
+        return self._to_str()
 
 
 class NodeArchived(NodeAny):
@@ -135,6 +153,9 @@ class NodeArchived(NodeAny):
         if children:
             self.children = children
 
+    def __str__(self) -> str:
+        return self._to_str()
+
 
 class NodeStorage(NodeAny):
     """a storage node"""
@@ -144,8 +165,8 @@ class NodeStorage(NodeAny):
                  free: int,
                  total: int,
                  size: int,
-                 indexed_dt: float,
-                 attr: Dict[str, Any],
+                 ts: float,
+                 attr: str,
                  parent=None,
                  children=None):
         """build a storage node"""
@@ -156,10 +177,13 @@ class NodeStorage(NodeAny):
         self.total = total
         self.attr = attr
         self.size = size
-        self.indexed_dt = indexed_dt
+        self.ts = ts
         self.parent = parent
         if children:
             self.children = children
+
+    def __str__(self) -> str:
+        return self._to_str()
 
 
 class NodeMeta(NodeAny):
@@ -167,7 +191,7 @@ class NodeMeta(NodeAny):
 
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
-                 attr: str,
+                 attr: Dict[str, Any],
                  parent=None,
                  children=None):
         """build a meta node"""
@@ -178,3 +202,6 @@ class NodeMeta(NodeAny):
         self.parent = parent
         if children:
             self.children = children
+
+    def __str__(self) -> str:
+        return self._to_str()

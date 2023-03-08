@@ -37,7 +37,7 @@ class Logger:
     def debug(cls: Type[CLASSTYPE],
               string: str) -> None:
         """to stderr no color"""
-        cls.stderr_nocolor(f'[DBG] {string}\n')
+        cls.stderr_nocolor(f'[DBG] {string}')
 
     @classmethod
     def info(cls: Type[CLASSTYPE],

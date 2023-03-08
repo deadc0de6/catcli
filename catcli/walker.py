@@ -11,7 +11,7 @@ from typing import Tuple, Optional
 # local imports
 from catcli.noder import Noder
 from catcli.logger import Logger
-from catcli.cnode import NodeAny, NodeTop
+from catcli.nodes import NodeAny, NodeTop
 
 
 class Walker:
