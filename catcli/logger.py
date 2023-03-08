@@ -69,16 +69,3 @@ class Logger:
         """make it bold"""
         string = fix_badchars(string)
         return f'{Colors.BOLD}{string}{Colors.RESET}'
-
-    @classmethod
-    def log_to_file(cls: Type[CLASSTYPE],
-                    path: str,
-                    string: str,
-                    append: bool = True) -> None:
-        """log to file"""
-        string = fix_badchars(string)
-        mode = 'w'
-        if append:
-            mode = 'a'
-        with open(path, mode, encoding='UTF-8') as file:
-            file.write(string)

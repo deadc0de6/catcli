@@ -6,7 +6,6 @@ fuse for catcli
 """
 
 import os
-import logging
 from time import time
 from stat import S_IFDIR, S_IFREG
 from typing import List, Dict, Any, Optional
@@ -17,14 +16,6 @@ from catcli.noder import Noder
 from catcli.nodes import NodeTop, NodeAny
 from catcli.utils import path_to_search_all, path_to_top
 from catcli import nodes
-
-
-# build custom logger to log in /tmp
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('/tmp/fuse-catcli.log')
-fh.setLevel(logging.DEBUG)
-logger.addHandler(fh)
 
 
 class Fuser:
@@ -114,8 +105,6 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
     def getattr(self, path: str, _fh: Any = None) -> Dict[str, Any]:
         """return attr of file pointed by path"""
-        logger.info('getattr path: %s', path)
-
         if path == '/':
             # mountpoint
             curt = time()
@@ -135,7 +124,6 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
     def readdir(self, path: str, _fh: Any) -> List[str]:
         """read directory content"""
-        logger.info('readdir path: %s', path)
         content = ['.', '..']
         entries = self._get_entries(path)
         for entry in entries:

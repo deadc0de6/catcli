@@ -112,8 +112,6 @@ def cmd_index(args: Dict[str, Any],
             Logger.err('aborted')
             return
         node = noder.get_storage_node(top, name)
-        Logger.debug(f'top node: {top}')
-        Logger.debug(f'storage node: {node}')
         node.parent = None
 
     start = datetime.datetime.now()

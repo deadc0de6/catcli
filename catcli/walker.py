@@ -118,7 +118,6 @@ class Walker:
                     if node:
                         node.flag()
                     continue
-                self._log2file(f'update catalog for \"{sub}\"')
                 node = self.noder.new_file_node(os.path.basename(file), sub,
                                                 parent, storagepath)
                 if node:
@@ -131,7 +130,6 @@ class Walker:
                 treepath = os.path.join(storagepath, adir)
                 reindex, dummy = self._need_reindex(parent, sub, treepath)
                 if reindex:
-                    self._log2file(f'update catalog for \"{sub}\"')
                     dummy = self.noder.new_dir_node(base, sub,
                                                     parent, storagepath)
                     cnt += 1
@@ -189,10 +187,3 @@ class Walker:
         if len(string) > self.MAXLINELEN:
             string = string[:self.MAXLINELEN] + '...'
         Logger.progr(f'indexing: {string:80}')
-
-    def _log2file(self, string: str) -> None:
-        """log to file"""
-        if not self.lpath:
-            return
-        line = f'{string}\n'
-        Logger.log_to_file(self.lpath, line, append=True)
