@@ -293,8 +293,8 @@ def print_supported_formats() -> None:
     print('"native"     : native format')
     print('"csv"        : CSV format')
     print(f'               {Noder.CSV_HEADER}')
-    print('"fzf-native" : fzf to native (only for find)')
-    print('"fzf-csv"    : fzf to csv (only for find)')
+    print('"fzf-native" : fzf to native (only valid for find)')
+    print('"fzf-csv"    : fzf to csv (only valid for find)')
 
 
 def main() -> bool:

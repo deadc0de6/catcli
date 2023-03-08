@@ -91,17 +91,17 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
         curt = time()
         mode: Any = S_IFREG
-        if isinstance(entry, nodes.NodeArchived):
+        if entry.type == nodes.TYPE_ARCHIVED:
             mode = S_IFREG
-        elif isinstance(entry, nodes.NodeDir):
+        elif entry.type == nodes.TYPE_DIR:
             mode = S_IFDIR
-        elif isinstance(entry, nodes.NodeFile):
+        elif entry.type == nodes.TYPE_FILE:
             mode = S_IFREG
-        elif isinstance(entry, nodes.NodeStorage):
+        elif entry.type == nodes.TYPE_STORAGE:
             mode = S_IFDIR
-        elif isinstance(entry, nodes.NodeMeta):
+        elif entry.type == nodes.TYPE_META:
             mode = S_IFREG
-        elif isinstance(entry, nodes.NodeTop):
+        elif entry.type == nodes.TYPE_TOP:
             mode = S_IFREG
         return {
             'st_mode': (mode),

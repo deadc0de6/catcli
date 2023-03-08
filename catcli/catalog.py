@@ -6,12 +6,12 @@ Class that represents the catcli catalog
 """
 
 import os
-import pickle
 from typing import Optional
 from anytree.exporter import JsonExporter  # type: ignore
 from anytree.importer import JsonImporter  # type: ignore
 
 # local imports
+from catcli import nodes
 from catcli.nodes import NodeMeta, NodeTop
 from catcli.utils import ask
 from catcli.logger import Logger
@@ -21,7 +21,6 @@ class Catalog:
     """the catalog"""
 
     def __init__(self, path: str,
-                 usepickle: bool = False,
                  debug: bool = False,
                  force: bool = False) -> None:
         """
@@ -34,7 +33,6 @@ class Catalog:
         self.debug = debug
         self.force = force
         self.metanode: Optional[NodeMeta] = None
-        self.pickle = usepickle
 
     def set_metanode(self, metanode: NodeMeta) -> None:
         """remove the metanode until tree is re-written"""
@@ -56,8 +54,6 @@ class Catalog:
             return None
         if not os.path.exists(self.path):
             return None
-        if self.pickle:
-            return self._restore_pickle()
         with open(self.path, 'r', encoding='UTF-8') as file:
             content = file.read()
         return self._restore_json(content)
@@ -79,8 +75,6 @@ class Catalog:
             return False
         if self.metanode:
             self.metanode.parent = node
-        if self.pickle:
-            return self._save_pickle(node)
         return self._save_json(node)
 
     def _debug(self, text: str) -> None:
@@ -88,38 +82,24 @@ class Catalog:
             return
         Logger.debug(text)
 
-    def _save_pickle(self, top: NodeTop) -> bool:
-        """pickle the catalog"""
-        with open(self.path, 'wb') as file:
-            pickle.dump(top, file)
-        self._debug(f'Catalog saved to pickle \"{self.path}\"')
-        return True
-
-    def _restore_pickle(self) -> NodeTop:
-        """restore the pickled tree"""
-        with open(self.path, 'rb') as file:
-            root = pickle.load(file)
-        msg = f'Catalog imported from pickle \"{self.path}\"'
-        self._debug(msg)
-        top = NodeTop(root)
-        return top
-
     def _save_json(self, top: NodeTop) -> bool:
         """export the catalog in json"""
-        Logger.debug(f'saving {top} to json...')
+        self._debug(f'saving {top} to json...')
         exp = JsonExporter(indent=2, sort_keys=True)
         with open(self.path, 'w', encoding='UTF-8') as file:
             exp.write(top, file)
         self._debug(f'Catalog saved to json \"{self.path}\"')
         return True
 
-    def _restore_json(self, string: str) -> NodeTop:
+    def _restore_json(self, string: str) -> Optional[NodeTop]:
         """restore the tree from json"""
         imp = JsonImporter()
-        Logger.debug(f'import from string: {string}')
+        self._debug(f'import from string: {string}')
         root = imp.import_(string)
         self._debug(f'Catalog imported from json \"{self.path}\"')
-        top = NodeTop(root)
-        Logger.debug(f'top imported: {top}')
+        self._debug(f'root imported: {root}')
+        if root.type != nodes.TYPE_TOP:
+            return None
+        top = NodeTop(root.name, children=root.children)
+        self._debug(f'top imported: {top}')
         return top
-        # return cast(NodeTop, root)
