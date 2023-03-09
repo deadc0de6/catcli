@@ -17,7 +17,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r tests-requirements.txt
         pip install -r requirements.txt
-        sudo apt-get install shellcheck
+        sudo apt-get -y install shellcheck jq
     - name: Run tests
       run: |
         ./tests.sh
