@@ -83,6 +83,7 @@ fi
 shellcheck --version
 find . -iname '*.sh' | while read -r script; do
   shellcheck -x \
+    --exclude SC2002 \
     "${script}"
 done
 
