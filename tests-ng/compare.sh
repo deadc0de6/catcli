@@ -62,6 +62,27 @@ cat "${src}" | jq '.. | keys?' | jq '.[]' > "${src_keys}"
 cat "${catalog}" | jq '.. | keys?' | jq '.[]' > "${dst_keys}"
 diff "${src_keys}" "${dst_keys}"
 
+# compare children 1
+src_keys="${tmpd}/src-child1"
+dst_keys="${tmpd}/dst-child1"
+cat "${src}" | jq '. | select(.type=="top") | .children | .[].name' > "${src_keys}"
+cat "${catalog}" | jq '. | select(.type=="top") | .children | .[].name' > "${dst_keys}"
+diff "${src_keys}" "${dst_keys}"
+
+# compare children 2
+src_keys="${tmpd}/src-child2"
+dst_keys="${tmpd}/dst-child2"
+cat "${src}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[].name' > "${src_keys}"
+cat "${catalog}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[].name' > "${dst_keys}"
+diff "${src_keys}" "${dst_keys}"
+
+# compare children 3
+src_keys="${tmpd}/src-child3"
+dst_keys="${tmpd}/dst-child3"
+cat "${src}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[] | select(.name=="workflows") | .children | .[].name' > "${src_keys}"
+cat "${catalog}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[] | select(.name=="workflows") | .children | .[].name' > "${dst_keys}"
+diff "${src_keys}" "${dst_keys}"
+
 # native
 native="${tmpd}/native.txt"
 ${bin} -B ls -s -r --format=native --catalog="${catalog}" > "${native}"
