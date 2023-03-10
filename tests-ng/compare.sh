@@ -86,10 +86,24 @@ diff "${src_keys}" "${dst_keys}"
 # native
 native="${tmpd}/native.txt"
 ${bin} -B ls -s -r --format=native --catalog="${catalog}" > "${native}"
+mod="${tmpd}/native.mod.txt"
+cat "${native}" | sed -e 's/free:.*%/free:0.0%/g' \
+  -e 's/date:.*$/date:2023-03-09 16:20:59/g' \
+  -e 's#du:[^|]* |#du:0/0 |#g' > "${mod}"
+#delta "tests-ng/assets/github.catalog.native.txt" "${mod}"
+diff --color=always "tests-ng/assets/github.catalog.native.txt" "${mod}"
 
 # csv
 csv="${tmpd}/csv.txt"
 ${bin} -B ls -s -r --format=csv --catalog="${catalog}" > "${csv}"
+mod="${tmpd}/csv.mod.txt"
+cat "${csv}" | sed -e 's/"2",".*",".*",""$/"2","0","0",""/g' | \
+  sed 's/20..-..-.. ..:..:..//g' > "${mod}"
+ori="${tmpd}/ori.mod.txt"
+cat "tests-ng/assets/github.catalog.csv.txt" | \
+  sed 's/20..-..-.. ..:..:..//g' > "${ori}"
+#delta "${ori}" "${mod}"
+diff "${ori}" "${mod}"
 
 # the end
 echo "test \"$(basename "$0")\" success"
