@@ -255,7 +255,7 @@ Each line contains the following fields:
 * **indexed_at**: when this entry was indexed
 * **maccess**: the entry modification date/time
 * **md5**: the entry checksum (if any)
-* **nbfiles**: the number of children (empty for not storage or directory nodes)
+* **nbfiles**: the number of children (empty for nodes that are not storage or directory)
 * **free_space**: free space (empty for not storage nodes)
 * **total_space**: total space (empty for not storage nodes)
 * **meta**: meta information (empty for not storage nodes)

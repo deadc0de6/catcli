@@ -50,12 +50,14 @@ catalog="${tmpd}/catalog"
 
 # index
 ${bin} -B index -c --catalog="${catalog}" github .github
+ls -laR .github
+cat "${catalog}"
 
 #cat "${catalog}"
 echo ""
 
 # compare keys
-echo "compare keys"
+echo "[+] compare keys"
 src="tests-ng/assets/github.catalog.json"
 src_keys="${tmpd}/src-keys"
 dst_keys="${tmpd}/dst-keys"
@@ -69,7 +71,7 @@ diff "${src_keys}" "${dst_keys}"
 echo "ok!"
 
 # compare children 1
-echo "compare children 1"
+echo "[+] compare children 1"
 src_keys="${tmpd}/src-child1"
 dst_keys="${tmpd}/dst-child1"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[].name' | sort > "${src_keys}"
@@ -82,7 +84,7 @@ diff "${src_keys}" "${dst_keys}"
 echo "ok!"
 
 # compare children 2
-echo "compare children 2"
+echo "[+] compare children 2"
 src_keys="${tmpd}/src-child2"
 dst_keys="${tmpd}/dst-child2"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[].name' | sort > "${src_keys}"
@@ -95,7 +97,7 @@ diff "${src_keys}" "${dst_keys}"
 echo "ok!"
 
 # compare children 3
-echo "compare children 3"
+echo "[+] compare children 3"
 src_keys="${tmpd}/src-child3"
 dst_keys="${tmpd}/dst-child3"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[] | select(.name=="workflows") | .children | .[].name' | sort > "${src_keys}"
@@ -108,21 +110,21 @@ diff "${src_keys}" "${dst_keys}"
 echo "ok!"
 
 # native
-echo "compare native output"
+echo "[+] compare native output"
 native="${tmpd}/native.txt"
 ${bin} -B ls -s -r --format=native --catalog="${catalog}" > "${native}"
 mod="${tmpd}/native.mod.txt"
 cat "${native}" | sed -e 's/free:.*%/free:0.0%/g' \
   -e 's/date:....-..-.. ..:..:../date:2023-03-09 16:20:59/g' \
   -e 's#du:[^|]* |#du:0/0 |#g' > "${mod}"
-if command -v delta; then
+if command -v delta >/dev/null; then
   delta -s "tests-ng/assets/github.catalog.native.txt" "${mod}"
 fi
 diff --color=always "tests-ng/assets/github.catalog.native.txt" "${mod}"
 echo "ok!"
 
 # csv
-echo "compare csv output"
+echo "[+] compare csv output"
 csv="${tmpd}/csv.txt"
 ${bin} -B ls -s -r --format=csv --catalog="${catalog}" > "${csv}"
 # modify created csv
@@ -134,7 +136,7 @@ ori="${tmpd}/ori.mod.txt"
 cat "tests-ng/assets/github.catalog.csv.txt" | \
   sed 's/....-..-.. ..:..:..//g' | \
   sed 's/"2","[^"]*","[^"]*",""/"2","0","0",""/g' > "${ori}"
-if command -v delta; then
+if command -v delta >/dev/null; then
   delta -s "${ori}" "${mod}"
 fi
 diff "${ori}" "${mod}"
