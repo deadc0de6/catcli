@@ -33,13 +33,13 @@
           "maccess": 1678375244.4865956,
           "name": "workflows",
           "relpath": "/workflows",
-          "size": 1190,
+          "size": 1493,
           "type": "dir"
         }
       ],
       "free": 0,
       "name": "github",
-      "size": 2380,
+      "size": 1510,
       "total": 0,
       "ts": 1678375259,
       "type": "storage"
