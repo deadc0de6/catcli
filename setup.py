@@ -1,11 +1,11 @@
 """setup.py"""
 from os import path
 from setuptools import setup, find_packages
-import catcli
+from catcli import version
 
 README = 'README.md'
 here = path.abspath(path.dirname(__file__))
-VERSION = catcli.version.__version__
+VERSION = version.__version__
 REQUIRES_PYTHON = '>=3'
 
 
