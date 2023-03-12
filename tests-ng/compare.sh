@@ -55,6 +55,7 @@ ${bin} -B index -c --catalog="${catalog}" github .github
 echo ""
 
 # compare keys
+echo "compare keys"
 src="tests-ng/assets/github.catalog.json"
 src_keys="${tmpd}/src-keys"
 dst_keys="${tmpd}/dst-keys"
@@ -63,6 +64,7 @@ cat "${catalog}" | jq '.. | keys?' | jq '.[]' > "${dst_keys}"
 diff "${src_keys}" "${dst_keys}"
 
 # compare children 1
+echo "compare children 1"
 src_keys="${tmpd}/src-child1"
 dst_keys="${tmpd}/dst-child1"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[].name' > "${src_keys}"
@@ -70,6 +72,7 @@ cat "${catalog}" | jq '. | select(.type=="top") | .children | .[].name' > "${dst
 diff "${src_keys}" "${dst_keys}"
 
 # compare children 2
+echo "compare children 2"
 src_keys="${tmpd}/src-child2"
 dst_keys="${tmpd}/dst-child2"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[].name' > "${src_keys}"
@@ -77,6 +80,7 @@ cat "${catalog}" | jq '. | select(.type=="top") | .children | .[] | select(.name
 diff "${src_keys}" "${dst_keys}"
 
 # compare children 3
+echo "compare children 3"
 src_keys="${tmpd}/src-child3"
 dst_keys="${tmpd}/dst-child3"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[] | select(.name=="workflows") | .children | .[].name' > "${src_keys}"
@@ -84,6 +88,7 @@ cat "${catalog}" | jq '. | select(.type=="top") | .children | .[] | select(.name
 diff "${src_keys}" "${dst_keys}"
 
 # native
+echo "compare native output"
 native="${tmpd}/native.txt"
 ${bin} -B ls -s -r --format=native --catalog="${catalog}" > "${native}"
 mod="${tmpd}/native.mod.txt"
@@ -96,6 +101,7 @@ fi
 diff --color=always "tests-ng/assets/github.catalog.native.txt" "${mod}"
 
 # csv
+echo "compare csv output"
 csv="${tmpd}/csv.txt"
 ${bin} -B ls -s -r --format=csv --catalog="${catalog}" > "${csv}"
 # modify created csv
