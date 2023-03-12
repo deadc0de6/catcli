@@ -139,27 +139,28 @@ class Noder:
         @store: store the size in the node
         """
         if node.type == nodes.TYPE_FILE:
-            self._debug(f'getting node size for \"{node.name}\"')
+            self._debug(f'size of {node.type} \"{node.name}\": {node.size}')
             return node.size
         msg = f'getting node size recursively for \"{node.name}\"'
         self._debug(msg)
         size: int = 0
         for i in node.children:
             if node.type == nodes.TYPE_DIR:
-                size = self.rec_size(i, store=store)
+                sub_size = self.rec_size(i, store=store)
                 if store:
-                    i.size = size
-                size += size
-            if node.type == nodes.TYPE_STORAGE:
-                size = self.rec_size(i, store=store)
-                if store:
-                    i.size = size
-                size += size
-            else:
+                    i.size = sub_size
+                size += sub_size
                 continue
-        self._debug(f'size of {node.name} is {size}')
+            if node.type == nodes.TYPE_STORAGE:
+                sub_size = self.rec_size(i, store=store)
+                if store:
+                    i.size = sub_size
+                size += sub_size
+                continue
+            self._debug(f'skipping {node.name}')
         if store:
             node.size = size
+        self._debug(f'size of {node.type} \"{node.name}\": {size}')
         return size
 
     ###############################################################
