@@ -11,24 +11,25 @@ Catcli command line interface
 import sys
 import os
 import datetime
+from typing import Dict, Any, List
 from docopt import docopt
 
 # local imports
-from .version import __version__ as VERSION
-from .logger import Logger
-from .colors import Colors
-from .catalog import Catalog
-from .walker import Walker
-from .noder import Noder
-from .utils import ask, edit
-from .exceptions import BadFormatException, CatcliException
+from catcli.version import __version__ as VERSION
+from catcli.nodes import NodeTop, NodeAny
+from catcli.logger import Logger
+from catcli.colors import Colors
+from catcli.catalog import Catalog
+from catcli.walker import Walker
+from catcli.noder import Noder
+from catcli.utils import ask, edit, path_to_search_all
+from catcli.fuser import Fuser
+from catcli.exceptions import BadFormatException, CatcliException
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
 CATALOGPATH = f'{NAME}.catalog'
 GRAPHPATH = f'/tmp/{NAME}.dot'
-SEPARATOR = '/'
-WILD = '*'
 FORMATS = ['native', 'csv', 'csv-with-header', 'fzf-native', 'fzf-csv']
 
 BANNER = f""" +-+-+-+-+-+-+
@@ -40,9 +41,12 @@ USAGE = f"""
 
 Usage:
     {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
-    {NAME} find   [--catalog=<path>] [--format=<fmt>] [-aBCbdVsP] [--path=<path>] [<term>]
-    {NAME} index  [--catalog=<path>] [--meta=<meta>...] [-aBCcfnV] <name> <path>
+    {NAME} find   [--catalog=<path>] [--format=<fmt>]
+                  [-aBCbdVsP] [--path=<path>] [<term>]
+    {NAME} index  [--catalog=<path>] [--meta=<meta>...]
+                  [-aBCcfnV] <name> <path>
     {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
+    {NAME} mount  [--catalog=<path>] [-V] <mountpoint>
     {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
     {NAME} rename [--catalog=<path>] [-BCfV] <storage> <name>
     {NAME} edit   [--catalog=<path>] [-BCfV] <storage>
@@ -61,14 +65,14 @@ Options:
     -C --no-color       Do not output colors [default: False].
     -c --hash           Calculate md5 hash [default: False].
     -d --directory      Only directory [default: False].
-    -F --format=<fmt>   Print format, see command \"print_supported_formats\" [default: native].
+    -F --format=<fmt>   see \"print_supported_formats\" [default: native].
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -n --no-subsize     Do not store size of directories [default: False].
     -P --parent         Ignore stored relpath [default: True].
     -p --path=<path>    Start path.
     -r --recursive      Recursive [default: False].
-    -s --raw-size       Print raw size rather than human readable [default: False].
+    -s --raw-size       Print raw size [default: False].
     -S --sortsize       Sort by size, largest first [default: False].
     -V --verbose        Be verbose [default: False].
     -v --version        Show version.
@@ -76,7 +80,20 @@ Options:
 """  # nopep8
 
 
-def cmd_index(args, noder, catalog, top):
+def cmd_mount(args: Dict[str, Any],
+              top: NodeTop,
+              noder: Noder) -> None:
+    """mount action"""
+    mountpoint = args['<mountpoint>']
+    debug = args['--verbose']
+    Fuser(mountpoint, top, noder,
+          debug=debug)
+
+
+def cmd_index(args: Dict[str, Any],
+              noder: Noder,
+              catalog: Catalog,
+              top: NodeTop) -> None:
     """index action"""
     path = args['<path>']
     name = args['<name>']
@@ -99,8 +116,8 @@ def cmd_index(args, noder, catalog, top):
 
     start = datetime.datetime.now()
     walker = Walker(noder, usehash=usehash, debug=debug)
-    attr = noder.format_storage_attr(args['--meta'])
-    root = noder.new_storage_node(name, path, parent=top, attr=attr)
+    attr = args['--meta']
+    root = noder.new_storage_node(name, path, top, attr)
     _, cnt = walker.index(path, root, name)
     if subsize:
         noder.rec_size(root, store=True)
@@ -111,7 +128,10 @@ def cmd_index(args, noder, catalog, top):
         catalog.save(top)
 
 
-def cmd_update(args, noder, catalog, top):
+def cmd_update(args: Dict[str, Any],
+               noder: Noder,
+               catalog: Catalog,
+               top: NodeTop) -> None:
     """update action"""
     path = args['<path>']
     name = args['<name>']
@@ -122,7 +142,7 @@ def cmd_update(args, noder, catalog, top):
     if not os.path.exists(path):
         Logger.err(f'\"{path}\" does not exist')
         return
-    root = noder.get_storage_node(top, name, path=path)
+    root = noder.get_storage_node(top, name, newpath=path)
     if not root:
         Logger.err(f'storage named \"{name}\" does not exist')
         return
@@ -139,28 +159,16 @@ def cmd_update(args, noder, catalog, top):
         catalog.save(top)
 
 
-def cmd_ls(args, noder, top):
+def cmd_ls(args: Dict[str, Any],
+           noder: Noder,
+           top: NodeTop) -> List[NodeAny]:
     """ls action"""
-    path = args['<path>']
-    if not path:
-        path = SEPARATOR
-    if not path.startswith(SEPARATOR):
-        path = SEPARATOR + path
-    # prepend with top node path
-    pre = f'{SEPARATOR}{noder.NAME_TOP}'
-    if not path.startswith(pre):
-        path = pre + path
-    # ensure ends with a separator
-    if not path.endswith(SEPARATOR):
-        path += SEPARATOR
-    # add wild card
-    if not path.endswith(WILD):
-        path += WILD
-
+    path = path_to_search_all(args['<path>'])
     fmt = args['--format']
     if fmt.startswith('fzf'):
         raise BadFormatException('fzf is not supported in ls, use find')
-    found = noder.list(top, path,
+    found = noder.list(top,
+                       path,
                        rec=args['--recursive'],
                        fmt=fmt,
                        raw=args['--raw-size'])
@@ -170,7 +178,10 @@ def cmd_ls(args, noder, top):
     return found
 
 
-def cmd_rm(args, noder, catalog, top):
+def cmd_rm(args: Dict[str, Any],
+           noder: Noder,
+           catalog: Catalog,
+           top: NodeTop) -> NodeTop:
     """rm action"""
     name = args['<storage>']
     node = noder.get_storage_node(top, name)
@@ -183,7 +194,9 @@ def cmd_rm(args, noder, catalog, top):
     return top
 
 
-def cmd_find(args, noder, top):
+def cmd_find(args: Dict[str, Any],
+             noder: Noder,
+             top: NodeTop) -> List[NodeAny]:
     """find action"""
     fromtree = args['--parent']
     directory = args['--directory']
@@ -192,12 +205,18 @@ def cmd_find(args, noder, top):
     raw = args['--raw-size']
     script = args['--script']
     search_for = args['<term>']
-    return noder.find_name(top, search_for, script=script,
-                           startpath=startpath, only_dir=directory,
-                           parentfromtree=fromtree, fmt=fmt, raw=raw)
+    found = noder.find_name(top, search_for,
+                            script=script,
+                            startnode=startpath,
+                            only_dir=directory,
+                            parentfromtree=fromtree,
+                            fmt=fmt, raw=raw)
+    return found
 
 
-def cmd_graph(args, noder, top):
+def cmd_graph(args: Dict[str, Any],
+              noder: Noder,
+              top: NodeTop) -> None:
     """graph action"""
     path = args['<path>']
     if not path:
@@ -206,7 +225,9 @@ def cmd_graph(args, noder, top):
     Logger.info(f'create graph with \"{cmd}\" (you need graphviz)')
 
 
-def cmd_rename(args, catalog, top):
+def cmd_rename(args: Dict[str, Any],
+               catalog: Catalog,
+               top: NodeTop) -> None:
     """rename action"""
     storage = args['<storage>']
     new = args['<name>']
@@ -219,10 +240,12 @@ def cmd_rename(args, catalog, top):
             Logger.info(msg)
     else:
         Logger.err(f'Storage named \"{storage}\" does not exist')
-    return top
 
 
-def cmd_edit(args, noder, catalog, top):
+def cmd_edit(args: Dict[str, Any],
+             noder: Noder,
+             catalog: Catalog,
+             top: NodeTop) -> None:
     """edit action"""
     storage = args['<storage>']
     storages = list(x.name for x in top.children)
@@ -232,30 +255,29 @@ def cmd_edit(args, noder, catalog, top):
         if not attr:
             attr = ''
         new = edit(attr)
-        node.attr = noder.format_storage_attr(new)
+        node.attr = noder.attrs_to_string(new)
         if catalog.save(top):
             Logger.info(f'Storage \"{storage}\" edited')
     else:
         Logger.err(f'Storage named \"{storage}\" does not exist')
-    return top
 
 
-def banner():
+def banner() -> None:
     """print banner"""
     Logger.stderr_nocolor(BANNER)
     Logger.stderr_nocolor("")
 
 
-def print_supported_formats():
+def print_supported_formats() -> None:
     """print all supported formats to stdout"""
     print('"native"     : native format')
     print('"csv"        : CSV format')
     print(f'               {Noder.CSV_HEADER}')
-    print('"fzf-native" : fzf to native (only for find)')
-    print('"fzf-csv"    : fzf to csv (only for find)')
+    print('"fzf-native" : fzf to native (only valid for find)')
+    print('"fzf-csv"    : fzf to csv (only valid for find)')
 
 
-def main():
+def main() -> bool:
     """entry point"""
     args = docopt(USAGE, version=VERSION)
 
@@ -320,6 +342,11 @@ def main():
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
             cmd_ls(args, noder, top)
+        elif args['mount']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
+            cmd_mount(args, top, noder)
         elif args['rm']:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')

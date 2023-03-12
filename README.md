@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/deadc0de6/catcli.svg?branch=master)](https://travis-ci.org/deadc0de6/catcli)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
-[![Coverage Status](https://coveralls.io/repos/github/deadc0de6/catcli/badge.svg?branch=master)](https://coveralls.io/github/deadc0de6/catcli?branch=master)
+[![Coveralls](https://img.shields.io/coveralls/github/deadc0de6/catcli)](https://coveralls.io/github/deadc0de6/catcli?branch=master)
 
 [![PyPI version](https://badge.fury.io/py/catcli.svg)](https://badge.fury.io/py/catcli)
 [![AUR](https://img.shields.io/aur/version/catcli-git.svg)](https://aur.archlinux.org/packages/catcli-git)
@@ -24,6 +24,7 @@ Features:
   * Index any directories in a catalog
   * Ability to search for files by name in the catalog
   * Ability to navigate through indexed data à la `ls`
+  * Support for fuse to mount the indexed data as a virtual filesystem
   * Handle archive files (zip, tar, ...) and index their content
   * Save catalog to json for easy versioning with git
   * Command line interface FTW
@@ -73,6 +74,7 @@ See the [examples](#examples) for an overview of the available features.
   * [Index archive files](#index-archive-files)
   * [Walk indexed files with ls](#walk-indexed-files-with-ls)
   * [Find files](#find-files)
+  * [Mount catalog](#mount-catalog)
   * [Display entire hierarchy](#display-entire-hierarchy)
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
@@ -185,6 +187,27 @@ searching:
 
 See the [examples](#examples) for more.
 
+## Mount catalog
+
+The catalog can be mounted with [fuse](https://www.kernel.org/doc/html/next/filesystems/fuse.html)
+and navigate like any filesystem.
+
+```bash
+$ mkdir /tmp/mnt
+$ catcli index -c github .github
+$ catcli mount /tmp/mnt
+$ ls -laR /tmp/mnt
+drwxrwxrwx - user  8 Mar 22:08 github
+
+mnt/github:
+.rwxrwxrwx 17 user 19 Oct  2022 FUNDING.yml
+drwxrwxrwx  - user  2 Mar 10:15 workflows
+
+mnt/github/workflows:
+.rwxrwxrwx 691 user 19 Oct  2022 pypi-release.yml
+.rwxrwxrwx 635 user  8 Mar 21:08 testing.yml
+```
+
 ## Display entire hierarchy
 
 The entire catalog can be shown using the `ls -r` command.
@@ -232,7 +255,7 @@ Each line contains the following fields:
 * **indexed_at**: when this entry was indexed
 * **maccess**: the entry modification date/time
 * **md5**: the entry checksum (if any)
-* **nbfiles**: the number of children (empty for not storage or directory nodes)
+* **nbfiles**: the number of children (empty for nodes that are not storage or directory)
 * **free_space**: free space (empty for not storage nodes)
 * **total_space**: total space (empty for not storage nodes)
 * **meta**: meta information (empty for not storage nodes)

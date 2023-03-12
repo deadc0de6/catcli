@@ -46,7 +46,7 @@ class TestUpdate(unittest.TestCase):
         d2f2 = create_rnd_file(dir2, 'dir2file2')
 
         noder = Noder(debug=True)
-        noder.set_hashing(True)
+        noder.do_hashing(True)
         top = noder.new_top_node()
         catalog = Catalog(catalogpath, force=True, debug=False)
 

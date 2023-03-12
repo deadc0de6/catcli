@@ -5,6 +5,11 @@ Copyright (c) 2022, deadc0de6
 shell colors
 """
 
+from typing import TypeVar, Type
+
+
+CLASSTYPE = TypeVar('CLASSTYPE', bound='Colors')
+
 
 class Colors:
     """shell colors"""
@@ -22,7 +27,7 @@ class Colors:
     UND = '\033[4m'
 
     @classmethod
-    def no_color(cls):
+    def no_color(cls: Type[CLASSTYPE]) -> None:
         """disable colors"""
         Colors.RED = ''
         Colors.GREEN = ''

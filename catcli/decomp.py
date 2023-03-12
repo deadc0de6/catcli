@@ -8,12 +8,13 @@ Catcli generic compressed data lister
 import os
 import tarfile
 import zipfile
+from typing import List
 
 
 class Decomp:
     """decompressor"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.ext = {
             'tar': self._tar,
             'tgz': self._tar,
@@ -28,29 +29,29 @@ class Decomp:
             'tar.bz2': self._tar,
             'zip': self._zip}
 
-    def get_formats(self):
+    def get_formats(self) -> List[str]:
         """return list of supported extensions"""
         return list(self.ext.keys())
 
-    def get_names(self, path):
+    def get_names(self, path: str) -> List[str]:
         """get tree of compressed archive"""
         ext = os.path.splitext(path)[1][1:].lower()
         if ext in list(self.ext):
             return self.ext[ext](path)
-        return None
+        return []
 
     @staticmethod
-    def _tar(path):
+    def _tar(path: str) -> List[str]:
         """return list of file names in tar"""
         if not tarfile.is_tarfile(path):
-            return None
+            return []
         with tarfile.open(path, "r") as tar:
             return tar.getnames()
 
     @staticmethod
-    def _zip(path):
+    def _zip(path: str) -> List[str]:
         """return list of file names in zip"""
         if not zipfile.is_zipfile(path):
-            return None
+            return []
         with zipfile.ZipFile(path) as file:
             return file.namelist()

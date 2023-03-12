@@ -1,0 +1,68 @@
+# author: deadc0de6 (https://github.com/deadc0de6)
+# Copyright (c) 2023, deadc0de6
+#
+# file to be sourced from test scripts
+#
+
+declare -a to_be_cleared
+
+# add a file/directory to be cleared
+# on exit
+#
+# $1: file path to clear
+clear_on_exit()
+{
+  local len="${#to_be_cleared[*]}"
+  # shellcheck disable=SC2004
+  to_be_cleared[${len}]="$1"
+  if [ "${len}" = "0" ]; then
+    # set trap
+    trap on_exit EXIT
+  fi
+}
+
+# clear files
+on_exit()
+{
+  for i in "${to_be_cleared[@]}"; do
+    rm -rf "${i}"
+  done
+}
+
+# osx tricks
+# brew install coreutils gnu-sed
+if [[ $OSTYPE == 'darwin'* ]]; then
+  mktemp() {
+    gmktemp "$@"
+  }
+  stat() {
+    gstat "$@"
+  }
+  sed() {
+    gsed "$@"
+  }
+  wc() {
+    gwc "$@"
+  }
+  date() {
+    gdate "$@"
+  }
+  chmod() {
+    gchmod "$@"
+  }
+  readlink() {
+    greadlink "$@"
+  }
+  realpath() {
+    grealpath "$@"
+  }
+
+  export -f mktemp
+  export -f stat
+  export -f sed
+  export -f wc
+  export -f date
+  export -f chmod
+  export -f readlink
+  export -f realpath
+fi

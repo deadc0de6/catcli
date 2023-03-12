@@ -6,9 +6,12 @@ Catcli filesystem indexer
 """
 
 import os
+from typing import Tuple, Optional
 
 # local imports
+from catcli.noder import Noder
 from catcli.logger import Logger
+from catcli.nodes import NodeAny, NodeTop
 
 
 class Walker:
@@ -16,8 +19,10 @@ class Walker:
 
     MAXLINELEN = 80 - 15
 
-    def __init__(self, noder, usehash=True, debug=False,
-                 logpath=None):
+    def __init__(self, noder: Noder,
+                 usehash: bool = True,
+                 debug: bool = False,
+                 logpath: str = ''):
         """
         @noder: the noder to use
         @hash: calculate hash of nodes
@@ -26,11 +31,14 @@ class Walker:
         """
         self.noder = noder
         self.usehash = usehash
-        self.noder.set_hashing(self.usehash)
+        self.noder.do_hashing(self.usehash)
         self.debug = debug
         self.lpath = logpath
 
-    def index(self, path, parent, name, storagepath=''):
+    def index(self, path: str,
+              parent: NodeAny,
+              name: str,
+              storagepath: str = '') -> Tuple[str, int]:
         """
         index a directory and store in tree
         @path: path to index
@@ -39,7 +47,8 @@ class Walker:
         """
         self._debug(f'indexing starting at {path}')
         if not parent:
-            parent = self.noder.new_dir_node(name, path, parent)
+            parent = self.noder.new_dir_node(name, path,
+                                             parent, storagepath)
 
         if os.path.islink(path):
             rel = os.readlink(path)
@@ -77,16 +86,19 @@ class Walker:
                 _, cnt2 = self.index(sub, dummy, base, nstoragepath)
                 cnt += cnt2
             break
-        self._progress(None)
+        self._progress('')
         return parent, cnt
 
-    def reindex(self, path, parent, top):
+    def reindex(self, path: str, parent: NodeAny, top: NodeTop) -> int:
         """reindex a directory and store in tree"""
         cnt = self._reindex(path, parent, top)
         cnt += self.noder.clean_not_flagged(parent)
         return cnt
 
-    def _reindex(self, path, parent, top, storagepath=''):
+    def _reindex(self, path: str,
+                 parent: NodeAny,
+                 top: NodeTop,
+                 storagepath: str = '') -> int:
         """
         reindex a directory and store in tree
         @path: directory path to re-index
@@ -103,13 +115,14 @@ class Walker:
                 reindex, node = self._need_reindex(parent, sub, treepath)
                 if not reindex:
                     self._debug(f'\tskip file {sub}')
-                    self.noder.flag(node)
+                    if node:
+                        node.flag()
                     continue
-                self._log2file(f'update catalog for \"{sub}\"')
                 node = self.noder.new_file_node(os.path.basename(file), sub,
                                                 parent, storagepath)
-                self.noder.flag(node)
-                cnt += 1
+                if node:
+                    node.flag()
+                    cnt += 1
             for adir in dirs:
                 self._debug(f'found dir \"{adir}\" under {path}')
                 base = os.path.basename(adir)
@@ -117,49 +130,53 @@ class Walker:
                 treepath = os.path.join(storagepath, adir)
                 reindex, dummy = self._need_reindex(parent, sub, treepath)
                 if reindex:
-                    self._log2file(f'update catalog for \"{sub}\"')
                     dummy = self.noder.new_dir_node(base, sub,
                                                     parent, storagepath)
                     cnt += 1
-                self.noder.flag(dummy)
+                if dummy:
+                    dummy.flag()
                 self._debug(f'reindexing deeper under {sub}')
                 nstoragepath = os.sep.join([storagepath, base])
                 if not storagepath:
                     nstoragepath = base
-                cnt2 = self._reindex(sub, dummy, top, nstoragepath)
-                cnt += cnt2
+                if dummy:
+                    cnt2 = self._reindex(sub, dummy, top, nstoragepath)
+                    cnt += cnt2
             break
         return cnt
 
-    def _need_reindex(self, top, path, treepath):
+    def _need_reindex(self,
+                      top: NodeTop,
+                      path: str,
+                      treepath: str) -> Tuple[bool, Optional[NodeTop]]:
         """
         test if node needs re-indexing
         @top: top node (storage)
         @path: abs path to file
         @treepath: rel path from indexed directory
         """
-        cnode, changed = self.noder.get_node_if_changed(top, path, treepath)
-        if not cnode:
+        node, changed = self.noder.get_node_if_changed(top, path, treepath)
+        if not node:
             self._debug(f'\t{path} does not exist')
-            return True, cnode
-        if cnode and not changed:
+            return True, node
+        if node and not changed:
             # ignore this node
             self._debug(f'\t{path} has not changed')
-            return False, cnode
-        if cnode and changed:
+            return False, node
+        if node and changed:
             # remove this node and re-add
             self._debug(f'\t{path} has changed')
-            self._debug(f'\tremoving node {cnode.name} for {path}')
-            cnode.parent = None
-        return True, cnode
+            self._debug(f'\tremoving node {node.name} for {path}')
+            node.parent = None
+        return True, node
 
-    def _debug(self, string):
+    def _debug(self, string: str) -> None:
         """print to debug"""
         if not self.debug:
             return
         Logger.debug(string)
 
-    def _progress(self, string):
+    def _progress(self, string: str) -> None:
         """print progress"""
         if self.debug:
             return
@@ -170,10 +187,3 @@ class Walker:
         if len(string) > self.MAXLINELEN:
             string = string[:self.MAXLINELEN] + '...'
         Logger.progr(f'indexing: {string:80}')
-
-    def _log2file(self, string):
-        """log to file"""
-        if not self.lpath:
-            return
-        line = f'{string}\n'
-        Logger.log_to_file(self.lpath, line, append=True)

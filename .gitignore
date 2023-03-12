@@ -1,6 +1,11 @@
 *.pyc
 .coverage
+.coverage*
 dist/
 build/
 *.egg-info/
 *.catalog
+.vscode/
+.mypy_cache
+.pytest_cache
+__pycache__

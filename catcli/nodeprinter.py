@@ -6,9 +6,14 @@ Class for printing nodes
 """
 
 import sys
+from typing import TypeVar, Type, Optional, Tuple, List, \
+    Dict, Any
 
 from catcli.colors import Colors
 from catcli.utils import fix_badchars
+
+
+CLASSTYPE = TypeVar('CLASSTYPE', bound='NodePrinter')
 
 
 class NodePrinter:
@@ -19,7 +24,9 @@ class NodePrinter:
     NBFILES = 'nbfiles'
 
     @classmethod
-    def print_storage_native(cls, pre, name, args, attr):
+    def print_storage_native(cls: Type[CLASSTYPE], pre: str,
+                             name: str, args: str,
+                             attr: Dict[str, Any]) -> None:
         """print a storage node"""
         end = ''
         if attr:
@@ -31,7 +38,8 @@ class NodePrinter:
         sys.stdout.write(f'{out}\n')
 
     @classmethod
-    def print_file_native(cls, pre, name, attr):
+    def print_file_native(cls: Type[CLASSTYPE], pre: str,
+                          name: str, attr: str) -> None:
         """print a file node"""
         nobad = fix_badchars(name)
         out = f'{pre}{nobad}'
@@ -39,22 +47,26 @@ class NodePrinter:
         sys.stdout.write(f'{out}\n')
 
     @classmethod
-    def print_dir_native(cls, pre, name, depth='', attr=None):
+    def print_dir_native(cls: Type[CLASSTYPE], pre: str,
+                         name: str,
+                         depth: int = 0,
+                         attr: Optional[List[Tuple[str, str]]] = None) -> None:
         """print a directory node"""
         end = []
-        if depth != '':
+        if depth > 0:
             end.append(f'{cls.NBFILES}:{depth}')
         if attr:
             end.append(' '.join([f'{x}:{y}' for x, y in attr]))
+        end_string = ''
         if end:
-            endstring = ', '.join(end)
-            end = f' [{endstring}]'
+            end_string = f' [{", ".join(end)}]'
         out = pre + Colors.BLUE + fix_badchars(name) + Colors.RESET
-        out += f'{Colors.GRAY}{end}{Colors.RESET}'
+        out += f'{Colors.GRAY}{end_string}{Colors.RESET}'
         sys.stdout.write(f'{out}\n')
 
     @classmethod
-    def print_archive_native(cls, pre, name, archive):
+    def print_archive_native(cls: Type[CLASSTYPE], pre: str,
+                             name: str, archive: str) -> None:
         """archive to stdout"""
         out = pre + Colors.YELLOW + fix_badchars(name) + Colors.RESET
         out += f' {Colors.GRAY}[{cls.ARCHIVE}:{archive}]{Colors.RESET}'

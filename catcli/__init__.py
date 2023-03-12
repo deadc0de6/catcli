@@ -7,7 +7,7 @@ Copyright (c) 2017, deadc0de6
 import sys
 
 
-def main():
+def main() -> None:
     """entry point"""
     import catcli.catcli
     if catcli.catcli.main():
