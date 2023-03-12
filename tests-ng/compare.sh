@@ -61,7 +61,12 @@ src_keys="${tmpd}/src-keys"
 dst_keys="${tmpd}/dst-keys"
 cat "${src}" | jq '.. | keys?' | jq '.[]' > "${src_keys}"
 cat "${catalog}" | jq '.. | keys?' | jq '.[]' > "${dst_keys}"
+echo "src:"
+cat "${src_keys}"
+echo "dst:"
+cat "${dst_keys}"
 diff "${src_keys}" "${dst_keys}"
+echo "ok!"
 
 # compare children 1
 echo "compare children 1"
@@ -69,7 +74,12 @@ src_keys="${tmpd}/src-child1"
 dst_keys="${tmpd}/dst-child1"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[].name' > "${src_keys}"
 cat "${catalog}" | jq '. | select(.type=="top") | .children | .[].name' > "${dst_keys}"
+echo "src:"
+cat "${src_keys}"
+echo "dst:"
+cat "${dst_keys}"
 diff "${src_keys}" "${dst_keys}"
+echo "ok!"
 
 # compare children 2
 echo "compare children 2"
@@ -77,7 +87,12 @@ src_keys="${tmpd}/src-child2"
 dst_keys="${tmpd}/dst-child2"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[].name' > "${src_keys}"
 cat "${catalog}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[].name' > "${dst_keys}"
+echo "src:"
+cat "${src_keys}"
+echo "dst:"
+cat "${dst_keys}"
 diff "${src_keys}" "${dst_keys}"
+echo "ok!"
 
 # compare children 3
 echo "compare children 3"
@@ -85,7 +100,12 @@ src_keys="${tmpd}/src-child3"
 dst_keys="${tmpd}/dst-child3"
 cat "${src}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[] | select(.name=="workflows") | .children | .[].name' > "${src_keys}"
 cat "${catalog}" | jq '. | select(.type=="top") | .children | .[] | select(.name=="github") | .children | .[] | select(.name=="workflows") | .children | .[].name' > "${dst_keys}"
+echo "src:"
+cat "${src_keys}"
+echo "dst:"
+cat "${dst_keys}"
 diff "${src_keys}" "${dst_keys}"
+echo "ok!"
 
 # native
 echo "compare native output"
@@ -99,6 +119,7 @@ if command -v delta; then
   delta -s "tests-ng/assets/github.catalog.native.txt" "${mod}"
 fi
 diff --color=always "tests-ng/assets/github.catalog.native.txt" "${mod}"
+echo "ok!"
 
 # csv
 echo "compare csv output"
@@ -117,6 +138,7 @@ if command -v delta; then
   delta -s "${ori}" "${mod}"
 fi
 diff "${ori}" "${mod}"
+echo "ok!"
 
 # the end
 echo "test \"$(basename "$0")\" success"
