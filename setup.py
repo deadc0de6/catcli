@@ -47,7 +47,9 @@ setup(
 
     keywords='catalog commandline indexer offline',
     packages=find_packages(exclude=['tests*']),
-    install_requires=['docopt', 'anytree'],
+    install_requires=['docopt', 'anytree',
+                      'types-docopt', 'pyfzf',
+                      'fusepy'],
 
     extras_require={
         'dev': ['check-manifest'],
