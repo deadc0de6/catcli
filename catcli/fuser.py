@@ -9,7 +9,10 @@ import os
 from time import time
 from stat import S_IFDIR, S_IFREG
 from typing import List, Dict, Any, Optional
-import fuse  # type: ignore
+try:
+    import fuse  # type: ignore
+except ModuleNotFoundError:
+    pass
 
 # local imports
 from catcli.noder import Noder

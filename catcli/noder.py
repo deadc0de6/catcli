@@ -10,7 +10,6 @@ import shutil
 import time
 from typing import List, Union, Tuple, Any, Optional, Dict, cast
 import anytree  # type: ignore
-from pyfzf.pyfzf import FzfPrompt  # type: ignore
 
 # local imports
 from catcli import nodes
@@ -506,10 +505,15 @@ class Noder:
 
     @staticmethod
     def _fzf_prompt(strings: Any) -> Any:
-        # prompt with fzf
-        fzf = FzfPrompt()
-        selected = fzf.prompt(strings)
-        return selected
+        """prompt with fzf"""
+        try:
+            from pyfzf.pyfzf import FzfPrompt  # type: ignore # pylint: disable=C0415 # noqa
+            fzf = FzfPrompt()
+            selected = fzf.prompt(strings)
+            return selected
+        except ModuleNotFoundError:
+            Logger.err('install pyfzf to use fzf')
+            return None
 
     def _to_fzf(self, node: NodeAny, fmt: str) -> None:
         """

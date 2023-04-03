@@ -23,7 +23,6 @@ from catcli.catalog import Catalog
 from catcli.walker import Walker
 from catcli.noder import Noder
 from catcli.utils import ask, edit, path_to_search_all
-from catcli.fuser import Fuser
 from catcli.exceptions import BadFormatException, CatcliException
 
 NAME = 'catcli'
@@ -82,12 +81,18 @@ Options:
 
 def cmd_mount(args: Dict[str, Any],
               top: NodeTop,
-              noder: Noder) -> None:
+              noder: Noder) -> bool:
     """mount action"""
     mountpoint = args['<mountpoint>']
     debug = args['--verbose']
-    Fuser(mountpoint, top, noder,
-          debug=debug)
+    try:
+        from catcli.fuser import Fuser  # pylint: disable=C0415
+        Fuser(mountpoint, top, noder,
+              debug=debug)
+    except ModuleNotFoundError:
+        Logger.err('install fusepy to use mount')
+        return False
+    return True
 
 
 def cmd_index(args: Dict[str, Any],
@@ -346,7 +351,8 @@ def main() -> bool:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
-            cmd_mount(args, top, noder)
+            if not cmd_mount(args, top, noder):
+                return False
         elif args['rm']:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')
