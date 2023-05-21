@@ -45,8 +45,6 @@ pylint -sn \
   --disable=R0022 \
   catcli/
 
-
-
 # R0801: Similar lines in 2 files
 # W0212: Access to a protected member
 # R0914: Too many local variables
