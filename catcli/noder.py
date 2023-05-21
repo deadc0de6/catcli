@@ -582,8 +582,7 @@ class Noder:
             start = self.get_node(top, startnode)
         filterfunc = self._callback_find_name(key, only_dir)
         found = anytree.findall(start, filter_=filterfunc)
-        nbfound = len(found)
-        self._debug(f'found {nbfound} node(s)')
+        self._debug(f'found {len(found)} node(s)')
 
         # compile found nodes
         paths = {}
@@ -591,10 +590,14 @@ class Noder:
             item.name = fix_badchars(item.name)
             if hasattr(item, 'relpath'):
                 item.relpath = fix_badchars(item.relpath)
+            storage = self._get_storage(item)
             if parentfromtree:
-                paths[self._get_parents(item)] = item
+                parent = self._get_parents(item)
+                key = f'{storage}/{parent}/{item.relpath}'
+                paths[parent] = item
             else:
-                paths[item.relpath] = item
+                key = f'{storage}/{item.path}'
+                paths[key] = item
 
         # handle fzf mode
         if fmt.startswith('fzf'):

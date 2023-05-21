@@ -94,7 +94,7 @@ class Catalog:
     def _restore_json(self, string: str) -> Optional[NodeTop]:
         """restore the tree from json"""
         imp = JsonImporter()
-        self._debug(f'import from string: {string}')
+        self._debug('import from string...')
         root = imp.import_(string)
         self._debug(f'Catalog imported from json \"{self.path}\"')
         self._debug(f'root imported: {root}')

@@ -210,12 +210,15 @@ def cmd_find(args: Dict[str, Any],
     raw = args['--raw-size']
     script = args['--script']
     search_for = args['<term>']
+    if args['--verbose']:
+        Logger.debug(f'search for \"{search_for}\" under \"{top.name}\"')
     found = noder.find_name(top, search_for,
                             script=script,
                             startnode=startpath,
                             only_dir=directory,
                             parentfromtree=fromtree,
-                            fmt=fmt, raw=raw)
+                            fmt=fmt,
+                            raw=raw)
     return found
 
 

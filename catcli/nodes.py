@@ -38,7 +38,7 @@ class NodeAny(NodeMixin):  # type: ignore
         if self.children:
             ret += '\n'
         for child in self.children:
-            ret += '  child => ' + str(child)
+            ret += f'  child => {child}\n'
         return ret
 
     def __str__(self) -> str:
