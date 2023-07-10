@@ -74,21 +74,21 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
         maccess = time()
         mode: Any = S_IFREG
-        size: int = 0
+        nodesize: int = 0
         if entry.type == nodes.TYPE_ARCHIVED:
             mode = S_IFREG
-            size = entry.size
+            nodesize = entry.nodesize
         elif entry.type == nodes.TYPE_DIR:
             mode = S_IFDIR
-            size = entry.size
+            nodesize = entry.nodesize
             maccess = entry.maccess
         elif entry.type == nodes.TYPE_FILE:
             mode = S_IFREG
-            size = entry.size
+            nodesize = entry.nodesize
             maccess = entry.maccess
         elif entry.type == nodes.TYPE_STORAGE:
             mode = S_IFDIR
-            size = entry.size
+            nodesize = entry.nodesize
             maccess = entry.ts
         elif entry.type == nodes.TYPE_META:
             mode = S_IFREG
@@ -98,7 +98,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
         return {
             'st_mode': (mode),  # file type
             'st_nlink': 1,  # count hard link
-            'st_size': size,
+            'st_size': nodesize,
             'st_ctime': maccess,  # attr last modified
             'st_mtime': maccess,  # content last modified
             'st_atime': maccess,  # access time
