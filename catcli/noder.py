@@ -138,29 +138,31 @@ class Noder:
         @store: store the size in the node
         """
         if node.type == nodes.TYPE_FILE:
-            self._debug(f'size of {node.type} \"{node.name}\": {node.size}')
-            return node.size
+            node.__class__ = NodeFile
+            msg = f'size of {node.type} \"{node.name}\": {node.nodesize}'
+            self._debug(msg)
+            return node.nodesize
         msg = f'getting node size recursively for \"{node.name}\"'
         self._debug(msg)
-        size: int = 0
+        fullsize: int = 0
         for i in node.children:
             if node.type == nodes.TYPE_DIR:
                 sub_size = self.rec_size(i, store=store)
                 if store:
-                    i.size = sub_size
-                size += sub_size
+                    i.nodesize = sub_size
+                fullsize += sub_size
                 continue
             if node.type == nodes.TYPE_STORAGE:
                 sub_size = self.rec_size(i, store=store)
                 if store:
-                    i.size = sub_size
-                size += sub_size
+                    i.nodesize = sub_size
+                fullsize += sub_size
                 continue
             self._debug(f'skipping {node.name}')
         if store:
-            node.size = size
-        self._debug(f'size of {node.type} \"{node.name}\": {size}')
-        return size
+            node.nodesize = fullsize
+        self._debug(f'size of {node.type} \"{node.name}\": {fullsize}')
+        return fullsize
 
     ###############################################################
     # public helpers
@@ -261,7 +263,7 @@ class Noder:
                          parent: str, archive: str) -> NodeArchived:
         """create a new node for archive data"""
         return NodeArchived(name=name, relpath=path,
-                            parent=parent, size=0, md5='',
+                            parent=parent, nodesize=0, md5='',
                             archive=archive)
 
     ###############################################################
@@ -351,7 +353,7 @@ class Noder:
             fullpath = os.path.join(storage.name, parents)
             out.append(fullpath.replace('"', '""'))  # full path
 
-            out.append(size_to_str(node.size, raw=raw))  # size
+            out.append(size_to_str(node.nodesize, raw=raw))  # size
             out.append(epoch_to_str(storage.ts))  # indexed_at
             if self._has_attr(node, 'maccess'):
                 out.append(epoch_to_str(node.maccess))  # maccess
@@ -392,9 +394,11 @@ class Noder:
         """
         if node.type == nodes.TYPE_TOP:
             # top node
+            node.__class__ = NodeTop
             Logger.stdout_nocolor(f'{pre}{node.name}')
         elif node.type == nodes.TYPE_FILE:
             # node of type file
+            node.__class__ = NodeFile
             name = node.name
             if withpath:
                 if recalcparent:
@@ -407,7 +411,7 @@ class Noder:
             attr_str = ''
             if node.md5:
                 attr_str = f', md5:{node.md5}'
-            size = size_to_str(node.size, raw=raw)
+            size = size_to_str(node.nodesize, raw=raw)
             compl = f'size:{size}{attr_str}'
             if withstorage:
                 content = Logger.get_bold_text(storage.name)
@@ -415,6 +419,7 @@ class Noder:
             NodePrinter.print_file_native(pre, name, compl)
         elif node.type == nodes.TYPE_DIR:
             # node of type directory
+            node.__class__ = NodeDir
             name = node.name
             if withpath:
                 if recalcparent:
@@ -428,13 +433,14 @@ class Noder:
             if withstorage:
                 storage = self._get_storage(node)
             attr: List[Tuple[str, str]] = []
-            if node.size:
-                attr.append(('totsize', size_to_str(node.size, raw=raw)))
+            if node.nodesize:
+                attr.append(('totsize', size_to_str(node.nodesize, raw=raw)))
             if withstorage:
                 attr.append(('storage', Logger.get_bold_text(storage.name)))
             NodePrinter.print_dir_native(pre, name, depth=depth, attr=attr)
         elif node.type == nodes.TYPE_STORAGE:
             # node of type storage
+            node.__class__ = NodeStorage
             sztotal = size_to_str(node.total, raw=raw)
             szused = size_to_str(node.total - node.free, raw=raw)
             nbchildren = len(node.children)
@@ -467,6 +473,7 @@ class Noder:
                                              node.attr)
         elif node.type == nodes.TYPE_ARCHIVED:
             # archive node
+            node.__class__ = NodeArchived
             if self.arc:
                 NodePrinter.print_archive_native(pre, node.name, node.archive)
         else:
@@ -775,9 +782,9 @@ class Noder:
     def _sort_size(node: NodeAny) -> float:
         """sorting nodes by size"""
         try:
-            if not node.size:
+            if not node.nodesize:
                 return 0
-            return float(node.size)
+            return float(node.nodesize)
         except AttributeError:
             return 0
 

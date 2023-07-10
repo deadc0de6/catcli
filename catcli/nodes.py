@@ -84,7 +84,7 @@ class NodeFile(NodeAny):
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
                  relpath: str,
-                 size: int,
+                 nodesize: int,
                  md5: str,
                  maccess: float,
                  parent=None,
@@ -94,7 +94,7 @@ class NodeFile(NodeAny):
         self.name = name
         self.type = TYPE_FILE
         self.relpath = relpath
-        self.size = size
+        self.nodesize = nodesize
         self.md5 = md5
         self.maccess = maccess
         self.parent = parent
@@ -111,7 +111,7 @@ class NodeDir(NodeAny):
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
                  relpath: str,
-                 size: int,
+                 nodesize: int,
                  maccess: float,
                  parent=None,
                  children=None):
@@ -120,7 +120,7 @@ class NodeDir(NodeAny):
         self.name = name
         self.type = TYPE_DIR
         self.relpath = relpath
-        self.size = size
+        self.nodesize = nodesize
         self.maccess = maccess
         self.parent = parent
         if children:
@@ -136,7 +136,7 @@ class NodeArchived(NodeAny):
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
                  relpath: str,
-                 size: int,
+                 nodesize: int,
                  md5: str,
                  archive: str,
                  parent=None,
@@ -146,7 +146,7 @@ class NodeArchived(NodeAny):
         self.name = name
         self.type = TYPE_ARCHIVED
         self.relpath = relpath
-        self.size = size
+        self.nodesize = nodesize
         self.md5 = md5
         self.archive = archive
         self.parent = parent
@@ -164,7 +164,7 @@ class NodeStorage(NodeAny):
                  name: str,
                  free: int,
                  total: int,
-                 size: int,
+                 nodesize: int,
                  ts: float,
                  attr: str,
                  parent=None,
@@ -176,7 +176,7 @@ class NodeStorage(NodeAny):
         self.free = free
         self.total = total
         self.attr = attr
-        self.size = size
+        self.nodesize = nodesize
         self.ts = ts  # pylint: disable=C0103
         self.parent = parent
         if children:
