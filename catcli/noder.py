@@ -14,7 +14,8 @@ import anytree  # type: ignore
 # local imports
 from catcli import nodes
 from catcli.nodes import NodeAny, NodeStorage, \
-    NodeTop, NodeFile, NodeArchived, NodeDir, NodeMeta
+    NodeTop, NodeFile, NodeArchived, NodeDir, NodeMeta, \
+    typcast_node
 from catcli.utils import size_to_str, epoch_to_str, md5sum, fix_badchars
 from catcli.logger import Logger
 from catcli.nodeprinter import NodePrinter
@@ -86,7 +87,8 @@ class Noder:
         try:
             bpath = os.path.basename(path)
             the_node = resolv.get(top, bpath)
-            return cast(NodeAny, the_node)
+            node = typcast_node(the_node)
+            return cast(NodeAny, node)
         except anytree.resolver.ChildResolverError:
             if not quiet:
                 Logger.err(f'No node at path \"{bpath}\"')
@@ -296,6 +298,7 @@ class Noder:
         """remove any node not flagged and clean flags"""
         cnt = 0
         for node in anytree.PreOrderIter(top):
+            node = typcast_node(node)
             if node.type not in [nodes.TYPE_DIR, nodes.TYPE_FILE]:
                 continue
             if self._clean(node):
