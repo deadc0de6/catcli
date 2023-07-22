@@ -33,7 +33,6 @@ class Fuser:
         fuse.FUSE(filesystem,
                   mountpoint,
                   foreground=debug,
-                  allow_other=True,
                   nothreads=True,
                   debug=debug)
 
