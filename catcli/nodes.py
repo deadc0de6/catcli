@@ -21,6 +21,22 @@ NAME_TOP = 'top'
 NAME_META = 'meta'
 
 
+def typcast_node(node: Any) -> None:
+    """typecast node to its sub type"""
+    if node.type == TYPE_TOP:
+        node.__class__ = NodeTop
+    elif node.type == TYPE_FILE:
+        node.__class__ = NodeFile
+    elif node.type == TYPE_DIR:
+        node.__class__ = NodeDir
+    elif node.type == TYPE_ARCHIVED:
+        node.__class__ = NodeArchived
+    elif node.type == TYPE_STORAGE:
+        node.__class__ = NodeStorage
+    elif node.type == TYPE_META:
+        node.__class__ = NodeMeta
+
+
 class NodeAny(NodeMixin):  # type: ignore
     """generic node"""
 

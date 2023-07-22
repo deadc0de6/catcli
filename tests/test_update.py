@@ -123,7 +123,7 @@ class TestUpdate(unittest.TestCase):
         noder.print_tree(top)
 
         # explore the top node to find all nodes
-        self.assertTrue(len(top.children) == 1)
+        self.assertEqual(len(top.children), 1)
         storage = top.children[0]
         self.assertTrue(len(storage.children) == 8)
 
