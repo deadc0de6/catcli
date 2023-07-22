@@ -87,8 +87,8 @@ class Noder:
         try:
             bpath = os.path.basename(path)
             the_node = resolv.get(top, bpath)
-            node = typcast_node(the_node)
-            return cast(NodeAny, node)
+            typcast_node(the_node)
+            return cast(NodeAny, the_node)
         except anytree.resolver.ChildResolverError:
             if not quiet:
                 Logger.err(f'No node at path \"{bpath}\"')
@@ -298,7 +298,7 @@ class Noder:
         """remove any node not flagged and clean flags"""
         cnt = 0
         for node in anytree.PreOrderIter(top):
-            node = typcast_node(node)
+            typcast_node(node)
             if node.type not in [nodes.TYPE_DIR, nodes.TYPE_FILE]:
                 continue
             if self._clean(node):

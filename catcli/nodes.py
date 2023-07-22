@@ -21,48 +21,20 @@ NAME_TOP = 'top'
 NAME_META = 'meta'
 
 
-def typcast_node(node: Any) -> Any:
+def typcast_node(node: Any) -> None:
     """typecast node to its sub type"""
     if node.type == TYPE_TOP:
-        return NodeTop(node.name, node.children)
-    if node.type == TYPE_FILE:
-        return NodeFile(node.name,
-                        node.relpath,
-                        node.nodesize,
-                        node.md5,
-                        node.maccess,
-                        node.parent,
-                        node.children)
-    if node.type == TYPE_DIR:
-        return NodeDir(node.name,
-                       node.relpath,
-                       node.nodesize,
-                       node.maccess,
-                       node.parent,
-                       node.children)
-    if node.type == TYPE_ARCHIVED:
-        return NodeArchived(node.name,
-                            node.relpath,
-                            node.nodesize,
-                            node.md5,
-                            node.archive,
-                            node.parent,
-                            node.children)
-    if node.type == TYPE_STORAGE:
-        return NodeStorage(node.name,
-                           node.free,
-                           node.total,
-                           node.nodesize,
-                           node.ts,
-                           node.attr,
-                           node.parent,
-                           node.children)
-    if node.type == TYPE_META:
-        return NodeMeta(node.name,
-                        node.attr,
-                        node.parent,
-                        node.children)
-    return node
+        node.__class__ = NodeTop
+    elif node.type == TYPE_FILE:
+        node.__class__ = NodeFile
+    elif node.type == TYPE_DIR:
+        node.__class__ = NodeDir
+    elif node.type == TYPE_ARCHIVED:
+        node.__class__ = NodeArchived
+    elif node.type == TYPE_STORAGE:
+        node.__class__ = NodeStorage
+    elif node.type == TYPE_META:
+        node.__class__ = NodeMeta
 
 
 class NodeAny(NodeMixin):  # type: ignore
