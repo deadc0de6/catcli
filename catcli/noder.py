@@ -257,8 +257,10 @@ class Noder:
                            self.attrs_to_string(attrs),
                            parent=parent)
 
-    def new_archive_node(self, name: str, path: str,
-                         parent: str, archive: str) -> NodeArchived:
+    def new_archive_node(self,
+                         name: str,
+                         parent: str,
+                         archive: str) -> NodeArchived:
         """create a new node for archive data"""
         return NodeArchived(name=name,
                             parent=parent, nodesize=0, md5='',
@@ -377,7 +379,7 @@ class Noder:
     def _print_node_native(self, node: NodeAny,
                            pre: str = '',
                            withpath: bool = False,
-                           withdepth: bool = False,
+                           withnbchildren: bool = False,
                            withstorage: bool = False,
                            raw: bool = False) -> None:
         """
@@ -385,7 +387,7 @@ class Noder:
         @node: the node to print
         @pre: string to print before node
         @withpath: print the node path
-        @withdepth: print the node depth info
+        @withnbchildren: print the node nb children
         @withstorage: print the node storage it belongs to
         @raw: print raw size rather than human readable
         """
@@ -424,15 +426,18 @@ class Noder:
                     self._get_parents(node.parent),
                     name])
             name = name.lstrip(os.sep)
-            depth = 0
-            if withdepth:
-                depth = len(node.children)
+            nbchildren = 0
+            if withnbchildren:
+                nbchildren = len(node.children)
             attr: List[Tuple[str, str]] = []
             if node.nodesize:
                 attr.append(('totsize', size_to_str(node.nodesize, raw=raw)))
             if withstorage:
                 attr.append(('storage', Logger.get_bold_text(storage.name)))
-            NodePrinter.print_dir_native(pre, name, depth=depth, attr=attr)
+            NodePrinter.print_dir_native(pre,
+                                         name,
+                                         nbchildren=nbchildren,
+                                         attr=attr)
         elif node.type == nodes.TYPE_STORAGE:
             # node of type storage
             node.__class__ = NodeStorage
@@ -489,7 +494,7 @@ class Noder:
             rend = anytree.RenderTree(node, childiter=self._sort_tree)
             for pre, _, thenode in rend:
                 self._print_node_native(thenode, pre=pre,
-                                        withdepth=True, raw=raw)
+                                        withnbchildren=True, raw=raw)
         elif fmt == 'csv':
             # csv output
             self._to_csv(node, raw=raw)
@@ -608,7 +613,7 @@ class Noder:
             if fmt == 'native':
                 for _, item in paths.items():
                     self._print_node_native(item, withpath=True,
-                                            withdepth=True,
+                                            withnbchildren=True,
                                             withstorage=True,
                                             raw=raw)
             elif fmt.startswith('csv'):
@@ -692,7 +697,7 @@ class Noder:
             if fmt == 'native':
                 self._print_node_native(found[0].parent,
                                         withpath=False,
-                                        withdepth=True,
+                                        withnbchildren=True,
                                         raw=raw)
             elif fmt.startswith('csv'):
                 self._node_to_csv(found[0].parent, raw=raw)
@@ -706,7 +711,7 @@ class Noder:
                 if fmt == 'native':
                     self._print_node_native(item, withpath=False,
                                             pre='- ',
-                                            withdepth=True,
+                                            withnbchildren=True,
                                             raw=raw)
                 elif fmt.startswith('csv'):
                     self._node_to_csv(item, raw=raw)
@@ -726,15 +731,15 @@ class Noder:
         """add an entry to the tree"""
         entries = name.rstrip(os.sep).split(os.sep)
         if len(entries) == 1:
-            self.new_archive_node(name, name, top, top.name)
+            self.new_archive_node(name, top, top.name)
             return
         sub = os.sep.join(entries[:-1])
         nodename = entries[-1]
         try:
             parent = resolv.get(top, sub)
-            parent = self.new_archive_node(nodename, name, parent, top.name)
+            parent = self.new_archive_node(nodename, parent, top.name)
         except anytree.resolver.ChildResolverError:
-            self.new_archive_node(nodename, name, top, top.name)
+            self.new_archive_node(nodename, top, top.name)
 
     def list_to_tree(self, parent: NodeAny, names: List[str]) -> None:
         """convert list of files to a tree"""

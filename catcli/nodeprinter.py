@@ -49,12 +49,12 @@ class NodePrinter:
     @classmethod
     def print_dir_native(cls: Type[CLASSTYPE], pre: str,
                          name: str,
-                         depth: int = 0,
+                         nbchildren: int = 0,
                          attr: Optional[List[Tuple[str, str]]] = None) -> None:
         """print a directory node"""
         end = []
-        if depth > 0:
-            end.append(f'{cls.NBFILES}:{depth}')
+        if nbchildren > 0:
+            end.append(f'{cls.NBFILES}:{nbchildren}')
         if attr:
             end.append(' '.join([f'{x}:{y}' for x, y in attr]))
         end_string = ''
