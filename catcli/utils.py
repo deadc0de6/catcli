@@ -41,9 +41,9 @@ def path_to_search_all(path: str) -> str:
     if not path.endswith(os.path.sep):
         # ensure ends with a separator
         path += os.path.sep
-    if not path.endswith(WILD):
-        # add wild card
-        path += WILD
+    # if not path.endswith(WILD):
+    #     # add wild card
+    #     path += WILD
     return path
 
 

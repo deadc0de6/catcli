@@ -376,6 +376,26 @@ class Noder:
         if len(line) > 0:
             Logger.stdout_nocolor(line)
 
+    def node_has_subs(self, node: Any) -> bool:
+        """
+        node may have children
+        we explicitely handle all case
+        for clarity
+        """
+        if not node:
+            return False
+        if node.type == nodes.TYPE_TOP:
+            return True
+        if node.type == nodes.TYPE_FILE:
+            return False
+        if node.type == nodes.TYPE_DIR:
+            return True
+        if node.type == nodes.TYPE_STORAGE:
+            return True
+        if node.type == nodes.TYPE_ARCHIVED:
+            return True
+        return False
+
     def _print_node_native(self, node: NodeAny,
                            pre: str = '',
                            withpath: bool = False,
@@ -678,8 +698,20 @@ class Noder:
         resolv = anytree.resolver.Resolver('name')
         found = []
         try:
-            # resolve the path in the tree
-            found = resolv.glob(top, path)
+            if '*' in path or '?' in path:
+                # we need to handle glob
+                found = resolv.glob(top, path)
+            else:
+                # we have a canonical path
+                found = resolv.get(top, path)
+                if found and self.node_has_subs(found):
+                    # let's find its children as well
+                    print(path)
+                    modpath = os.path.join(path, '*')
+                    found = resolv.glob(top, modpath)
+                else:
+                    found = [found]
+
             if len(found) < 1:
                 # nothing found
                 self._debug('nothing found')
