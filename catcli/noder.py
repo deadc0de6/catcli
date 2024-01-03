@@ -615,8 +615,9 @@ class Noder:
             item.name = fix_badchars(item.name)
             storage = self._get_storage(item)
             parents = self._get_parents(item)
-            key = f'{storage}/{parents}/{item.name}'
-            paths[parents] = item
+            parent_key = f'{storage.name}/{parents}'
+            key = f'{parent_key}/{item.name}'
+            paths[parent_key] = item
 
         # handle fzf mode
         if fmt.startswith('fzf'):

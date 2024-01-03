@@ -40,6 +40,7 @@ ${bin} -B index -c -f --catalog="${catalog}" github2 .github
 #cat "${catalog}"
 echo ""
 
+${bin} -B ls -r --catalog="${catalog}"
 ${bin} -B find --catalog="${catalog}" testing.yml
 cnt=$(${bin} -B find --catalog="${catalog}" testing.yml | wc -l)
 [ "${cnt}" != "2" ] && echo "should return 2!" && exit 1
