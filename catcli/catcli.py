@@ -41,7 +41,7 @@ USAGE = f"""
 Usage:
     {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
     {NAME} find   [--catalog=<path>] [--format=<fmt>]
-                  [-aBCbdVsP] [--path=<path>] [<term>]
+                  [-aBCbdVs] [--path=<path>] [<term>]
     {NAME} index  [--catalog=<path>] [--meta=<meta>...]
                   [-aBCcfnV] <name> <path>
     {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
@@ -68,7 +68,6 @@ Options:
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -n --no-subsize     Do not store size of directories [default: False].
-    -P --parent         Ignore stored relpath [default: True].
     -p --path=<path>    Start path.
     -r --recursive      Recursive [default: False].
     -s --raw-size       Print raw size [default: False].
@@ -203,7 +202,6 @@ def cmd_find(args: Dict[str, Any],
              noder: Noder,
              top: NodeTop) -> List[NodeAny]:
     """find action"""
-    fromtree = args['--parent']
     directory = args['--directory']
     startpath = args['--path']
     fmt = args['--format']
@@ -216,7 +214,6 @@ def cmd_find(args: Dict[str, Any],
                             script=script,
                             startnode=startpath,
                             only_dir=directory,
-                            parentfromtree=fromtree,
                             fmt=fmt,
                             raw=raw)
     return found

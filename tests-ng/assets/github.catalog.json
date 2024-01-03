@@ -7,7 +7,6 @@
           "maccess": 1666206037.0786593,
           "md5": "0c6407a84d412c514007313fb3bca4de",
           "name": "FUNDING.yml",
-          "relpath": "/FUNDING.yml",
           "size": 17,
           "type": "file"
         },
@@ -17,7 +16,6 @@
               "maccess": 1666206037.078865,
               "md5": "57699a7a6a03e20e864f220e19f8e197",
               "name": "pypi-release.yml",
-              "relpath": "workflows/pypi-release.yml",
               "size": 691,
               "type": "file"
             },
@@ -25,14 +23,12 @@
               "maccess": 1678375244.4870229,
               "md5": "7144a119ef43adb634654522c12ec250",
               "name": "testing.yml",
-              "relpath": "workflows/testing.yml",
               "size": 802,
               "type": "file"
             }
           ],
           "maccess": 1678375244.4865956,
           "name": "workflows",
-          "relpath": "/workflows",
           "size": 1493,
           "type": "dir"
         }

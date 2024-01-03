@@ -16,13 +16,12 @@ from catcli import nodes
 from catcli.exceptions import CatcliException
 
 
-SEPARATOR = '/'
 WILD = '*'
 
 
 def path_to_top(path: str) -> str:
     """path pivot under top"""
-    pre = f'{SEPARATOR}{nodes.NAME_TOP}'
+    pre = f'{os.path.sep}{nodes.NAME_TOP}'
     if not path.startswith(pre):
         # prepend with top node path
         path = pre + path
@@ -32,16 +31,16 @@ def path_to_top(path: str) -> str:
 def path_to_search_all(path: str) -> str:
     """path to search for all subs"""
     if not path:
-        path = SEPARATOR
-    if not path.startswith(SEPARATOR):
-        path = SEPARATOR + path
-    pre = f'{SEPARATOR}{nodes.NAME_TOP}'
+        path = os.path.sep
+    if not path.startswith(os.path.sep):
+        path = os.path.sep + path
+    pre = f'{os.path.sep}{nodes.NAME_TOP}'
     if not path.startswith(pre):
         # prepend with top node path
         path = pre + path
-    if not path.endswith(SEPARATOR):
+    if not path.endswith(os.path.sep):
         # ensure ends with a separator
-        path += SEPARATOR
+        path += os.path.sep
     if not path.endswith(WILD):
         # add wild card
         path += WILD

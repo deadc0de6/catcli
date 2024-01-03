@@ -99,7 +99,6 @@ class NodeFile(NodeAny):
 
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
-                 relpath: str,
                  nodesize: int,
                  md5: str,
                  maccess: float,
@@ -109,7 +108,6 @@ class NodeFile(NodeAny):
         super().__init__()  # type: ignore[no-untyped-call]
         self.name = name
         self.type = TYPE_FILE
-        self.relpath = relpath
         self.nodesize = nodesize
         self.md5 = md5
         self.maccess = maccess
@@ -126,7 +124,6 @@ class NodeDir(NodeAny):
 
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
-                 relpath: str,
                  nodesize: int,
                  maccess: float,
                  parent=None,
@@ -135,7 +132,6 @@ class NodeDir(NodeAny):
         super().__init__()  # type: ignore[no-untyped-call]
         self.name = name
         self.type = TYPE_DIR
-        self.relpath = relpath
         self.nodesize = nodesize
         self.maccess = maccess
         self.parent = parent
@@ -151,7 +147,6 @@ class NodeArchived(NodeAny):
 
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
-                 relpath: str,
                  nodesize: int,
                  md5: str,
                  archive: str,
@@ -161,7 +156,6 @@ class NodeArchived(NodeAny):
         super().__init__()  # type: ignore[no-untyped-call]
         self.name = name
         self.type = TYPE_ARCHIVED
-        self.relpath = relpath
         self.nodesize = nodesize
         self.md5 = md5
         self.archive = archive

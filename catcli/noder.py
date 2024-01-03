@@ -212,11 +212,9 @@ class Noder:
         md5 = ''
         if self.hash:
             md5 = self._get_hash(path)
-        relpath = os.sep.join([storagepath, name])
 
         maccess = os.path.getmtime(path)
         node = NodeFile(name,
-                        relpath,
                         stat.st_size,
                         md5,
                         maccess,
@@ -235,10 +233,8 @@ class Noder:
                      parent: NodeAny, storagepath: str) -> NodeDir:
         """create a new node representing a directory"""
         path = os.path.abspath(path)
-        relpath = os.sep.join([storagepath, name])
         maccess = os.path.getmtime(path)
         return NodeDir(name,
-                       relpath,
                        0,
                        maccess,
                        parent=parent)
@@ -264,7 +260,7 @@ class Noder:
     def new_archive_node(self, name: str, path: str,
                          parent: str, archive: str) -> NodeArchived:
         """create a new node for archive data"""
-        return NodeArchived(name=name, relpath=path,
+        return NodeArchived(name=name,
                             parent=parent, nodesize=0, md5='',
                             archive=archive)
 
@@ -383,7 +379,6 @@ class Noder:
                            withpath: bool = False,
                            withdepth: bool = False,
                            withstorage: bool = False,
-                           recalcparent: bool = False,
                            raw: bool = False) -> None:
         """
         print a node
@@ -392,7 +387,6 @@ class Noder:
         @withpath: print the node path
         @withdepth: print the node depth info
         @withstorage: print the node storage it belongs to
-        @recalcparent: get relpath from tree instead of relpath field
         @raw: print raw size rather than human readable
         """
         if node.type == nodes.TYPE_TOP:
@@ -403,14 +397,13 @@ class Noder:
             # node of type file
             node.__class__ = NodeFile
             name = node.name
+            storage = self._get_storage(node)
             if withpath:
-                if recalcparent:
-                    name = os.sep.join([self._get_parents(node.parent), name])
-                else:
-                    name = node.relpath
+                name = os.sep.join([
+                    storage.name,
+                    self._get_parents(node.parent),
+                    name])
             name = name.lstrip(os.sep)
-            if withstorage:
-                storage = self._get_storage(node)
             attr_str = ''
             if node.md5:
                 attr_str = f', md5:{node.md5}'
@@ -424,17 +417,16 @@ class Noder:
             # node of type directory
             node.__class__ = NodeDir
             name = node.name
+            storage = self._get_storage(node)
             if withpath:
-                if recalcparent:
-                    name = os.sep.join([self._get_parents(node.parent), name])
-                else:
-                    name = node.relpath
+                name = os.sep.join([
+                    storage.name,
+                    self._get_parents(node.parent),
+                    name])
             name = name.lstrip(os.sep)
             depth = 0
             if withdepth:
                 depth = len(node.children)
-            if withstorage:
-                storage = self._get_storage(node)
             attr: List[Tuple[str, str]] = []
             if node.nodesize:
                 attr.append(('totsize', size_to_str(node.nodesize, raw=raw)))
@@ -569,7 +561,6 @@ class Noder:
                   script: bool = False,
                   only_dir: bool = False,
                   startnode: Optional[NodeAny] = None,
-                  parentfromtree: bool = False,
                   fmt: str = 'native',
                   raw: bool = False) -> List[NodeAny]:
         """
@@ -579,7 +570,6 @@ class Noder:
         @script: output script
         @directory: only search for directories
         @startpath: node to start with
-        @parentfromtree: get path from parent instead of stored relpath
         @fmt: output format
         @raw: raw size output
         returns the found nodes
@@ -598,16 +588,10 @@ class Noder:
         paths = {}
         for item in found:
             item.name = fix_badchars(item.name)
-            if hasattr(item, 'relpath'):
-                item.relpath = fix_badchars(item.relpath)
             storage = self._get_storage(item)
-            if parentfromtree:
-                parent = self._get_parents(item)
-                key = f'{storage}/{parent}/{item.relpath}'
-                paths[parent] = item
-            else:
-                key = f'{storage}/{item.path}'
-                paths[key] = item
+            parents = self._get_parents(item)
+            key = f'{storage}/{parents}/{item.name}'
+            paths[parents] = item
 
         # handle fzf mode
         if fmt.startswith('fzf'):
@@ -626,7 +610,6 @@ class Noder:
                     self._print_node_native(item, withpath=True,
                                             withdepth=True,
                                             withstorage=True,
-                                            recalcparent=parentfromtree,
                                             raw=raw)
             elif fmt.startswith('csv'):
                 if fmt == 'csv-with-header':
