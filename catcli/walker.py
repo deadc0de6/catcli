@@ -47,8 +47,9 @@ class Walker:
         """
         self._debug(f'indexing starting at {path}')
         if not parent:
-            parent = self.noder.new_dir_node(name, path,
-                                             parent, storagepath)
+            parent = self.noder.new_dir_node(name,
+                                             path,
+                                             parent)
 
         if os.path.islink(path):
             rel = os.readlink(path)
@@ -65,8 +66,9 @@ class Walker:
                     continue
                 self._progress(file)
                 self._debug(f'index file {sub}')
-                node = self.noder.new_file_node(os.path.basename(file), sub,
-                                                parent, storagepath)
+                node = self.noder.new_file_node(os.path.basename(file),
+                                                sub,
+                                                parent)
                 if node:
                     cnt += 1
             for adir in dirs:
@@ -76,7 +78,7 @@ class Walker:
                 self._debug(f'index directory {sub}')
                 if not os.path.exists(sub):
                     continue
-                dummy = self.noder.new_dir_node(base, sub, parent, storagepath)
+                dummy = self.noder.new_dir_node(base, sub, parent)
                 if not dummy:
                     continue
                 cnt += 1
@@ -118,8 +120,9 @@ class Walker:
                     if node:
                         node.flag()
                     continue
-                node = self.noder.new_file_node(os.path.basename(file), sub,
-                                                parent, storagepath)
+                node = self.noder.new_file_node(os.path.basename(file),
+                                                sub,
+                                                parent)
                 if node:
                     node.flag()
                     cnt += 1
@@ -131,7 +134,7 @@ class Walker:
                 reindex, dummy = self._need_reindex(parent, sub, treepath)
                 if reindex:
                     dummy = self.noder.new_dir_node(base, sub,
-                                                    parent, storagepath)
+                                                    parent)
                     cnt += 1
                 if dummy:
                     dummy.flag()

@@ -198,7 +198,7 @@ class Noder:
         return top
 
     def new_file_node(self, name: str, path: str,
-                      parent: NodeAny, storagepath: str) -> Optional[NodeFile]:
+                      parent: NodeAny) -> Optional[NodeFile]:
         """create a new node representing a file"""
         if not os.path.exists(path):
             Logger.err(f'File \"{path}\" does not exist')
@@ -230,7 +230,7 @@ class Noder:
         return node
 
     def new_dir_node(self, name: str, path: str,
-                     parent: NodeAny, storagepath: str) -> NodeDir:
+                     parent: NodeAny) -> NodeDir:
         """create a new node representing a directory"""
         path = os.path.abspath(path)
         maccess = os.path.getmtime(path)
