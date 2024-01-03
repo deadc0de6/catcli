@@ -61,6 +61,11 @@ pylint -sn setup.py
 echo "[+] mypy"
 mypy --strict catcli/
 
+set +e
+grep -R 'TODO' catcli/ && echo "TODO found" && exit 1
+grep -R 'FIXME' catcli/ && echo "FIXME found" && exit 1
+set -e
+
 # unittest
 echo "[+] unittests"
 coverage run -p -m pytest tests
