@@ -706,7 +706,6 @@ class Noder:
                 found = resolv.get(top, path)
                 if found and self.node_has_subs(found):
                     # let's find its children as well
-                    print(path)
                     modpath = os.path.join(path, '*')
                     found = resolv.glob(top, modpath)
                 else:
