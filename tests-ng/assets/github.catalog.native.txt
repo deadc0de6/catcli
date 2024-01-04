@@ -1,7 +1,8 @@
 top
 └── [4mstorage[0m: [1;35mgithub[0m
-  [0;37mnbfiles:2 | totsize:1510 | free:0.0% | du:0/0 | date:2023-03-09 16:20:59[0m
-    ├── [94mworkflows[0m[0;37m [nbfiles:2, totsize:1493][0m
+  [0;37mnbfiles:3 | totsize:1642 | free:0.0% | du:0/0 | date:2023-03-09 16:20:59[0m
+    ├── [94mworkflows[0m[0;37m [nbfiles:2, totsize:1521][0m
     │   ├── pypi-release.yml [0;37m[size:691, md5:57699a7a6a03e20e864f220e19f8e197][0m
-    │   └── testing.yml [0;37m[size:802, md5:7144a119ef43adb634654522c12ec250][0m
+    │   └── testing.yml [0;37m[size:830, md5:93c53fc77c983b4686c8971aa25b6b18][0m
+    ├── codecov.yml [0;37m[size:104, md5:4203204f75b43cd4bf032402beb3359d][0m
     └── FUNDING.yml [0;37m[size:17, md5:0c6407a84d412c514007313fb3bca4de][0m

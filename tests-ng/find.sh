@@ -10,7 +10,8 @@ cd "${prev}"
 # coverage
 bin="python3 -m catcli.catcli"
 if command -v coverage 2>/dev/null; then
-  bin="coverage run -p --source=catcli -m catcli.catcli"
+  mkdir -p coverages/
+  bin="coverage run -p --data-file coverages/coverage --source=catcli -m catcli.catcli"
 fi
 
 echo "current dir: $(pwd)"

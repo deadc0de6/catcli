@@ -11,6 +11,13 @@
           "type": "file"
         },
         {
+          "maccess": 1704320710.7056112,
+          "md5": "4203204f75b43cd4bf032402beb3359d",
+          "name": "codecov.yml",
+          "size": 104,
+          "type": "file"
+        },
+        {
           "children": [
             {
               "maccess": 1666206037.078865,
@@ -20,32 +27,32 @@
               "type": "file"
             },
             {
-              "maccess": 1678375244.4870229,
-              "md5": "7144a119ef43adb634654522c12ec250",
+              "maccess": 1704320754.2561862,
+              "md5": "93c53fc77c983b4686c8971aa25b6b18",
               "name": "testing.yml",
-              "size": 802,
+              "size": 830,
               "type": "file"
             }
           ],
-          "maccess": 1678375244.4865956,
+          "maccess": 1704320727.2641916,
           "name": "workflows",
-          "size": 1493,
+          "size": 1521,
           "type": "dir"
         }
       ],
       "free": 0,
       "name": "github",
-      "size": 1510,
+      "size": 1642,
       "total": 0,
-      "ts": 1678375259,
+      "ts": 1704402832,
       "type": "storage"
     },
     {
       "attr": {
-        "access": 1678375259,
-        "access_version": "0.8.7",
-        "created": 1678375259,
-        "created_version": "0.8.7"
+        "access": 1704402832,
+        "access_version": "0.9.6",
+        "created": 1704402832,
+        "created_version": "0.9.6"
       },
       "name": "meta",
       "type": "meta"
