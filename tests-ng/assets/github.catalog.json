@@ -27,31 +27,31 @@
               "type": "file"
             },
             {
-              "maccess": 1704403201.272202,
-              "md5": "19421bdffa97bff7f391e4927a88fe45",
+              "maccess": 1704403569.24789,
+              "md5": "691df1a4d2f254b5cd04c152e7c6ccaf",
               "name": "testing.yml",
-              "size": 857,
+              "size": 850,
               "type": "file"
             }
           ],
           "maccess": 1704320727.2641916,
           "name": "workflows",
-          "size": 1548,
+          "size": 1541,
           "type": "dir"
         }
       ],
       "free": 0,
       "name": "github",
-      "size": 1669,
+      "size": 1662,
       "total": 0,
-      "ts": 1704403315,
+      "ts": 1704403613,
       "type": "storage"
     },
     {
       "attr": {
-        "access": 1704403315,
+        "access": 1704403613,
         "access_version": "0.9.6",
-        "created": 1704403315,
+        "created": 1704403613,
         "created_version": "0.9.6"
       },
       "name": "meta",
