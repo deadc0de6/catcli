@@ -59,6 +59,7 @@ pylint -sn setup.py
 
 # mypy
 echo "[+] mypy"
+mypy --version
 mypy --strict --disable-error-code=import-untyped catcli/
 
 set +e
