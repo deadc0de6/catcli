@@ -21,7 +21,7 @@ jobs:
     - name: Run tests
       run: |
         ./tests.sh
-     - name: Upload coverage reports to Codecov
+    - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       with:
         files: coverage.xml
