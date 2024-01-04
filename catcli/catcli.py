@@ -12,7 +12,7 @@ import sys
 import os
 import datetime
 from typing import Dict, Any, List
-from docopt import docopt  # type: ignore
+from docopt import docopt  # type: ignore[import-untyped]
 
 # local imports
 from catcli.version import __version__ as VERSION
