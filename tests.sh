@@ -60,7 +60,7 @@ pylint -sn setup.py
 # mypy
 echo "[+] mypy"
 mypy --version
-mypy --strict --disable-error-code=import-untyped catcli/
+mypy --config-file=.mypy.ini catcli/
 
 set +e
 grep -R 'TODO' catcli/ && echo "TODO found" && exit 1
