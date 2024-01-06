@@ -40,6 +40,7 @@ USAGE = f"""
 
 Usage:
     {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
+    {NAME} tree   [--catalog=<path>] [-aBCVSs] [<path>]
     {NAME} find   [--catalog=<path>] [--format=<fmt>]
                   [-aBCbdVs] [--path=<path>] [<term>]
     {NAME} index  [--catalog=<path>] [--meta=<meta>...]
@@ -346,6 +347,12 @@ def main() -> bool:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
+            cmd_ls(args, noder, top)
+        elif args['tree']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
+            args['--recursive'] = True
             cmd_ls(args, noder, top)
         elif args['mount']:
             if not catalog.exists():
