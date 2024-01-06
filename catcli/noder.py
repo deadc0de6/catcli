@@ -10,6 +10,7 @@ import shutil
 import time
 from typing import List, Union, Tuple, Any, Optional, Dict, cast
 import anytree  # type: ignore
+from natsort import os_sort_keygen
 
 # local imports
 from catcli import nodes
@@ -723,7 +724,9 @@ class Noder:
                 return found
 
             # sort found nodes
-            found = sorted(found, key=self._sort, reverse=self.sortsize)
+            #found = os_sorted(found)
+            found = sorted(found, key=os_sort_keygen(self._sort))
+            #found = sorted(found, key=cmp_to_key(self._sort), reverse=self.sortsize)
 
             # print the parent
             if fmt == 'native':
@@ -798,8 +801,10 @@ class Noder:
 
     @staticmethod
     def _sort_fs(node: NodeAny) -> Tuple[str, str]:
-        """sorting nodes dir first and alpha"""
-        return (node.type, node.name.lstrip('.').lower())
+        """sort by name"""
+        # to sort by types then name
+        # return (node.type, node.name)
+        return node.name
 
     @staticmethod
     def _sort_size(node: NodeAny) -> float:
