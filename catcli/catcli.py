@@ -18,6 +18,7 @@ from docopt import docopt
 from catcli.version import __version__ as VERSION
 from catcli.nodes import NodeTop, NodeAny
 from catcli.logger import Logger
+from catcli.printer_csv import CsvPrinter
 from catcli.colors import Colors
 from catcli.catalog import Catalog
 from catcli.walker import Walker
@@ -116,7 +117,7 @@ def cmd_index(args: Dict[str, Any],
         except KeyboardInterrupt:
             Logger.err('aborted')
             return
-        node = noder.get_storage_node(top, name)
+        node = top.get_storage_node()
         node.parent = None
 
     start = datetime.datetime.now()
@@ -125,7 +126,7 @@ def cmd_index(args: Dict[str, Any],
     root = noder.new_storage_node(name, path, top, attr)
     _, cnt = walker.index(path, root, name)
     if subsize:
-        noder.rec_size(root, store=True)
+        root.nodesize = root.get_rec_size()
     stop = datetime.datetime.now()
     diff = stop - start
     Logger.info(f'Indexed {cnt} file(s) in {diff}')
@@ -147,16 +148,17 @@ def cmd_update(args: Dict[str, Any],
     if not os.path.exists(path):
         Logger.err(f'\"{path}\" does not exist')
         return
-    root = noder.get_storage_node(top, name, newpath=path)
-    if not root:
+    storage = noder.find_storage_node_by_name(top, name)
+    if not storage:
         Logger.err(f'storage named \"{name}\" does not exist')
         return
+    noder.update_storage_path(top, name, path)
     start = datetime.datetime.now()
     walker = Walker(noder, usehash=usehash, debug=debug,
                     logpath=logpath)
-    cnt = walker.reindex(path, root, top)
+    cnt = walker.reindex(path, storage, top)
     if subsize:
-        noder.rec_size(root, store=True)
+        storage.nodesize = storage.get_rec_size()
     stop = datetime.datetime.now()
     diff = stop - start
     Logger.info(f'updated {cnt} file(s) in {diff}')
@@ -189,7 +191,7 @@ def cmd_rm(args: Dict[str, Any],
            top: NodeTop) -> NodeTop:
     """rm action"""
     name = args['<storage>']
-    node = noder.get_storage_node(top, name)
+    node = noder.find_storage_node_by_name(top, name)
     if node:
         node.parent = None
         if catalog.save(top):
@@ -278,7 +280,7 @@ def print_supported_formats() -> None:
     """print all supported formats to stdout"""
     print('"native"     : native format')
     print('"csv"        : CSV format')
-    print(f'               {Noder.CSV_HEADER}')
+    print(f'               {CsvPrinter.CSV_HEADER}')
     print('"fzf-native" : fzf to native (only valid for find)')
     print('"fzf-csv"    : fzf to csv (only valid for find)')
 
@@ -303,7 +305,7 @@ def main() -> bool:
         return False
 
     if args['--verbose']:
-        print(args)
+        print(f'args: {args}')
 
     # print banner
     if not args['--no-banner']:

@@ -46,7 +46,7 @@ class TestRm(unittest.TestCase):
         top = cmd_rm(args, noder, catalog, top)
 
         # ensure there no children anymore
-        self.assertTrue(len(top.children) == 0)
+        self.assertEqual(len(top.children), 0)
 
 
 def main():

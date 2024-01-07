@@ -17,6 +17,8 @@ from catcli.exceptions import CatcliException
 
 
 WILD = '*'
+TS_FORMAT_6 = '%b %d %H:%M'
+TS_FORMAT_MORE = '%b %d %Y'
 
 
 def path_to_top(path: str) -> str:
@@ -38,9 +40,9 @@ def path_to_search_all(path: str) -> str:
     if not path.startswith(pre):
         # prepend with top node path
         path = pre + path
-    if not path.endswith(os.path.sep):
-        # ensure ends with a separator
-        path += os.path.sep
+    # if not path.endswith(os.path.sep):
+    #     # ensure ends with a separator
+    #     path += os.path.sep
     # if not path.endswith(WILD):
     #     # add wild card
     #     path += WILD
@@ -95,6 +97,18 @@ def epoch_to_str(epoch: float) -> str:
     return timestamp.strftime(fmt)
 
 
+def epoch_to_ls_str(epoch: float) -> str:
+    """convert epoch to string"""
+    if not epoch:
+        return ''
+    timestamp = datetime.datetime.fromtimestamp(epoch)
+    delta = datetime.date.today() - datetime.timedelta(days=6*365/12)
+    fmt = TS_FORMAT_MORE
+    if timestamp.date() < delta:
+        fmt = TS_FORMAT_6
+    return timestamp.strftime(fmt)
+
+
 def ask(question: str) -> bool:
     """ask the user what to do"""
     resp = input(f'{question} [y|N] ? ')
@@ -117,3 +131,8 @@ def edit(string: str) -> str:
 def fix_badchars(string: str) -> str:
     """fix none utf-8 chars in string"""
     return string.encode('utf-8', 'ignore').decode('utf-8')
+
+
+def has_attr(node: nodes.NodeAny, attr: str) -> bool:
+    """return True if node has attr as attribute"""
+    return attr in node.__dict__.keys()

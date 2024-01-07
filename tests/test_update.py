@@ -125,7 +125,7 @@ class TestUpdate(unittest.TestCase):
         # explore the top node to find all nodes
         self.assertEqual(len(top.children), 1)
         storage = top.children[0]
-        self.assertTrue(len(storage.children) == 8)
+        self.assertEqual(len(storage.children), 8)
 
         # ensure d1f1 md5 sum has changed in catalog
         nods = noder.find_name(top, os.path.basename(d1f1))
