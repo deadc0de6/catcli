@@ -487,11 +487,8 @@ class Noder:
         for item in found:
             typcast_node(item)
             item.name = fix_badchars(item.name)
-            storage = item.get_storage_node()
-            parents = item.get_parent_hierarchy()
-            parent_key = f'{storage.name}/{parents}'
-            key = f'{parent_key}/{item.name}'
-            paths[parent_key] = item
+            key = get_node_fullpath(item)
+            paths[key] = item
 
         # handle fzf mode
         if fmt.startswith('fzf'):
@@ -549,6 +546,8 @@ class Noder:
                 return True
             if term in path:
                 return True
+            if self.debug:
+                Logger.debug(f'match \"{path}\" with \"{term}\"')
             if fnmatch.fnmatch(path, term):
                 return True
 

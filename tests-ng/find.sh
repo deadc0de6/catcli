@@ -44,10 +44,12 @@ echo ""
 
 ${bin} -B ls -r --catalog="${catalog}"
 
+echo "finding \"testing.yml\""
 ${bin} -B find --catalog="${catalog}" testing.yml
 cnt=$(${bin} -B find --catalog="${catalog}" testing.yml | wc -l)
 [ "${cnt}" != "2" ] && echo "should return 2 (not ${cnt})" && exit 1
 
+echo "finding \"*.yml\""
 ${bin} -B find --catalog="${catalog}" '*.yml'
 cnt=$(${bin} -B find --catalog="${catalog}" '*.yml' | wc -l)
 [ "${cnt}" != "8" ] && echo "should return 8 (not ${cnt})" && exit 1
