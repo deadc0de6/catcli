@@ -148,9 +148,6 @@ directory under `catcli.catalog`.
 The `--meta` switch allows to add any additional information to store along in
 the catalog like for example `the blue disk in my office`.
 
-Catcli will calculate and store the total size of each node (directories, storages, etc)
-unless the `-n --no-subsize` switch is used.
-
 Using the `-a --archive` switch allows to also index archive files as explained
 [below](#index-archive-files).
 

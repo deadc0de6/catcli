@@ -610,7 +610,8 @@ class Noder:
                 self.csv_printer.print_header()
             for item in found:
                 if fmt == 'native':
-                    self._print_node_native(item, withpath=False,
+                    self._print_node_native(item,
+                                            withpath=True,
                                             withnbchildren=True,
                                             raw=raw)
                 elif fmt.startswith('csv'):

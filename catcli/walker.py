@@ -35,7 +35,8 @@ class Walker:
         self.debug = debug
         self.lpath = logpath
 
-    def index(self, path: str,
+    def index(self,
+              path: str,
               parent: NodeAny,
               name: str,
               storagepath: str = '') -> Tuple[str, int]:
@@ -47,6 +48,7 @@ class Walker:
         """
         self._debug(f'indexing starting at {path}')
         if not parent:
+            # create the parent
             parent = self.noder.new_dir_node(name,
                                              path,
                                              parent)

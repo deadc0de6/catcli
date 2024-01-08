@@ -146,7 +146,7 @@ class NodeFile(NodeAny):
         path = self.parent.get_parent_hierarchy()
         if path:
             return os.sep.join([path, self.name])
-        return str(self.name)
+        return ''
 
     def get_storage_node(self) -> NodeAny:
         """recursively traverse up to find storage"""
@@ -185,7 +185,7 @@ class NodeDir(NodeAny):
         path = self.parent.get_parent_hierarchy()
         if path:
             return os.sep.join([path, self.name])
-        return str(self.name)
+        return ''
 
     def get_storage_node(self) -> NodeAny:
         """recursively traverse up to find storage"""
@@ -230,7 +230,7 @@ class NodeArchived(NodeAny):
         path = self.parent.get_parent_hierarchy()
         if path:
             return os.sep.join([path, self.name])
-        return str(self.name)
+        return ''
 
     def get_storage_node(self) -> NodeAny:
         """recursively traverse up to find storage"""
@@ -312,7 +312,7 @@ class NodeMeta(NodeAny):
         path = self.parent.get_parent_hierarchy()
         if path:
             return os.sep.join([path, self.name])
-        return str(self.name)
+        return ''
 
     def get_rec_size(self) -> int:
         """recursively traverse tree and return size"""

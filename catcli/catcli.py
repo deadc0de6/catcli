@@ -45,8 +45,8 @@ Usage:
     {NAME} find   [--catalog=<path>] [--format=<fmt>]
                   [-aBCbdVs] [--path=<path>] [<term>]
     {NAME} index  [--catalog=<path>] [--meta=<meta>...]
-                  [-aBCcfnV] <name> <path>
-    {NAME} update [--catalog=<path>] [-aBCcfnV]
+                  [-aBCcfV] <name> <path>
+    {NAME} update [--catalog=<path>] [-aBCcfV]
                   [--lpath=<path>] <name> <path>
     {NAME} mount  [--catalog=<path>] [-V] <mountpoint>
     {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
@@ -70,7 +70,6 @@ Options:
     -F --format=<fmt>   see \"print_supported_formats\" [default: native].
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
-    -n --no-subsize     Do not store size of directories [default: False].
     -p --path=<path>    Start path.
     -r --recursive      Recursive [default: False].
     -s --raw-size       Print raw size [default: False].
@@ -106,7 +105,6 @@ def cmd_index(args: Dict[str, Any],
     name = args['<name>']
     usehash = args['--hash']
     debug = args['--verbose']
-    subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err(f'\"{path}\" does not exist')
         return
@@ -119,15 +117,15 @@ def cmd_index(args: Dict[str, Any],
             Logger.err('aborted')
             return
         node = top.get_storage_node()
-        node.parent = None
+        if node:
+            node.parent = None
 
     start = datetime.datetime.now()
     walker = Walker(noder, usehash=usehash, debug=debug)
     attr = args['--meta']
     root = noder.new_storage_node(name, path, top, attr)
     _, cnt = walker.index(path, root, name)
-    if subsize:
-        root.nodesize = root.get_rec_size()
+    root.nodesize = root.get_rec_size()
     stop = datetime.datetime.now()
     diff = stop - start
     Logger.info(f'Indexed {cnt} file(s) in {diff}')
@@ -145,7 +143,6 @@ def cmd_update(args: Dict[str, Any],
     usehash = args['--hash']
     logpath = args['--lpath']
     debug = args['--verbose']
-    subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err(f'\"{path}\" does not exist')
         return
@@ -158,8 +155,7 @@ def cmd_update(args: Dict[str, Any],
     walker = Walker(noder, usehash=usehash, debug=debug,
                     logpath=logpath)
     cnt = walker.reindex(path, storage, top)
-    if subsize:
-        storage.nodesize = storage.get_rec_size()
+    storage.nodesize = storage.get_rec_size()
     stop = datetime.datetime.now()
     diff = stop - start
     Logger.info(f'updated {cnt} file(s) in {diff}')
