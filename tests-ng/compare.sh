@@ -36,6 +36,7 @@ catalog="${tmpd}/catalog"
 
 # index
 ${bin} -B index -c --catalog="${catalog}" github .github
+clean_catalog "${catalog}"
 ls -laR .github
 cat "${catalog}"
 

@@ -46,7 +46,8 @@ Usage:
                   [-aBCbdVs] [--path=<path>] [<term>]
     {NAME} index  [--catalog=<path>] [--meta=<meta>...]
                   [-aBCcfnV] <name> <path>
-    {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
+    {NAME} update [--catalog=<path>] [-aBCcfnV]
+                  [--lpath=<path>] <name> <path>
     {NAME} mount  [--catalog=<path>] [-V] <mountpoint>
     {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
     {NAME} rename [--catalog=<path>] [-BCfV] <storage> <name>
@@ -176,8 +177,8 @@ def cmd_ls(args: Dict[str, Any],
         raise BadFormatException('fzf is not supported in ls, use find')
     found = noder.list(top,
                        path,
-                       rec=args['--recursive'],
                        fmt=fmt,
+                       rec=args['--recursive'],
                        raw=args['--raw-size'])
     if not found:
         path = args['<path>']
@@ -213,12 +214,12 @@ def cmd_find(args: Dict[str, Any],
     search_for = args['<term>']
     if args['--verbose']:
         Logger.debug(f'search for \"{search_for}\" under \"{top.name}\"')
-    found = noder.find_name(top, search_for,
-                            script=script,
-                            startnode=startpath,
-                            only_dir=directory,
-                            fmt=fmt,
-                            raw=raw)
+    found = noder.find(top, search_for,
+                       script=script,
+                       startnode=startpath,
+                       only_dir=directory,
+                       fmt=fmt,
+                       raw=raw)
     return found
 
 

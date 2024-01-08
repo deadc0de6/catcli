@@ -6,18 +6,23 @@ Class for printing nodes in native format
 """
 
 import sys
-import os
 
 from catcli.nodes import NodeFile, NodeDir, NodeStorage
 from catcli.colors import Colors
 from catcli.logger import Logger
 from catcli.utils import fix_badchars, size_to_str, \
-    has_attr, epoch_to_ls_str
+    has_attr, epoch_to_ls_str, get_node_fullpath
 
 
-TS_LJUST = 13
-SIZE_LJUST = 6
-NAME_LJUST = 20
+COLOR_STORAGE = Colors.YELLOW
+COLOR_FILE = Colors.WHITE
+COLOR_DIRECTORY = Colors.BLUE
+COLOR_ARCHIVE = Colors.PURPLE
+COLOR_TS = Colors.CYAN
+COLOR_SIZE = Colors.GREEN
+
+FULLPATH_IN_NAME = True
+
 
 class NativePrinter:
     """a node printer class"""
@@ -60,9 +65,9 @@ class NativePrinter:
 
         # print
         out = f'{pre}{Colors.UND}{self.STORAGE}{Colors.RESET}: '
-        out += f'{Colors.PURPLE}{name}{Colors.RESET}'
+        out += f'{COLOR_STORAGE}{name}{Colors.RESET}'
         if attrs:
-            out += f'\n{" "*len(name)}{Colors.GRAY}{"|".join(attrs)}{Colors.RESET}'
+            out += f' [{Colors.WHITE}{"|".join(attrs)}{Colors.RESET}]'
         sys.stdout.write(f'{out}\n')
 
     def print_file(self, pre: str,
@@ -75,32 +80,30 @@ class NativePrinter:
         name = node.name
         storage = node.get_storage_node()
         if withpath:
-            name = os.sep.join([
-                storage.name,
-                node.parent.get_parent_hierarchy(),
-                name])
-        name = fix_badchars(name)
+            name = get_node_fullpath(node)
         # construct attributes
         attrs = []
         if node.md5:
             attrs.append(f'md5:{node.md5}')
         if withstorage:
             content = Logger.get_bold_text(storage.name)
-            attrs.append(f', storage:{content}')
+            attrs.append(f'storage:{content}')
         # print
         out = []
-        out .append(f'{pre}')
-        line = name.ljust(NAME_LJUST, ' ')
-        out.append(f'{line}')
+        out.append(f'{pre}')
+        out.append(f'{COLOR_FILE}{name}{Colors.RESET}')
         size = 0
         if node.nodesize:
             size = node.nodesize
-        line = size_to_str(size, raw=raw).ljust(SIZE_LJUST, ' ')
-        out.append(f'{Colors.BLUE}{line}{Colors.RESET}')
-        line = epoch_to_ls_str(node.maccess).ljust(TS_LJUST, ' ')
-        out.append(f'{Colors.PURPLE}{line}{Colors.RESET}')
+        line = size_to_str(size, raw=raw)
+        out.append(f'{COLOR_SIZE}{line}{Colors.RESET}')
+        if has_attr(node, 'maccess'):
+            line = epoch_to_ls_str(node.maccess)
+            out.append(f'{COLOR_TS}{line}{Colors.RESET}')
         if attrs:
             out.append(f'{Colors.GRAY}[{",".join(attrs)}]{Colors.RESET}')
+
+        out = [x for x in out if x]
         sys.stdout.write(f'{" ".join(out)}\n')
 
     def print_dir(self, pre: str,
@@ -114,11 +117,7 @@ class NativePrinter:
         name = node.name
         storage = node.get_storage_node()
         if withpath:
-            name = os.sep.join([
-                storage.name,
-                node.parent.get_parent_hierarchy(),
-                name])
-        name = fix_badchars(name)
+            name = get_node_fullpath(node)
         # construct attrs
         attrs = []
         if withnbchildren:
@@ -129,23 +128,25 @@ class NativePrinter:
         # print
         out = []
         out.append(f'{pre}')
-        line = name.ljust(NAME_LJUST, ' ')
-        out.append(f'{Colors.BLUE}{line}{Colors.RESET}')
+        out.append(f'{COLOR_DIRECTORY}{name}{Colors.RESET}')
         size = 0
         if node.nodesize:
             size = node.nodesize
-        line = size_to_str(size, raw=raw).ljust(SIZE_LJUST, ' ')
-        out.append(f'{Colors.GRAY}{line}{Colors.RESET}')
-        line = epoch_to_ls_str(node.maccess).ljust(TS_LJUST, ' ')
-        out.append(f'{Colors.GRAY}{line}{Colors.RESET}')
+        line = size_to_str(size, raw=raw)
+        out.append(f'{COLOR_SIZE}{line}{Colors.RESET}')
+        if has_attr(node, 'maccess'):
+            line = epoch_to_ls_str(node.maccess)
+            out.append(f'{COLOR_TS}{line}{Colors.RESET}')
         if attrs:
             out.append(f'{Colors.GRAY}[{",".join(attrs)}]{Colors.RESET}')
+
+        out = [x for x in out if x]
         sys.stdout.write(f'{" ".join(out)}\n')
 
     def print_archive(self, pre: str,
                       name: str, archive: str) -> None:
         """print an archive"""
         name = fix_badchars(name)
-        out = f'{pre}{Colors.YELLOW}{name}{Colors.RESET} '
+        out = f'{pre}{COLOR_ARCHIVE}{name}{Colors.RESET} '
         out += f'{Colors.GRAY}[{self.ARCHIVE}:{archive}]{Colors.RESET}'
         sys.stdout.write(f'{out}\n')

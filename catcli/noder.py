@@ -9,6 +9,7 @@ import os
 import shutil
 import time
 from typing import List, Union, Tuple, Any, Optional, Dict, cast
+import fnmatch
 import anytree  # type: ignore
 from natsort import os_sort_keygen  # type: ignore
 
@@ -17,7 +18,8 @@ from catcli import nodes
 from catcli.nodes import NodeAny, NodeStorage, \
     NodeTop, NodeFile, NodeArchived, NodeDir, NodeMeta, \
     typcast_node
-from catcli.utils import md5sum, fix_badchars, has_attr
+from catcli.utils import md5sum, fix_badchars, has_attr, \
+    get_node_fullpath
 from catcli.logger import Logger
 from catcli.printer_native import NativePrinter
 from catcli.printer_csv import CsvPrinter
@@ -35,8 +37,7 @@ class Noder:
     * "dir" node representing a directory
     * "file" node representing a file
     """
-
-    PRE = '  '
+    # pylint: disable=R0904
 
     def __init__(self, debug: bool = False,
                  sortsize: bool = False,
@@ -292,11 +293,11 @@ class Noder:
         @sep: CSV separator character
         @raw: print raw size rather than human readable
         """
+        typcast_node(node)
         if not node:
             return
         if node.type == nodes.TYPE_TOP:
             return
-
         if node.type == nodes.TYPE_STORAGE:
             self.csv_printer.print_storage(node,
                                            sep=sep,
@@ -341,20 +342,18 @@ class Noder:
         @withstorage: print the node storage it belongs to
         @raw: print raw size rather than human readable
         """
+        typcast_node(node)
         if node.type == nodes.TYPE_TOP:
             # top node
-            node.__class__ = NodeTop
             self.native_printer.print_top(pre, node.name)
         elif node.type == nodes.TYPE_FILE:
             # node of type file
-            node.__class__ = NodeFile
             self.native_printer.print_file(pre, node,
                                            withpath=withpath,
                                            withstorage=withstorage,
                                            raw=raw)
         elif node.type == nodes.TYPE_DIR:
             # node of type directory
-            node.__class__ = NodeDir
             self.native_printer.print_dir(pre,
                                           node,
                                           withpath=withpath,
@@ -363,14 +362,11 @@ class Noder:
                                           raw=raw)
         elif node.type == nodes.TYPE_STORAGE:
             # node of type storage
-            node.__class__ = NodeStorage
-
             self.native_printer.print_storage(pre,
                                               node,
                                               raw=raw)
         elif node.type == nodes.TYPE_ARCHIVED:
             # archive node
-            node.__class__ = NodeArchived
             if self.arc:
                 self.native_printer.print_archive(pre, node.name, node.archive)
         else:
@@ -458,13 +454,13 @@ class Noder:
     ###############################################################
     # searching
     ###############################################################
-    def find_name(self, top: NodeTop,
-                  key: str,
-                  script: bool = False,
-                  only_dir: bool = False,
-                  startnode: Optional[NodeAny] = None,
-                  fmt: str = 'native',
-                  raw: bool = False) -> List[NodeAny]:
+    def find(self, top: NodeTop,
+             key: str,
+             script: bool = False,
+             only_dir: bool = False,
+             startnode: Optional[NodeAny] = None,
+             fmt: str = 'native',
+             raw: bool = False) -> List[NodeAny]:
         """
         find files based on their names
         @top: top node
@@ -511,7 +507,8 @@ class Noder:
         else:
             if fmt == 'native':
                 for _, item in paths.items():
-                    self._print_node_native(item, withpath=True,
+                    self._print_node_native(item,
+                                            withpath=True,
                                             withnbchildren=True,
                                             withstorage=True,
                                             raw=raw)
@@ -533,6 +530,7 @@ class Noder:
     def _callback_find_name(self, term: str, only_dir: bool) -> Any:
         """callback for finding files"""
         def find_name(node: NodeAny) -> bool:
+            path = get_node_fullpath(node)
             if node.type == nodes.TYPE_STORAGE:
                 # ignore storage nodes
                 return False
@@ -549,7 +547,9 @@ class Noder:
             # filter
             if not term:
                 return True
-            if term.lower() in node.name.lower():
+            if term in path:
+                return True
+            if fnmatch.fnmatch(path, term):
                 return True
 
             # ignore
@@ -572,17 +572,18 @@ class Noder:
         @fmt: output format
         @raw: print raw size
         """
-        self._debug(f'walking path: \"{path}\" from {top.name}')
+        self._debug(f'walking path: \"{path}\" from \"{top.name}\"')
 
         resolv = anytree.resolver.Resolver('name')
         found = []
         try:
             if '*' in path or '?' in path:
                 # we need to handle glob
-                self._debug(f'glob with top {top.name} and path {path}')
+                self._debug('glob ls...')
                 found = resolv.glob(top, path)
             else:
                 # we have a canonical path
+                self._debug('get ls...')
                 found = resolv.get(top, path)
                 if found and self.node_has_subs(found):
                     # let's find its children as well
@@ -604,24 +605,12 @@ class Noder:
             # sort found nodes
             found = sorted(found, key=os_sort_keygen(self._sort))
 
-            # print the parent
-            if fmt == 'native':
-                self._print_node_native(found[0].parent,
-                                        withpath=False,
-                                        withnbchildren=True,
-                                        raw=raw)
-            elif fmt.startswith('csv'):
-                self._print_node_csv(found[0].parent, raw=raw)
-            elif fmt.startswith('fzf'):
-                pass
-
             # print all found nodes
             if fmt == 'csv-with-header':
                 self.csv_printer.print_header()
             for item in found:
                 if fmt == 'native':
                     self._print_node_native(item, withpath=False,
-                                            pre=Noder.PRE,
                                             withnbchildren=True,
                                             raw=raw)
                 elif fmt.startswith('csv'):

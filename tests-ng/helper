@@ -21,6 +21,14 @@ clear_on_exit()
   fi
 }
 
+# clear catalog stuff for testing
+# $1: catalog path
+clean_catalog()
+{
+  sed -i 's/"free": .*,/"free": 0,/g' "${1}"
+  sed -i 's/"total": .*,/"total": 0,/g' "${1}"
+}
+
 # clear files
 on_exit()
 {

@@ -8,8 +8,7 @@ rm -f tests-ng/assets/github.catalog.json
 python3 -m catcli.catcli index -c github .github --catalog=tests-ng/assets/github.catalog.json
 
 # edit catalog
-sed -i 's/"free": .*,/"free": 0,/g' "tests-ng/assets/github.catalog.json"
-sed -i 's/"total": .*,/"total": 0,/g' "tests-ng/assets/github.catalog.json"
+clean_catalog "tests-ng/assets/github.catalog.json"
 
 # native
 python3 -m catcli.catcli ls -r -s -B --catalog=tests-ng/assets/github.catalog.json | \
