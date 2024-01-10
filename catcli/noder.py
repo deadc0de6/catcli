@@ -517,6 +517,7 @@ class Noder:
     def _callback_find_name(self, term: str, only_dir: bool) -> Any:
         """callback for finding files"""
         def find_name(node: NodeAny) -> bool:
+            typcast_node(node)
             path = node.get_fullpath()
             if node.type == nodes.TYPE_STORAGE:
                 # ignore storage nodes
@@ -549,6 +550,7 @@ class Noder:
     # fixsizes
     ###############################################################
     def fixsizes(self, top: NodeTop) -> None:
+        """fix node sizes"""
         typcast_node(top)
         rend = anytree.RenderTree(top)
         for _, _, thenode in rend:
@@ -582,14 +584,15 @@ class Noder:
             else:
                 # we have a canonical path
                 self._debug('get ls...')
-                found = resolv.get(top, path)
-                typcast_node(found)
-                if found and found.may_have_children():
+                foundone = resolv.get(top, path)
+                cast(NodeAny, foundone)
+                typcast_node(foundone)
+                if foundone and foundone.may_have_children():
                     # let's find its children as well
                     modpath = os.path.join(path, '*')
                     found = resolv.glob(top, modpath)
                 else:
-                    found = [found]
+                    found = [foundone]
 
             if len(found) < 1:
                 # nothing found
@@ -625,12 +628,13 @@ class Noder:
     ###############################################################
     # du
     ###############################################################
-    def du(self, top: NodeTop,
-           path: str,
-           raw: bool = False) -> List[NodeAny]:
+    def diskusage(self, top: NodeTop,
+                  path: str,
+                  raw: bool = False) -> List[NodeAny]:
+        """disk usage"""
         self._debug(f'du walking path: \"{path}\" from \"{top.name}\"')
         resolv = anytree.resolver.Resolver('name')
-        found = []
+        found: NodeAny
         try:
             # we have a canonical path
             self._debug('get du...')
@@ -691,7 +695,7 @@ class Noder:
                 if thenode.type == nodes.TYPE_DIR:
                     thenodes.append(thenode)
         else:
-            [thenodes.append(x) for _, _, x in rend]
+            thenodes = [x for _, _, x in rend]
         return sorted(thenodes, key=os_sort_keygen(self._sort))
 
     def _sort_tree(self,

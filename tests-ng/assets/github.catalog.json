@@ -36,7 +36,7 @@
           ],
           "maccess": 1704320727.2641916,
           "name": "workflows",
-          "size": 0,
+          "size": 1541,
           "type": "dir"
         }
       ],
@@ -44,20 +44,22 @@
       "name": "github",
       "size": 1662,
       "total": 0,
-      "ts": 1704913782,
+      "ts": 1704922075,
       "type": "storage"
     },
     {
       "attr": {
-        "access": 1704913782,
+        "access": 1704922075,
         "access_version": "0.9.6",
-        "created": 1704913782,
+        "created": 1704922075,
         "created_version": "0.9.6"
       },
       "name": "meta",
+      "size": null,
       "type": "meta"
     }
   ],
   "name": "top",
+  "size": null,
   "type": "top"
 }

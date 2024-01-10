@@ -170,13 +170,14 @@ def cmd_du(args: Dict[str, Any],
            top: NodeTop) -> List[NodeAny]:
     """du action"""
     path = path_to_search_all(args['<path>'])
-    found = noder.du(top,
-                     path,
-                     raw=args['--raw-size'])
+    found = noder.diskusage(top,
+                            path,
+                            raw=args['--raw-size'])
     if not found:
         path = args['<path>']
         Logger.err(f'\"{path}\": nothing found')
     return found
+
 
 def cmd_ls(args: Dict[str, Any],
            noder: Noder,
@@ -253,6 +254,7 @@ def cmd_fixsizes(top: NodeTop,
     recursively their size
     """
     noder.fixsizes(top)
+    catalog.save(top)
     Logger.info('sizes fixed')
 
 

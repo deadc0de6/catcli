@@ -6,7 +6,6 @@ Class for printing nodes in csv format
 """
 
 import sys
-import os
 from typing import List
 
 from catcli.nodes import NodeAny, NodeStorage, TYPE_DIR

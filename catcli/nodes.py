@@ -46,10 +46,14 @@ class NodeAny(NodeMixin):  # type: ignore
     """generic node"""
 
     def __init__(self,  # type: ignore[no-untyped-def]
+                 name=None,
+                 size=None,
                  parent=None,
                  children=None):
         """build generic node"""
         super().__init__()
+        self.name = name
+        self.nodesize = size
         self.parent = parent
         if children:
             self.children = children
@@ -76,7 +80,7 @@ class NodeAny(NodeMixin):  # type: ignore
             typcast_node(self.parent)
             ppath = self.parent.get_fullpath()
             path = os.path.join(ppath, path)
-        return path
+        return str(path)
 
     def get_rec_size(self) -> int:
         """recursively traverse tree and return size"""
