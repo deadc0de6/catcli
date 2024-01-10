@@ -59,12 +59,11 @@ class CsvPrinter:
         out = []
         out.append(node.name.replace('"', '""'))  # name
         out.append(node.type)  # type
-        parents = node.get_parent_hierarchy()
-        storage = node.get_storage_node()
-        fullpath = os.path.join(storage.name, parents)
+        fullpath = node.get_fullpath()
         out.append(fullpath.replace('"', '""'))  # full path
 
         out.append(size_to_str(node.nodesize, raw=raw))  # size
+        storage = node.get_storage_node()
         out.append(epoch_to_str(storage.ts))  # indexed_at
         if has_attr(node, 'maccess'):
             out.append(epoch_to_str(node.maccess))  # maccess

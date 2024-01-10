@@ -122,17 +122,3 @@ def fix_badchars(string: str) -> str:
 def has_attr(node: nodes.NodeAny, attr: str) -> bool:
     """return True if node has attr as attribute"""
     return attr in node.__dict__.keys()
-
-
-def get_node_fullpath(node: nodes.NodeAny) -> str:
-    """get node full path"""
-    nodes.typcast_node(node)
-    path = node.name
-    parents = node.get_parent_hierarchy()
-    if parents:
-        path = os.sep.join([parents, path])
-    storage = node.get_storage_node()
-    if storage:
-        path = os.sep.join([storage.name, path])
-    path = fix_badchars(path)
-    return str(path)

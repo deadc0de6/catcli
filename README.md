@@ -50,6 +50,8 @@ catcli ls -r
 catcli ls log
 # find files/directories named '*log*'
 catcli find log
+# show directories sizes
+catcli du log
 ```
 
 see [usage](#usage) for specific info
@@ -76,6 +78,7 @@ See the [examples](#examples) for an overview of the available features.
   * [Find files](#find-files)
   * [Mount catalog](#mount-catalog)
   * [Display entire hierarchy](#display-entire-hierarchy)
+  * [Disk usage](#disk-usage)
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
   * [Update catalog](#update-catalog)
@@ -211,6 +214,11 @@ The entire catalog can be shown using the `ls -r` command.
 Resulting files can be sorted by size using the `-S --sortsize` switch.
 
 See the [examples](#examples) for more.
+
+## Disk usage
+
+You can get the disk usage with the `du` command.
+Resulting files can be sorted by size using the `-S --sortsize` switch.
 
 ## Catalog graph
 

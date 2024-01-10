@@ -7,11 +7,12 @@ Class for printing nodes in native format
 
 import sys
 
-from catcli.nodes import NodeFile, NodeDir, NodeStorage
+from catcli.nodes import NodeFile, NodeDir, \
+    NodeStorage, NodeAny, typcast_node
 from catcli.colors import Colors
 from catcli.logger import Logger
 from catcli.utils import fix_badchars, size_to_str, \
-    has_attr, epoch_to_str, get_node_fullpath
+    has_attr, epoch_to_str
 
 
 COLOR_STORAGE = Colors.YELLOW
@@ -30,6 +31,19 @@ class NativePrinter:
     STORAGE = 'storage'
     ARCHIVE = 'archive'
     NBFILES = 'nbfiles'
+
+    def print_du(self, node: NodeAny,
+                 raw: bool = False) -> None:
+        """print du style"""
+        typcast_node(node)
+        name = node.get_fullpath()
+        size = node.nodesize
+
+        line = size_to_str(size, raw=raw).ljust(10, ' ')
+        out = f'{COLOR_SIZE}{line}{Colors.RESET}'
+        out += ' '
+        out += f'{COLOR_FILE}{name}{Colors.RESET}'
+        sys.stdout.write(f'{out}\n')
 
     def print_top(self, pre: str, name: str) -> None:
         """print top node"""
@@ -80,7 +94,7 @@ class NativePrinter:
         name = node.name
         storage = node.get_storage_node()
         if withpath:
-            name = get_node_fullpath(node)
+            name = node.get_fullpath()
         # construct attributes
         attrs = []
         if node.md5:
@@ -117,7 +131,7 @@ class NativePrinter:
         name = node.name
         storage = node.get_storage_node()
         if withpath:
-            name = get_node_fullpath(node)
+            name = node.get_fullpath()
         # construct attrs
         attrs = []
         if withnbchildren:

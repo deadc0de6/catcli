@@ -18,8 +18,7 @@ from catcli import nodes
 from catcli.nodes import NodeAny, NodeStorage, \
     NodeTop, NodeFile, NodeArchived, NodeDir, NodeMeta, \
     typcast_node
-from catcli.utils import md5sum, fix_badchars, has_attr, \
-    get_node_fullpath
+from catcli.utils import md5sum, fix_badchars, has_attr
 from catcli.logger import Logger
 from catcli.printer_native import NativePrinter
 from catcli.printer_csv import CsvPrinter
@@ -307,25 +306,16 @@ class Noder:
                                         sep=sep,
                                         raw=raw)
 
-    def node_has_subs(self, node: Any) -> bool:
+    def _print_node_du(self, node: NodeAny,
+                       raw: bool = False) -> None:
         """
-        node may have children
-        we explicitely handle all case
-        for clarity
+        print node du style
         """
-        if not node:
-            return False
-        if node.type == nodes.TYPE_TOP:
-            return True
-        if node.type == nodes.TYPE_FILE:
-            return False
-        if node.type == nodes.TYPE_DIR:
-            return True
-        if node.type == nodes.TYPE_STORAGE:
-            return True
-        if node.type == nodes.TYPE_ARCHIVED:
-            return True
-        return False
+        typcast_node(node)
+        thenodes = self._get_entire_tree(node,
+                                         dironly=True)
+        for thenode in thenodes:
+            self.native_printer.print_du(thenode, raw=raw)
 
     def _print_node_native(self, node: NodeAny,
                            pre: str = '',
@@ -427,7 +417,7 @@ class Noder:
         for _, _, rend in rendered:
             if not rend:
                 continue
-            parents = rend.get_parent_hierarchy()
+            parents = rend.get_fullpath()
             storage = rend.get_storage_node()
             fullpath = os.path.join(storage.name, parents)
             the_nodes[fullpath] = rend
@@ -487,7 +477,7 @@ class Noder:
         for item in found:
             typcast_node(item)
             item.name = fix_badchars(item.name)
-            key = get_node_fullpath(item)
+            key = item.get_fullpath()
             paths[key] = item
 
         # handle fzf mode
@@ -527,7 +517,7 @@ class Noder:
     def _callback_find_name(self, term: str, only_dir: bool) -> Any:
         """callback for finding files"""
         def find_name(node: NodeAny) -> bool:
-            path = get_node_fullpath(node)
+            path = node.get_fullpath()
             if node.type == nodes.TYPE_STORAGE:
                 # ignore storage nodes
                 return False
@@ -556,6 +546,16 @@ class Noder:
         return find_name
 
     ###############################################################
+    # fixsizes
+    ###############################################################
+    def fixsizes(self, top: NodeTop) -> None:
+        typcast_node(top)
+        rend = anytree.RenderTree(top)
+        for _, _, thenode in rend:
+            typcast_node(thenode)
+            thenode.nodesize = thenode.get_rec_size()
+
+    ###############################################################
     # ls
     ###############################################################
     def list(self, top: NodeTop,
@@ -571,8 +571,7 @@ class Noder:
         @fmt: output format
         @raw: print raw size
         """
-        self._debug(f'walking path: \"{path}\" from \"{top.name}\"')
-
+        self._debug(f'ls walking path: \"{path}\" from \"{top.name}\"')
         resolv = anytree.resolver.Resolver('name')
         found = []
         try:
@@ -584,7 +583,8 @@ class Noder:
                 # we have a canonical path
                 self._debug('get ls...')
                 found = resolv.get(top, path)
-                if found and self.node_has_subs(found):
+                typcast_node(found)
+                if found and found.may_have_children():
                     # let's find its children as well
                     modpath = os.path.join(path, '*')
                     found = resolv.glob(top, modpath)
@@ -623,6 +623,30 @@ class Noder:
         return found
 
     ###############################################################
+    # du
+    ###############################################################
+    def du(self, top: NodeTop,
+           path: str,
+           raw: bool = False) -> List[NodeAny]:
+        self._debug(f'du walking path: \"{path}\" from \"{top.name}\"')
+        resolv = anytree.resolver.Resolver('name')
+        found = []
+        try:
+            # we have a canonical path
+            self._debug('get du...')
+            found = resolv.get(top, path)
+            if not found:
+                # nothing found
+                self._debug('nothing found')
+                return []
+
+            self._debug(f'du found: {found}')
+            self._print_node_du(found, raw=raw)
+        except anytree.resolver.ChildResolverError:
+            pass
+        return found
+
+    ###############################################################
     # tree creation
     ###############################################################
     def _add_entry(self, name: str,
@@ -653,6 +677,23 @@ class Noder:
     ###############################################################
     # diverse
     ###############################################################
+    def _get_entire_tree(self, start: NodeAny,
+                         dironly: bool = False) -> List[NodeAny]:
+        """
+        get entire tree and sort it
+        """
+        typcast_node(start)
+        rend = anytree.RenderTree(start)
+        thenodes = []
+        if dironly:
+            for _, _, thenode in rend:
+                typcast_node(thenode)
+                if thenode.type == nodes.TYPE_DIR:
+                    thenodes.append(thenode)
+        else:
+            [thenodes.append(x) for _, _, x in rend]
+        return sorted(thenodes, key=os_sort_keygen(self._sort))
+
     def _sort_tree(self,
                    items: List[NodeAny]) -> List[NodeAny]:
         """sorting a list of items"""

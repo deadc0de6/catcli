@@ -54,6 +54,10 @@ class NodeAny(NodeMixin):  # type: ignore
         if children:
             self.children = children
 
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        raise NotImplementedError
+
     def _to_str(self) -> str:
         ret = str(self.__class__) + ": " + str(self.__dict__)
         if self.children:
@@ -65,17 +69,26 @@ class NodeAny(NodeMixin):  # type: ignore
     def __str__(self) -> str:
         return self._to_str()
 
-    def get_parent_hierarchy(self) -> str:
-        """get all parents recursively"""
-        raise NotImplementedError
+    def get_fullpath(self) -> str:
+        """return full path to this node"""
+        path = self.name
+        if self.parent:
+            typcast_node(self.parent)
+            ppath = self.parent.get_fullpath()
+            path = os.path.join(ppath, path)
+        return path
+
+    def get_rec_size(self) -> int:
+        """recursively traverse tree and return size"""
+        totsize: int = self.nodesize
+        for node in self.children:
+            typcast_node(node)
+            totsize += node.get_rec_size()
+        return totsize
 
     def get_storage_node(self) -> NodeMixin:
         """recursively traverse up to find storage"""
         return None
-
-    def get_rec_size(self) -> int:
-        """recursively traverse tree and return size"""
-        raise NotImplementedError
 
     def flagged(self) -> bool:
         """is flagged"""
@@ -107,13 +120,22 @@ class NodeTop(NodeAny):
         if children:
             self.children = children
 
-    def get_parent_hierarchy(self) -> str:
-        """get all parents recursively"""
+    def get_fullpath(self) -> str:
+        """return full path to this node"""
         return ''
 
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return True
+
     def get_rec_size(self) -> int:
-        """recursively traverse tree and return size"""
-        return 0
+        """
+        recursively traverse tree and return size
+        also ensure to update the size on the way
+        """
+        size = super().get_rec_size()
+        self.nodesize = size
+        return size
 
     def __str__(self) -> str:
         return self._to_str()
@@ -140,21 +162,13 @@ class NodeFile(NodeAny):
         if children:
             self.children = children
 
-    def get_parent_hierarchy(self) -> str:
-        """get all parents recursively"""
-        typcast_node(self.parent)
-        path = self.parent.get_parent_hierarchy()
-        if path:
-            return os.sep.join([path, self.name])
-        return ''
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return False
 
     def get_storage_node(self) -> NodeAny:
         """recursively traverse up to find storage"""
         return cast(NodeStorage, self.ancestors[1])
-
-    def get_rec_size(self) -> int:
-        """recursively traverse tree and return size"""
-        return self.nodesize
 
     def __str__(self) -> str:
         return self._to_str()
@@ -179,25 +193,22 @@ class NodeDir(NodeAny):
         if children:
             self.children = children
 
-    def get_parent_hierarchy(self) -> str:
-        """get all parents recursively"""
-        typcast_node(self.parent)
-        path = self.parent.get_parent_hierarchy()
-        if path:
-            return os.sep.join([path, self.name])
-        return ''
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return True
+
+    def get_rec_size(self) -> int:
+        """
+        recursively traverse tree and return size
+        also ensure to update the size on the way
+        """
+        size = super().get_rec_size()
+        self.nodesize = size
+        return size
 
     def get_storage_node(self) -> NodeAny:
         """recursively traverse up to find storage"""
         return cast(NodeStorage, self.ancestors[1])
-
-    def get_rec_size(self) -> int:
-        """recursively traverse tree and return size"""
-        totsize: int = 0
-        for node in self.children:
-            typcast_node(node)
-            totsize += node.get_rec_size()
-        return totsize
 
     def __str__(self) -> str:
         return self._to_str()
@@ -224,21 +235,13 @@ class NodeArchived(NodeAny):
         if children:
             self.children = children
 
-    def get_parent_hierarchy(self) -> str:
-        """get all parents recursively"""
-        typcast_node(self.parent)
-        path = self.parent.get_parent_hierarchy()
-        if path:
-            return os.sep.join([path, self.name])
-        return ''
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return False
 
     def get_storage_node(self) -> NodeAny:
         """recursively traverse up to find storage"""
         return cast(NodeStorage, self.ancestors[1])
-
-    def get_rec_size(self) -> int:
-        """recursively traverse tree and return size"""
-        return self.nodesize
 
     def __str__(self) -> str:
         return self._to_str()
@@ -269,21 +272,22 @@ class NodeStorage(NodeAny):
         if children:
             self.children = children
 
-    def get_parent_hierarchy(self) -> str:
-        """get all parents recursively"""
-        return ''
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return True
+
+    def get_rec_size(self) -> int:
+        """
+        recursively traverse tree and return size
+        also ensure to update the size on the way
+        """
+        size = super().get_rec_size()
+        self.nodesize = size
+        return size
 
     def get_storage_node(self) -> NodeAny:
         """recursively traverse up to find storage"""
         return self
-
-    def get_rec_size(self) -> int:
-        """recursively traverse tree and return size"""
-        totsize: int = 0
-        for node in self.children:
-            typcast_node(node)
-            totsize += node.get_rec_size()
-        return totsize
 
     def __str__(self) -> str:
         return self._to_str()
@@ -306,13 +310,9 @@ class NodeMeta(NodeAny):
         if children:
             self.children = children
 
-    def get_parent_hierarchy(self) -> str:
-        """get all parents recursively"""
-        typcast_node(self.parent)
-        path = self.parent.get_parent_hierarchy()
-        if path:
-            return os.sep.join([path, self.name])
-        return ''
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return False
 
     def get_rec_size(self) -> int:
         """recursively traverse tree and return size"""

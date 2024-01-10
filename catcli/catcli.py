@@ -40,19 +40,21 @@ USAGE = f"""
 {BANNER}
 
 Usage:
-    {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
-    {NAME} tree   [--catalog=<path>] [-aBCVSs] [<path>]
-    {NAME} find   [--catalog=<path>] [--format=<fmt>]
-                  [-aBCbdVs] [--path=<path>] [<term>]
-    {NAME} index  [--catalog=<path>] [--meta=<meta>...]
-                  [-aBCcfV] <name> <path>
-    {NAME} update [--catalog=<path>] [-aBCcfV]
-                  [--lpath=<path>] <name> <path>
-    {NAME} mount  [--catalog=<path>] [-V] <mountpoint>
-    {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
-    {NAME} rename [--catalog=<path>] [-BCfV] <storage> <name>
-    {NAME} edit   [--catalog=<path>] [-BCfV] <storage>
-    {NAME} graph  [--catalog=<path>] [-BCV] [<path>]
+    {NAME} ls       [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
+    {NAME} tree     [--catalog=<path>] [-aBCVSs] [<path>]
+    {NAME} find     [--catalog=<path>] [--format=<fmt>]
+                    [-aBCbdVs] [--path=<path>] [<term>]
+    {NAME} index    [--catalog=<path>] [--meta=<meta>...]
+                    [-aBCcfV] <name> <path>
+    {NAME} update   [--catalog=<path>] [-aBCcfV]
+                    [--lpath=<path>] <name> <path>
+    {NAME} mount    [--catalog=<path>] [-V] <mountpoint>
+    {NAME} du       [--catalog=<path>] [-BCVSs] [<path>]
+    {NAME} rm       [--catalog=<path>] [-BCfV] <storage>
+    {NAME} rename   [--catalog=<path>] [-BCfV] <storage> <name>
+    {NAME} edit     [--catalog=<path>] [-BCfV] <storage>
+    {NAME} graph    [--catalog=<path>] [-BCV] [<path>]
+    {NAME} fixsizes [--catalog=<path>]
     {NAME} print_supported_formats
     {NAME} help
     {NAME} --help
@@ -163,6 +165,19 @@ def cmd_update(args: Dict[str, Any],
         catalog.save(top)
 
 
+def cmd_du(args: Dict[str, Any],
+           noder: Noder,
+           top: NodeTop) -> List[NodeAny]:
+    """du action"""
+    path = path_to_search_all(args['<path>'])
+    found = noder.du(top,
+                     path,
+                     raw=args['--raw-size'])
+    if not found:
+        path = args['<path>']
+        Logger.err(f'\"{path}\": nothing found')
+    return found
+
 def cmd_ls(args: Dict[str, Any],
            noder: Noder,
            top: NodeTop) -> List[NodeAny]:
@@ -228,6 +243,17 @@ def cmd_graph(args: Dict[str, Any],
         path = GRAPHPATH
     cmd = noder.to_dot(top, path)
     Logger.info(f'create graph with \"{cmd}\" (you need graphviz)')
+
+
+def cmd_fixsizes(top: NodeTop,
+                 noder: Noder,
+                 catalog: Catalog) -> None:
+    """
+    fix each node size by re-calculating
+    recursively their size
+    """
+    noder.fixsizes(top)
+    Logger.info('sizes fixed')
 
 
 def cmd_rename(args: Dict[str, Any],
@@ -379,6 +405,16 @@ def main() -> bool:
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
             cmd_edit(args, noder, catalog, top)
+        elif args['du']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
+            cmd_du(args, noder, top)
+        elif args['fixsizes']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
+            cmd_fixsizes(top, noder, catalog)
     except CatcliException as exc:
         Logger.stderr_nocolor('ERROR ' + str(exc))
         return False
