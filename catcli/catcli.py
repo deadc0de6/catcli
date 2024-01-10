@@ -255,7 +255,6 @@ def cmd_fixsizes(top: NodeTop,
     """
     noder.fixsizes(top)
     catalog.save(top)
-    Logger.info('sizes fixed')
 
 
 def cmd_rename(args: Dict[str, Any],
@@ -365,6 +364,7 @@ def main() -> bool:
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
             cmd_update(args, noder, catalog, top)
+            cmd_fixsizes(top, noder, catalog)
         elif args['find']:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')
