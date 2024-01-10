@@ -8,7 +8,7 @@ Class that represents a node in the catalog tree
 
 import os
 from typing import Dict, Any, cast
-from anytree import NodeMixin  # type: ignore
+from anytree import NodeMixin
 
 from catcli.exceptions import CatcliException
 

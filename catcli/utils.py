@@ -17,8 +17,6 @@ from catcli.exceptions import CatcliException
 
 
 WILD = '*'
-TS_FORMAT_6 = '%b %d %H:%M'
-TS_FORMAT_MORE = '%b %d %Y'
 
 
 def path_to_top(path: str) -> str:
@@ -94,18 +92,6 @@ def epoch_to_str(epoch: float) -> str:
         return ''
     fmt = '%Y-%m-%d %H:%M:%S'
     timestamp = datetime.datetime.fromtimestamp(epoch)
-    return timestamp.strftime(fmt)
-
-
-def epoch_to_ls_str(epoch: float) -> str:
-    """convert epoch to string"""
-    if not epoch:
-        return ''
-    timestamp = datetime.datetime.fromtimestamp(epoch)
-    delta = datetime.date.today() - datetime.timedelta(days=6*365/12)
-    fmt = TS_FORMAT_MORE
-    if timestamp.date() < delta:
-        fmt = TS_FORMAT_6
     return timestamp.strftime(fmt)
 
 

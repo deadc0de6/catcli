@@ -11,7 +11,7 @@ from catcli.nodes import NodeFile, NodeDir, NodeStorage
 from catcli.colors import Colors
 from catcli.logger import Logger
 from catcli.utils import fix_badchars, size_to_str, \
-    has_attr, epoch_to_ls_str, get_node_fullpath
+    has_attr, epoch_to_str, get_node_fullpath
 
 
 COLOR_STORAGE = Colors.YELLOW
@@ -61,7 +61,7 @@ class NativePrinter:
         attrs.append(f'du:{szused}/{sztotal}')
         # timestamp
         if has_attr(node, 'ts'):
-            attrs.append(f'date:{epoch_to_ls_str(node.ts)}')
+            attrs.append(f'date:{epoch_to_str(node.ts)}')
 
         # print
         out = f'{pre}{Colors.UND}{self.STORAGE}{Colors.RESET}: '
@@ -98,7 +98,7 @@ class NativePrinter:
         line = size_to_str(size, raw=raw)
         out.append(f'{COLOR_SIZE}{line}{Colors.RESET}')
         if has_attr(node, 'maccess'):
-            line = epoch_to_ls_str(node.maccess)
+            line = epoch_to_str(node.maccess)
             out.append(f'{COLOR_TS}{line}{Colors.RESET}')
         if attrs:
             out.append(f'{Colors.GRAY}[{",".join(attrs)}]{Colors.RESET}')
@@ -135,7 +135,7 @@ class NativePrinter:
         line = size_to_str(size, raw=raw)
         out.append(f'{COLOR_SIZE}{line}{Colors.RESET}')
         if has_attr(node, 'maccess'):
-            line = epoch_to_ls_str(node.maccess)
+            line = epoch_to_str(node.maccess)
             out.append(f'{COLOR_TS}{line}{Colors.RESET}')
         if attrs:
             out.append(f'{Colors.GRAY}[{",".join(attrs)}]{Colors.RESET}')

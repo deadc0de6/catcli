@@ -7,9 +7,9 @@ Class that represents the catcli catalog
 
 import os
 from typing import Optional, List, Dict, Tuple, Union, Any
-from anytree.exporter import JsonExporter, DictExporter  # type: ignore
-from anytree.importer import JsonImporter  # type: ignore
-from anytree import AnyNode  # type: ignore
+from anytree.exporter import JsonExporter, DictExporter
+from anytree.importer import JsonImporter
+from anytree import AnyNode
 
 # local imports
 from catcli import nodes

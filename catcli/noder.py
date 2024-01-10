@@ -10,8 +10,8 @@ import shutil
 import time
 from typing import List, Union, Tuple, Any, Optional, Dict, cast
 import fnmatch
-import anytree  # type: ignore
-from natsort import os_sort_keygen  # type: ignore
+import anytree
+from natsort import os_sort_keygen
 
 # local imports
 from catcli import nodes
@@ -407,7 +407,7 @@ class Noder:
     def _fzf_prompt(strings: Any) -> Any:
         """prompt with fzf"""
         try:
-            from pyfzf.pyfzf import FzfPrompt  # type: ignore # pylint: disable=C0415 # noqa
+            from pyfzf.pyfzf import FzfPrompt  # pylint: disable=C0415 # noqa
             fzf = FzfPrompt()
             selected = fzf.prompt(strings)
             return selected
