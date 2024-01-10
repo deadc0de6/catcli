@@ -47,7 +47,7 @@ class NodeAny(NodeMixin):  # type: ignore
 
     def __init__(self,  # type: ignore[no-untyped-def]
                  name=None,
-                 size=None,
+                 size=0,
                  parent=None,
                  children=None):
         """build generic node"""

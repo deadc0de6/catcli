@@ -102,7 +102,7 @@ native="${tmpd}/native.txt"
 ${bin} -B ls -s -r --format=native --catalog="${catalog}" > "${native}"
 mod="${tmpd}/native.mod.txt"
 cat "${native}" | sed -e 's/free:.*%/free:0.0%/g' \
-  -e 's/date:....-..-.. ..:..:../date:2023-03-09 16:20:59/g' \
+  -e 's/....-..-.. ..:..:../2023-03-09 16:20:59/g' \
   -e 's#du:[^|]* |#du:0/0 |#g' > "${mod}"
 if command -v delta >/dev/null; then
   delta -s "tests-ng/assets/github.catalog.native.txt" "${mod}"
