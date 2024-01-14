@@ -12,7 +12,9 @@ import sys
 import os
 import datetime
 from typing import Dict, Any, List
+import typing
 from docopt import docopt
+import cmd2
 
 # local imports
 from catcli.version import __version__ as VERSION
@@ -54,6 +56,7 @@ Usage:
     {NAME} rename   [--catalog=<path>] [-BCfV] <storage> <name>
     {NAME} edit     [--catalog=<path>] [-BCfV] <storage>
     {NAME} graph    [--catalog=<path>] [-BCV] [<path>]
+    {NAME}          [--catalog=<path>]
     {NAME} fixsizes [--catalog=<path>]
     {NAME} print_supported_formats
     {NAME} help
@@ -294,6 +297,73 @@ def cmd_edit(args: Dict[str, Any],
         Logger.err(f'Storage named \"{storage}\" does not exist')
 
 
+@typing.no_type_check
+class CatcliRepl(cmd2.Cmd):
+    """catcli repl"""
+
+    prompt = 'catcli> '
+    intro = ''
+
+    def __init__(self):
+        super().__init__()
+        # remove built-ins
+        del cmd2.Cmd.do_alias
+        del cmd2.Cmd.do_edit
+        del cmd2.Cmd.do_macro
+        del cmd2.Cmd.do_run_pyscript
+        del cmd2.Cmd.do_run_script
+        del cmd2.Cmd.do_set
+        del cmd2.Cmd.do_shell
+        del cmd2.Cmd.do_shortcuts
+        self.hidden_commands.append('EOF')
+
+    def cmdloop(self, intro=None):
+        return cmd2.Cmd.cmdloop(self, intro)
+
+    @cmd2.with_argument_list
+    def do_ls(self, arglist: List[str]):
+        """ls <path>"""
+        arglist.insert(0, '--no-banner')
+        arglist.insert(0, 'ls')
+        args, noder, _, _, top = init(arglist)
+        cmd_ls(args, noder, top)
+        return False
+
+    @cmd2.with_argument_list
+    def do_tree(self, arglist):
+        """tree <path>"""
+        arglist.insert(0, '--no-banner')
+        arglist.insert(0, 'tree')
+        args, noder, _, _, top = init(arglist)
+        cmd_ls(args, noder, top)
+
+    @cmd2.with_argument_list
+    def do_find(self, arglist):
+        """find <term>"""
+        arglist.insert(0, '--no-banner')
+        arglist.insert(0, 'find')
+        args, noder, _, _, top = init(arglist)
+        cmd_find(args, noder, top)
+
+    @cmd2.with_argument_list
+    def do_du(self, arglist):
+        """du <path>"""
+        arglist.insert(0, '--no-banner')
+        arglist.insert(0, 'du')
+        args, noder, _, _, top = init(arglist)
+        cmd_du(args, noder, top)
+
+    def do_help(self, _):
+        """help"""
+        print(USAGE)
+        return False
+
+    # pylint: disable=C0103
+    def do_EOF(self, _):
+        """exit repl"""
+        return True
+
+
 def banner() -> None:
     """print banner"""
     Logger.stderr_nocolor(BANNER)
@@ -309,24 +379,23 @@ def print_supported_formats() -> None:
     print('"fzf-csv"    : fzf to csv (only valid for find)')
 
 
-def main() -> bool:
-    """entry point"""
-    args = docopt(USAGE, version=VERSION)
+def init(args):
+    """parse catcli arguments"""
+    args = docopt(USAGE, argv=args, version=VERSION)
 
     if args['help'] or args['--help']:
         print(USAGE)
-        return True
+        sys.exit(0)
 
     if args['print_supported_formats']:
         print_supported_formats()
-        return True
+        sys.exit(0)
 
-    # check format
     fmt = args['--format']
     if fmt not in FORMATS:
         Logger.err(f'bad format: {fmt}')
         print_supported_formats()
-        return False
+        sys.exit(0)
 
     if args['--verbose']:
         print(f'args: {args}')
@@ -354,6 +423,13 @@ def main() -> bool:
     # handle the meta node
     meta = noder.update_metanode(top)
     catalog.set_metanode(meta)
+
+    return args, noder, catalog, catalog_path, top
+
+
+def main() -> bool:
+    """entry point"""
+    args, noder, catalog, catalog_path, top = init(sys.argv[1:])
 
     # parse command
     try:
@@ -417,6 +493,8 @@ def main() -> bool:
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
             cmd_fixsizes(top, noder, catalog)
+        else:
+            CatcliRepl().cmdloop()
     except CatcliException as exc:
         Logger.stderr_nocolor('ERROR ' + str(exc))
         return False
