@@ -11,8 +11,8 @@ Catcli command line interface
 import sys
 import os
 import datetime
-from typing import Dict, Any, List
-import typing
+from typing import Dict, Any, List, \
+    Tuple
 from docopt import docopt
 import cmd2
 
@@ -297,14 +297,13 @@ def cmd_edit(args: Dict[str, Any],
         Logger.err(f'Storage named \"{storage}\" does not exist')
 
 
-@typing.no_type_check
-class CatcliRepl(cmd2.Cmd):
+class CatcliRepl(cmd2.Cmd):  # type: ignore
     """catcli repl"""
 
     prompt = 'catcli> '
     intro = ''
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # remove built-ins
         del cmd2.Cmd.do_alias
@@ -317,11 +316,11 @@ class CatcliRepl(cmd2.Cmd):
         del cmd2.Cmd.do_shortcuts
         self.hidden_commands.append('EOF')
 
-    def cmdloop(self, intro=None):
+    def cmdloop(self, intro: Any = None) -> Any:
         return cmd2.Cmd.cmdloop(self, intro)
 
-    @cmd2.with_argument_list
-    def do_ls(self, arglist: List[str]):
+    @cmd2.with_argument_list  # type: ignore
+    def do_ls(self, arglist: List[str]) -> bool:
         """ls <path>"""
         arglist.insert(0, '--no-banner')
         arglist.insert(0, 'ls')
@@ -329,37 +328,40 @@ class CatcliRepl(cmd2.Cmd):
         cmd_ls(args, noder, top)
         return False
 
-    @cmd2.with_argument_list
-    def do_tree(self, arglist):
+    @cmd2.with_argument_list  # type: ignore
+    def do_tree(self, arglist: List[str]) -> bool:
         """tree <path>"""
         arglist.insert(0, '--no-banner')
         arglist.insert(0, 'tree')
         args, noder, _, _, top = init(arglist)
         cmd_ls(args, noder, top)
+        return False
 
-    @cmd2.with_argument_list
-    def do_find(self, arglist):
+    @cmd2.with_argument_list  # type: ignore
+    def do_find(self, arglist: List[str]) -> bool:
         """find <term>"""
         arglist.insert(0, '--no-banner')
         arglist.insert(0, 'find')
         args, noder, _, _, top = init(arglist)
         cmd_find(args, noder, top)
+        return False
 
-    @cmd2.with_argument_list
-    def do_du(self, arglist):
+    @cmd2.with_argument_list  # type: ignore
+    def do_du(self, arglist: List[str]) -> bool:
         """du <path>"""
         arglist.insert(0, '--no-banner')
         arglist.insert(0, 'du')
         args, noder, _, _, top = init(arglist)
         cmd_du(args, noder, top)
+        return False
 
-    def do_help(self, _):
+    def do_help(self, _: Any) -> bool:
         """help"""
         print(USAGE)
         return False
 
     # pylint: disable=C0103
-    def do_EOF(self, _):
+    def do_EOF(self, _: Any) -> bool:
         """exit repl"""
         return True
 
@@ -379,9 +381,13 @@ def print_supported_formats() -> None:
     print('"fzf-csv"    : fzf to csv (only valid for find)')
 
 
-def init(args):
+def init(argv: List[str]) -> Tuple[Dict[str, Any],
+                                   Noder,
+                                   Catalog,
+                                   str,
+                                   NodeTop]:
     """parse catcli arguments"""
-    args = docopt(USAGE, argv=args, version=VERSION)
+    args = docopt(USAGE, argv=argv, version=VERSION)
 
     if args['help'] or args['--help']:
         print(USAGE)
@@ -435,7 +441,7 @@ def main() -> bool:
     try:
         if args['index']:
             cmd_index(args, noder, catalog, top)
-        if args['update']:
+        elif args['update']:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
