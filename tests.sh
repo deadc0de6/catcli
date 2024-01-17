@@ -62,6 +62,11 @@ echo "[+] mypy"
 mypy --version
 mypy --config-file=.mypy.ini catcli/
 
+# pytype
+echo "[+] pytype"
+pytype --version
+pytype catcli/
+
 set +e
 grep -R 'TODO' catcli/ && echo "TODO found" && exit 1
 grep -R 'FIXME' catcli/ && echo "FIXME found" && exit 1
