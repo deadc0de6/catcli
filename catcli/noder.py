@@ -86,6 +86,7 @@ class Noder:
                  quiet: bool = False) -> Optional[NodeAny]:
         """get the node by internal tree path"""
         resolv = anytree.resolver.Resolver('name')
+        bpath = ''
         try:
             bpath = os.path.basename(path)
             the_node = resolv.get(top, bpath)
