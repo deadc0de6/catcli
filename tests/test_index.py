@@ -50,7 +50,7 @@ class TestIndexing(unittest.TestCase):
         tmpdirname = 'tmpdir'
         args = {'<path>': dirpath, '<name>': tmpdirname,
                 '--hash': True, '--meta': ['some meta'],
-                '--no-subsize': False, '--verbose': True}
+                '--verbose': True}
 
         # index the directory
         cmd_index(args, noder, catalog, top)

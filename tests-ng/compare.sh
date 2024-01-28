@@ -10,7 +10,8 @@ cd "${prev}"
 # coverage
 bin="python3 -m catcli.catcli"
 if command -v coverage 2>/dev/null; then
-  bin="coverage run -p --source=catcli -m catcli.catcli"
+  mkdir -p coverages/
+  bin="coverage run -p --data-file coverages/coverage --source=catcli -m catcli.catcli"
 fi
 
 echo "current dir: $(pwd)"
@@ -35,6 +36,7 @@ catalog="${tmpd}/catalog"
 
 # index
 ${bin} -B index -c --catalog="${catalog}" github .github
+clean_catalog "${catalog}"
 ls -laR .github
 cat "${catalog}"
 
@@ -100,7 +102,7 @@ native="${tmpd}/native.txt"
 ${bin} -B ls -s -r --format=native --catalog="${catalog}" > "${native}"
 mod="${tmpd}/native.mod.txt"
 cat "${native}" | sed -e 's/free:.*%/free:0.0%/g' \
-  -e 's/date:....-..-.. ..:..:../date:2023-03-09 16:20:59/g' \
+  -e 's/....-..-.. ..:..:../2023-03-09 16:20:59/g' \
   -e 's#du:[^|]* |#du:0/0 |#g' > "${mod}"
 if command -v delta >/dev/null; then
   delta -s "tests-ng/assets/github.catalog.native.txt" "${mod}"
@@ -114,13 +116,14 @@ csv="${tmpd}/csv.txt"
 ${bin} -B ls -s -r --format=csv --catalog="${catalog}" > "${csv}"
 # modify created csv
 mod="${tmpd}/csv.mod.txt"
-cat "${csv}" | sed -e 's/"2","[^"]*","[^"]*",""/"2","0","0",""/g' | \
+cat "${csv}" | \
+  sed -e 's/"3","[^"]*","[^"]*",""/"3","0","0",""/g' | \
   sed 's/20..-..-.. ..:..:..//g' > "${mod}"
 # modify original
 ori="${tmpd}/ori.mod.txt"
 cat "tests-ng/assets/github.catalog.csv.txt" | \
   sed 's/....-..-.. ..:..:..//g' | \
-  sed 's/"2","[^"]*","[^"]*",""/"2","0","0",""/g' > "${ori}"
+  sed 's/"3","[^"]*","[^"]*",""/"3","0","0",""/g' > "${ori}"
 if command -v delta >/dev/null; then
   delta -s "${ori}" "${mod}"
 fi

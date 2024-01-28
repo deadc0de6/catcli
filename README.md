@@ -2,7 +2,7 @@
 
 [![Tests Status](https://github.com/deadc0de6/catcli/workflows/tests/badge.svg?branch=master)](https://github.com/deadc0de6/catcli/actions)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
-[![Coveralls](https://img.shields.io/coveralls/github/deadc0de6/catcli)](https://coveralls.io/github/deadc0de6/catcli?branch=master)
+[![Coverage](https://codecov.io/gh/deadc0de6/catcli/graph/badge.svg?token=t5dF7UL7K1)](https://codecov.io/gh/deadc0de6/catcli)
 
 [![PyPI version](https://badge.fury.io/py/catcli.svg)](https://badge.fury.io/py/catcli)
 [![AUR](https://img.shields.io/aur/version/catcli-git.svg)](https://aur.archlinux.org/packages/catcli-git)
@@ -50,6 +50,8 @@ catcli ls -r
 catcli ls log
 # find files/directories named '*log*'
 catcli find log
+# show directories sizes
+catcli du log
 ```
 
 see [usage](#usage) for specific info
@@ -76,6 +78,7 @@ See the [examples](#examples) for an overview of the available features.
   * [Find files](#find-files)
   * [Mount catalog](#mount-catalog)
   * [Display entire hierarchy](#display-entire-hierarchy)
+  * [Disk usage](#disk-usage)
   * [Catalog graph](#catalog-graph)
   * [Edit storage](#edit-storage)
   * [Update catalog](#update-catalog)
@@ -148,9 +151,6 @@ directory under `catcli.catalog`.
 The `--meta` switch allows to add any additional information to store along in
 the catalog like for example `the blue disk in my office`.
 
-Catcli will calculate and store the total size of each node (directories, storages, etc)
-unless the `-n --no-subsize` switch is used.
-
 Using the `-a --archive` switch allows to also index archive files as explained
 [below](#index-archive-files).
 
@@ -214,6 +214,11 @@ The entire catalog can be shown using the `ls -r` command.
 Resulting files can be sorted by size using the `-S --sortsize` switch.
 
 See the [examples](#examples) for more.
+
+## Disk usage
+
+You can get the disk usage with the `du` command.
+Resulting files can be sorted by size using the `-S --sortsize` switch.
 
 ## Catalog graph
 

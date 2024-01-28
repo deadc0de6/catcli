@@ -11,13 +11,16 @@ Catcli command line interface
 import sys
 import os
 import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, \
+    Tuple
 from docopt import docopt
+import cmd2
 
 # local imports
 from catcli.version import __version__ as VERSION
 from catcli.nodes import NodeTop, NodeAny
 from catcli.logger import Logger
+from catcli.printer_csv import CsvPrinter
 from catcli.colors import Colors
 from catcli.catalog import Catalog
 from catcli.walker import Walker
@@ -39,17 +42,22 @@ USAGE = f"""
 {BANNER}
 
 Usage:
-    {NAME} ls     [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
-    {NAME} find   [--catalog=<path>] [--format=<fmt>]
-                  [-aBCbdVsP] [--path=<path>] [<term>]
-    {NAME} index  [--catalog=<path>] [--meta=<meta>...]
-                  [-aBCcfnV] <name> <path>
-    {NAME} update [--catalog=<path>] [-aBCcfnV] [--lpath=<path>] <name> <path>
-    {NAME} mount  [--catalog=<path>] [-V] <mountpoint>
-    {NAME} rm     [--catalog=<path>] [-BCfV] <storage>
-    {NAME} rename [--catalog=<path>] [-BCfV] <storage> <name>
-    {NAME} edit   [--catalog=<path>] [-BCfV] <storage>
-    {NAME} graph  [--catalog=<path>] [-BCV] [<path>]
+    {NAME} ls       [--catalog=<path>] [--format=<fmt>] [-aBCrVSs] [<path>]
+    {NAME} tree     [--catalog=<path>] [-aBCVSs] [<path>]
+    {NAME} find     [--catalog=<path>] [--format=<fmt>]
+                    [-aBCbdVs] [--path=<path>] [<term>]
+    {NAME} index    [--catalog=<path>] [--meta=<meta>...]
+                    [-aBCcfV] <name> <path>
+    {NAME} update   [--catalog=<path>] [-aBCcfV]
+                    [--lpath=<path>] <name> <path>
+    {NAME} mount    [--catalog=<path>] [-V] <mountpoint>
+    {NAME} du       [--catalog=<path>] [-BCVSs] [<path>]
+    {NAME} rm       [--catalog=<path>] [-BCfV] <storage>
+    {NAME} rename   [--catalog=<path>] [-BCfV] <storage> <name>
+    {NAME} edit     [--catalog=<path>] [-BCfV] <storage>
+    {NAME} graph    [--catalog=<path>] [-BCV] [<path>]
+    {NAME}          [--catalog=<path>]
+    {NAME} fixsizes [--catalog=<path>]
     {NAME} print_supported_formats
     {NAME} help
     {NAME} --help
@@ -67,8 +75,6 @@ Options:
     -F --format=<fmt>   see \"print_supported_formats\" [default: native].
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
-    -n --no-subsize     Do not store size of directories [default: False].
-    -P --parent         Ignore stored relpath [default: True].
     -p --path=<path>    Start path.
     -r --recursive      Recursive [default: False].
     -s --raw-size       Print raw size [default: False].
@@ -104,7 +110,6 @@ def cmd_index(args: Dict[str, Any],
     name = args['<name>']
     usehash = args['--hash']
     debug = args['--verbose']
-    subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err(f'\"{path}\" does not exist')
         return
@@ -116,16 +121,16 @@ def cmd_index(args: Dict[str, Any],
         except KeyboardInterrupt:
             Logger.err('aborted')
             return
-        node = noder.get_storage_node(top, name)
-        node.parent = None
+        node = top.get_storage_node()
+        if node:
+            node.parent = None
 
     start = datetime.datetime.now()
     walker = Walker(noder, usehash=usehash, debug=debug)
     attr = args['--meta']
     root = noder.new_storage_node(name, path, top, attr)
     _, cnt = walker.index(path, root, name)
-    if subsize:
-        noder.rec_size(root, store=True)
+    root.nodesize = root.get_rec_size()
     stop = datetime.datetime.now()
     diff = stop - start
     Logger.info(f'Indexed {cnt} file(s) in {diff}')
@@ -143,25 +148,38 @@ def cmd_update(args: Dict[str, Any],
     usehash = args['--hash']
     logpath = args['--lpath']
     debug = args['--verbose']
-    subsize = not args['--no-subsize']
     if not os.path.exists(path):
         Logger.err(f'\"{path}\" does not exist')
         return
-    root = noder.get_storage_node(top, name, newpath=path)
-    if not root:
+    storage = noder.find_storage_node_by_name(top, name)
+    if not storage:
         Logger.err(f'storage named \"{name}\" does not exist')
         return
+    noder.update_storage_path(top, name, path)
     start = datetime.datetime.now()
     walker = Walker(noder, usehash=usehash, debug=debug,
                     logpath=logpath)
-    cnt = walker.reindex(path, root, top)
-    if subsize:
-        noder.rec_size(root, store=True)
+    cnt = walker.reindex(path, storage, top)
+    storage.nodesize = storage.get_rec_size()
     stop = datetime.datetime.now()
     diff = stop - start
     Logger.info(f'updated {cnt} file(s) in {diff}')
     if cnt > 0:
         catalog.save(top)
+
+
+def cmd_du(args: Dict[str, Any],
+           noder: Noder,
+           top: NodeTop) -> List[NodeAny]:
+    """du action"""
+    path = path_to_search_all(args['<path>'])
+    found = noder.diskusage(top,
+                            path,
+                            raw=args['--raw-size'])
+    if not found:
+        path = args['<path>']
+        Logger.err(f'\"{path}\": nothing found')
+    return found
 
 
 def cmd_ls(args: Dict[str, Any],
@@ -174,8 +192,8 @@ def cmd_ls(args: Dict[str, Any],
         raise BadFormatException('fzf is not supported in ls, use find')
     found = noder.list(top,
                        path,
-                       rec=args['--recursive'],
                        fmt=fmt,
+                       rec=args['--recursive'],
                        raw=args['--raw-size'])
     if not found:
         path = args['<path>']
@@ -189,7 +207,7 @@ def cmd_rm(args: Dict[str, Any],
            top: NodeTop) -> NodeTop:
     """rm action"""
     name = args['<storage>']
-    node = noder.get_storage_node(top, name)
+    node = noder.find_storage_node_by_name(top, name)
     if node:
         node.parent = None
         if catalog.save(top):
@@ -203,7 +221,6 @@ def cmd_find(args: Dict[str, Any],
              noder: Noder,
              top: NodeTop) -> List[NodeAny]:
     """find action"""
-    fromtree = args['--parent']
     directory = args['--directory']
     startpath = args['--path']
     fmt = args['--format']
@@ -212,13 +229,12 @@ def cmd_find(args: Dict[str, Any],
     search_for = args['<term>']
     if args['--verbose']:
         Logger.debug(f'search for \"{search_for}\" under \"{top.name}\"')
-    found = noder.find_name(top, search_for,
-                            script=script,
-                            startnode=startpath,
-                            only_dir=directory,
-                            parentfromtree=fromtree,
-                            fmt=fmt,
-                            raw=raw)
+    found = noder.find(top, search_for,
+                       script=script,
+                       startnode=startpath,
+                       only_dir=directory,
+                       fmt=fmt,
+                       raw=raw)
     return found
 
 
@@ -231,6 +247,17 @@ def cmd_graph(args: Dict[str, Any],
         path = GRAPHPATH
     cmd = noder.to_dot(top, path)
     Logger.info(f'create graph with \"{cmd}\" (you need graphviz)')
+
+
+def cmd_fixsizes(top: NodeTop,
+                 noder: Noder,
+                 catalog: Catalog) -> None:
+    """
+    fix each node size by re-calculating
+    recursively their size
+    """
+    noder.fixsizes(top)
+    catalog.save(top)
 
 
 def cmd_rename(args: Dict[str, Any],
@@ -270,6 +297,75 @@ def cmd_edit(args: Dict[str, Any],
         Logger.err(f'Storage named \"{storage}\" does not exist')
 
 
+class CatcliRepl(cmd2.Cmd):  # type: ignore
+    """catcli repl"""
+
+    prompt = 'catcli> '
+    intro = ''
+
+    def __init__(self) -> None:
+        super().__init__()
+        # remove built-ins
+        del cmd2.Cmd.do_alias
+        del cmd2.Cmd.do_edit
+        del cmd2.Cmd.do_macro
+        del cmd2.Cmd.do_run_pyscript
+        del cmd2.Cmd.do_run_script
+        del cmd2.Cmd.do_set
+        del cmd2.Cmd.do_shell
+        del cmd2.Cmd.do_shortcuts
+        self.hidden_commands.append('EOF')
+
+    def cmdloop(self, intro: Any = None) -> Any:
+        return cmd2.Cmd.cmdloop(self, intro)
+
+    @cmd2.with_argument_list  # type: ignore
+    def do_ls(self, arglist: List[str]) -> bool:
+        """ls <path>"""
+        arglist.insert(0, '--no-banner')
+        arglist.insert(0, 'ls')
+        args, noder, _, _, top = init(arglist)
+        cmd_ls(args, noder, top)
+        return False
+
+    @cmd2.with_argument_list  # type: ignore
+    def do_tree(self, arglist: List[str]) -> bool:
+        """tree <path>"""
+        arglist.insert(0, '--no-banner')
+        arglist.insert(0, 'tree')
+        args, noder, _, _, top = init(arglist)
+        cmd_ls(args, noder, top)
+        return False
+
+    @cmd2.with_argument_list  # type: ignore
+    def do_find(self, arglist: List[str]) -> bool:
+        """find <term>"""
+        arglist.insert(0, '--no-banner')
+        arglist.insert(0, 'find')
+        args, noder, _, _, top = init(arglist)
+        cmd_find(args, noder, top)
+        return False
+
+    @cmd2.with_argument_list  # type: ignore
+    def do_du(self, arglist: List[str]) -> bool:
+        """du <path>"""
+        arglist.insert(0, '--no-banner')
+        arglist.insert(0, 'du')
+        args, noder, _, _, top = init(arglist)
+        cmd_du(args, noder, top)
+        return False
+
+    def do_help(self, _: Any) -> bool:
+        """help"""
+        print(USAGE)
+        return False
+
+    # pylint: disable=C0103
+    def do_EOF(self, _: Any) -> bool:
+        """exit repl"""
+        return True
+
+
 def banner() -> None:
     """print banner"""
     Logger.stderr_nocolor(BANNER)
@@ -280,32 +376,35 @@ def print_supported_formats() -> None:
     """print all supported formats to stdout"""
     print('"native"     : native format')
     print('"csv"        : CSV format')
-    print(f'               {Noder.CSV_HEADER}')
+    print(f'               {CsvPrinter.CSV_HEADER}')
     print('"fzf-native" : fzf to native (only valid for find)')
     print('"fzf-csv"    : fzf to csv (only valid for find)')
 
 
-def main() -> bool:
-    """entry point"""
-    args = docopt(USAGE, version=VERSION)
+def init(argv: List[str]) -> Tuple[Dict[str, Any],
+                                   Noder,
+                                   Catalog,
+                                   str,
+                                   NodeTop]:
+    """parse catcli arguments"""
+    args = docopt(USAGE, argv=argv, version=VERSION)
 
     if args['help'] or args['--help']:
         print(USAGE)
-        return True
+        sys.exit(0)
 
     if args['print_supported_formats']:
         print_supported_formats()
-        return True
+        sys.exit(0)
 
-    # check format
     fmt = args['--format']
     if fmt not in FORMATS:
         Logger.err(f'bad format: {fmt}')
         print_supported_formats()
-        return False
+        sys.exit(0)
 
     if args['--verbose']:
-        print(args)
+        print(f'args: {args}')
 
     # print banner
     if not args['--no-banner']:
@@ -331,15 +430,23 @@ def main() -> bool:
     meta = noder.update_metanode(top)
     catalog.set_metanode(meta)
 
+    return args, noder, catalog, catalog_path, top
+
+
+def main() -> bool:
+    """entry point"""
+    args, noder, catalog, catalog_path, top = init(sys.argv[1:])
+
     # parse command
     try:
         if args['index']:
             cmd_index(args, noder, catalog, top)
-        if args['update']:
+        elif args['update']:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
             cmd_update(args, noder, catalog, top)
+            cmd_fixsizes(top, noder, catalog)
         elif args['find']:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')
@@ -349,6 +456,12 @@ def main() -> bool:
             if not catalog.exists():
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
+            cmd_ls(args, noder, top)
+        elif args['tree']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
+            args['--recursive'] = True
             cmd_ls(args, noder, top)
         elif args['mount']:
             if not catalog.exists():
@@ -376,6 +489,18 @@ def main() -> bool:
                 Logger.err(f'no such catalog: {catalog_path}')
                 return False
             cmd_edit(args, noder, catalog, top)
+        elif args['du']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
+            cmd_du(args, noder, top)
+        elif args['fixsizes']:
+            if not catalog.exists():
+                Logger.err(f'no such catalog: {catalog_path}')
+                return False
+            cmd_fixsizes(top, noder, catalog)
+        else:
+            CatcliRepl().cmdloop()
     except CatcliException as exc:
         Logger.stderr_nocolor('ERROR ' + str(exc))
         return False

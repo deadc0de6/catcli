@@ -149,21 +149,18 @@ FAKECATALOG = """
         {
           "md5": null,
           "name": "7544G",
-          "relpath": "tmpj5602ih7.catcli/7544G",
           "size": 100,
           "type": "file"
         },
         {
           "md5": null,
           "name": "KF2ZC",
-          "relpath": "tmpj5602ih7.catcli/KF2ZC",
           "size": 100,
           "type": "file"
         },
         {
           "md5": null,
           "name": "Z9OII",
-          "relpath": "tmpj5602ih7.catcli/Z9OII",
           "size": 100,
           "type": "file"
         },
@@ -172,14 +169,12 @@ FAKECATALOG = """
             {
               "md5": null,
               "name": "M592O9",
-              "relpath": "tmpj5602ih7.catcli/VNN/M592O9",
               "size": 100,
               "type": "file"
             }
           ],
           "md5": null,
           "name": "VNN",
-          "relpath": "VNN",
           "size": 100,
           "type": "dir"
         },
@@ -188,21 +183,18 @@ FAKECATALOG = """
             {
               "md5": null,
               "name": "X37H",
-              "relpath": "tmpj5602ih7.catcli/P4C/X37H",
               "size": 100,
               "type": "file"
             },
             {
               "md5": null,
               "name": "I566",
-              "relpath": "tmpj5602ih7.catcli/P4C/I566",
               "size": 100,
               "type": "file"
             }
           ],
           "md5": null,
           "name": "P4C",
-          "relpath": "P4C",
           "size": 200,
           "type": "dir"
         }

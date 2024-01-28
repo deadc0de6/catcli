@@ -6,8 +6,11 @@ Class that represents a node in the catalog tree
 """
 # pylint: disable=W0622
 
-from typing import Dict, Any
-from anytree import NodeMixin  # type: ignore
+import os
+from typing import Dict, Any, cast
+from anytree import NodeMixin
+
+from catcli.exceptions import CatcliException
 
 
 TYPE_TOP = 'top'
@@ -35,19 +38,29 @@ def typcast_node(node: Any) -> None:
         node.__class__ = NodeStorage
     elif node.type == TYPE_META:
         node.__class__ = NodeMeta
+    else:
+        raise CatcliException(f"bad node: {node}")
 
 
 class NodeAny(NodeMixin):  # type: ignore
     """generic node"""
 
     def __init__(self,  # type: ignore[no-untyped-def]
+                 name=None,
+                 size=0,
                  parent=None,
                  children=None):
         """build generic node"""
         super().__init__()
+        self.name = name
+        self.nodesize = size
         self.parent = parent
         if children:
             self.children = children
+
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        raise NotImplementedError
 
     def _to_str(self) -> str:
         ret = str(self.__class__) + ": " + str(self.__dict__)
@@ -59,6 +72,27 @@ class NodeAny(NodeMixin):  # type: ignore
 
     def __str__(self) -> str:
         return self._to_str()
+
+    def get_fullpath(self) -> str:
+        """return full path to this node"""
+        path = self.name
+        if self.parent:
+            typcast_node(self.parent)
+            ppath = self.parent.get_fullpath()
+            path = os.path.join(ppath, path)
+        return str(path)
+
+    def get_rec_size(self) -> int:
+        """recursively traverse tree and return size"""
+        totsize: int = self.nodesize
+        for node in self.children:
+            typcast_node(node)
+            totsize += node.get_rec_size()
+        return totsize
+
+    def get_storage_node(self) -> NodeMixin:
+        """recursively traverse up to find storage"""
+        return None
 
     def flagged(self) -> bool:
         """is flagged"""
@@ -90,6 +124,23 @@ class NodeTop(NodeAny):
         if children:
             self.children = children
 
+    def get_fullpath(self) -> str:
+        """return full path to this node"""
+        return ''
+
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return True
+
+    def get_rec_size(self) -> int:
+        """
+        recursively traverse tree and return size
+        also ensure to update the size on the way
+        """
+        size = super().get_rec_size()
+        self.nodesize = size
+        return size
+
     def __str__(self) -> str:
         return self._to_str()
 
@@ -99,7 +150,6 @@ class NodeFile(NodeAny):
 
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
-                 relpath: str,
                  nodesize: int,
                  md5: str,
                  maccess: float,
@@ -109,13 +159,20 @@ class NodeFile(NodeAny):
         super().__init__()  # type: ignore[no-untyped-call]
         self.name = name
         self.type = TYPE_FILE
-        self.relpath = relpath
         self.nodesize = nodesize
         self.md5 = md5
         self.maccess = maccess
         self.parent = parent
         if children:
             self.children = children
+
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return False
+
+    def get_storage_node(self) -> NodeAny:
+        """recursively traverse up to find storage"""
+        return cast(NodeStorage, self.ancestors[1])
 
     def __str__(self) -> str:
         return self._to_str()
@@ -126,7 +183,6 @@ class NodeDir(NodeAny):
 
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
-                 relpath: str,
                  nodesize: int,
                  maccess: float,
                  parent=None,
@@ -135,12 +191,28 @@ class NodeDir(NodeAny):
         super().__init__()  # type: ignore[no-untyped-call]
         self.name = name
         self.type = TYPE_DIR
-        self.relpath = relpath
         self.nodesize = nodesize
         self.maccess = maccess
         self.parent = parent
         if children:
             self.children = children
+
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return True
+
+    def get_rec_size(self) -> int:
+        """
+        recursively traverse tree and return size
+        also ensure to update the size on the way
+        """
+        size = super().get_rec_size()
+        self.nodesize = size
+        return size
+
+    def get_storage_node(self) -> NodeAny:
+        """recursively traverse up to find storage"""
+        return cast(NodeStorage, self.ancestors[1])
 
     def __str__(self) -> str:
         return self._to_str()
@@ -151,7 +223,6 @@ class NodeArchived(NodeAny):
 
     def __init__(self,  # type: ignore[no-untyped-def]
                  name: str,
-                 relpath: str,
                  nodesize: int,
                  md5: str,
                  archive: str,
@@ -161,13 +232,20 @@ class NodeArchived(NodeAny):
         super().__init__()  # type: ignore[no-untyped-call]
         self.name = name
         self.type = TYPE_ARCHIVED
-        self.relpath = relpath
         self.nodesize = nodesize
         self.md5 = md5
         self.archive = archive
         self.parent = parent
         if children:
             self.children = children
+
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return False
+
+    def get_storage_node(self) -> NodeAny:
+        """recursively traverse up to find storage"""
+        return cast(NodeStorage, self.ancestors[1])
 
     def __str__(self) -> str:
         return self._to_str()
@@ -198,6 +276,23 @@ class NodeStorage(NodeAny):
         if children:
             self.children = children
 
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return True
+
+    def get_rec_size(self) -> int:
+        """
+        recursively traverse tree and return size
+        also ensure to update the size on the way
+        """
+        size = super().get_rec_size()
+        self.nodesize = size
+        return size
+
+    def get_storage_node(self) -> NodeAny:
+        """recursively traverse up to find storage"""
+        return self
+
     def __str__(self) -> str:
         return self._to_str()
 
@@ -218,6 +313,14 @@ class NodeMeta(NodeAny):
         self.parent = parent
         if children:
             self.children = children
+
+    def may_have_children(self) -> bool:
+        """can node contains sub"""
+        return False
+
+    def get_rec_size(self) -> int:
+        """recursively traverse tree and return size"""
+        return 0
 
     def __str__(self) -> str:
         return self._to_str()

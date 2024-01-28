@@ -10,7 +10,7 @@ from time import time
 from stat import S_IFDIR, S_IFREG
 from typing import List, Dict, Any, Optional
 try:
-    import fuse  # type: ignore
+    import fuse
 except ModuleNotFoundError:
     pass
 
@@ -107,7 +107,7 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
 
     def getattr(self, path: str, _fh: Any = None) -> Dict[str, Any]:
         """return attr of file pointed by path"""
-        if path == '/':
+        if path == os.path.sep:
             # mountpoint
             curt = time()
             meta = {

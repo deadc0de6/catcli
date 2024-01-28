@@ -59,11 +59,23 @@ pylint -sn setup.py
 
 # mypy
 echo "[+] mypy"
-mypy --strict catcli/
+mypy --version
+mypy --config-file=.mypy.ini catcli/
+
+# pytype
+echo "[+] pytype"
+pytype --version
+pytype catcli/
+
+set +e
+grep -R 'TODO' catcli/ && echo "TODO found" && exit 1
+grep -R 'FIXME' catcli/ && echo "FIXME found" && exit 1
+set -e
 
 # unittest
 echo "[+] unittests"
-coverage run -p -m pytest tests
+mkdir -p coverages/
+coverage run -p --data-file coverages/coverage -m pytest tests
 
 # tests-ng
 echo "[+] tests-ng"
@@ -87,7 +99,8 @@ done
 
 # merge coverage
 echo "[+] coverage merge"
-coverage combine
+coverage combine coverages/*
+coverage xml
 
 echo "ALL TESTS DONE OK"
 exit 0

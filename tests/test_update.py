@@ -62,8 +62,7 @@ class TestUpdate(unittest.TestCase):
         tmpdirname = 'tmpdir'
         args = {'<path>': dirpath, '<name>': tmpdirname,
                 '--hash': True, '--meta': ['some meta'],
-                '--no-subsize': False, '--verbose': True,
-                '--lpath': None}
+                '--verbose': True, '--lpath': None}
 
         # index the directory
         unix_tree(dirpath)
@@ -71,11 +70,11 @@ class TestUpdate(unittest.TestCase):
         self.assertTrue(os.stat(catalogpath).st_size != 0)
 
         # ensure md5 sum are in
-        nods = noder.find_name(top, os.path.basename(file4))
-        self.assertTrue(len(nods) == 1)
+        nods = noder.find(top, os.path.basename(file4))
+        self.assertEqual(len(nods), 1)
         nod = nods[0]
         self.assertTrue(nod)
-        self.assertTrue(nod.md5 == f4_md5)
+        self.assertEqual(nod.md5, f4_md5)
 
         # print catalog
         noder.print_tree(top)
@@ -125,10 +124,10 @@ class TestUpdate(unittest.TestCase):
         # explore the top node to find all nodes
         self.assertEqual(len(top.children), 1)
         storage = top.children[0]
-        self.assertTrue(len(storage.children) == 8)
+        self.assertEqual(len(storage.children), 8)
 
         # ensure d1f1 md5 sum has changed in catalog
-        nods = noder.find_name(top, os.path.basename(d1f1))
+        nods = noder.find(top, os.path.basename(d1f1))
         self.assertTrue(len(nods) == 1)
         nod = nods[0]
         self.assertTrue(nod)
@@ -136,7 +135,7 @@ class TestUpdate(unittest.TestCase):
         self.assertTrue(nod.md5 == d1f1_md5_new)
 
         # ensure f4 md5 sum has changed in catalog
-        nods = noder.find_name(top, os.path.basename(file4))
+        nods = noder.find(top, os.path.basename(file4))
         self.assertTrue(len(nods) == 1)
         nod = nods[0]
         self.assertTrue(nod)
@@ -144,7 +143,7 @@ class TestUpdate(unittest.TestCase):
         self.assertTrue(nod.md5 == f4_md5_new)
 
         # ensure d2f2 md5 sum has changed in catalog
-        nods = noder.find_name(top, os.path.basename(d2f2))
+        nods = noder.find(top, os.path.basename(d2f2))
         self.assertTrue(len(nods) == 1)
         nod = nods[0]
         self.assertTrue(nod)

@@ -7,8 +7,14 @@
           "maccess": 1666206037.0786593,
           "md5": "0c6407a84d412c514007313fb3bca4de",
           "name": "FUNDING.yml",
-          "relpath": "/FUNDING.yml",
           "size": 17,
+          "type": "file"
+        },
+        {
+          "maccess": 1704320710.7056112,
+          "md5": "4203204f75b43cd4bf032402beb3359d",
+          "name": "codecov.yml",
+          "size": 104,
           "type": "file"
         },
         {
@@ -17,44 +23,43 @@
               "maccess": 1666206037.078865,
               "md5": "57699a7a6a03e20e864f220e19f8e197",
               "name": "pypi-release.yml",
-              "relpath": "workflows/pypi-release.yml",
               "size": 691,
               "type": "file"
             },
             {
-              "maccess": 1678375244.4870229,
-              "md5": "7144a119ef43adb634654522c12ec250",
+              "maccess": 1704403569.24789,
+              "md5": "691df1a4d2f254b5cd04c152e7c6ccaf",
               "name": "testing.yml",
-              "relpath": "workflows/testing.yml",
-              "size": 802,
+              "size": 850,
               "type": "file"
             }
           ],
-          "maccess": 1678375244.4865956,
+          "maccess": 1704320727.2641916,
           "name": "workflows",
-          "relpath": "/workflows",
-          "size": 1493,
+          "size": 1541,
           "type": "dir"
         }
       ],
       "free": 0,
       "name": "github",
-      "size": 1510,
+      "size": 1662,
       "total": 0,
-      "ts": 1678375259,
+      "ts": 1704923096,
       "type": "storage"
     },
     {
       "attr": {
-        "access": 1678375259,
-        "access_version": "0.8.7",
-        "created": 1678375259,
-        "created_version": "0.8.7"
+        "access": 1704923096,
+        "access_version": "0.9.6",
+        "created": 1704923096,
+        "created_version": "0.9.6"
       },
       "name": "meta",
+      "size": null,
       "type": "meta"
     }
   ],
   "name": "top",
+  "size": null,
   "type": "top"
 }

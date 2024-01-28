@@ -7,9 +7,9 @@ Class that represents the catcli catalog
 
 import os
 from typing import Optional, List, Dict, Tuple, Union, Any
-from anytree.exporter import JsonExporter, DictExporter  # type: ignore
-from anytree.importer import JsonImporter  # type: ignore
-from anytree import AnyNode  # type: ignore
+from anytree.exporter import JsonExporter, DictExporter
+from anytree.importer import JsonImporter
+from anytree import AnyNode
 
 # local imports
 from catcli import nodes
@@ -96,14 +96,13 @@ class Catalog:
     def _restore_json(self, string: str) -> Optional[NodeTop]:
         """restore the tree from json"""
         imp = JsonImporter(dictimporter=_DictImporter(debug=self.debug))
-        self._debug('import from string...')
         root = imp.import_(string)
         self._debug(f'Catalog imported from json \"{self.path}\"')
         self._debug(f'root imported: {root}')
         if root.type != nodes.TYPE_TOP:
             return None
         top = NodeTop(root.name, children=root.children)
-        self._debug(f'top imported: {top}')
+        self._debug(f'top imported: {top.name}')
         return top
 
 
@@ -126,7 +125,7 @@ class _DictImporter():
         assert "parent" not in data
         attrs = dict(data)
         # replace attr
-        attrs = back_attriter(attrs, debug=self.debug)
+        attrs = back_attriter(attrs)
         children: Union[str, Any] = attrs.pop("children", [])
         node = self.nodecls(parent=parent, **attrs)
         for child in children:
@@ -134,16 +133,14 @@ class _DictImporter():
         return node
 
 
-def back_attriter(adict: Dict[str, str],
-                  debug: bool = False) -> Dict[str, str]:
+def back_attriter(adict: Dict[str, str]) -> Dict[str, str]:
     """replace attribute on json restore"""
     attrs = {}
     for k, val in adict.items():
+        newk = k
         if k == 'size':
-            if debug:
-                Logger.debug(f'changing {k}={val}')
-            k = 'nodesize'
-        attrs[k] = val
+            newk = 'nodesize'
+        attrs[newk] = val
     return attrs
 
 

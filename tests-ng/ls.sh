@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # author: deadc0de6 (https://github.com/deadc0de6)
-# Copyright (c) 2023, deadc0de6
+# Copyright (c) 2024, deadc0de6
 
 set -e
 cur=$(cd "$(dirname "${0}")" && pwd)
@@ -44,15 +44,13 @@ echo ""
 
 ${bin} -B ls -r --catalog="${catalog}"
 
-echo "finding \"testing.yml\""
-${bin} -B find --catalog="${catalog}" testing.yml
-cnt=$(${bin} -B find --catalog="${catalog}" testing.yml | wc -l)
+${bin} -B ls --catalog="${catalog}" 'github1/*.yml'
+cnt=$(${bin} -B ls --catalog="${catalog}" 'github1/*.yml' | wc -l)
 [ "${cnt}" != "2" ] && echo "should return 2 (not ${cnt})" && exit 1
 
-echo "finding \"*.yml\""
-${bin} -B find --catalog="${catalog}" '*.yml'
-cnt=$(${bin} -B find --catalog="${catalog}" '*.yml' | wc -l)
-[ "${cnt}" != "8" ] && echo "should return 8 (not ${cnt})" && exit 1
+${bin} -B ls --catalog="${catalog}" 'github*/*.yml'
+cnt=$(${bin} -B ls --catalog="${catalog}" 'github*/*.yml' | wc -l)
+[ "${cnt}" != "4" ] && echo "should return 4 (not ${cnt})" && exit 1
 
 # the end
 echo ""
