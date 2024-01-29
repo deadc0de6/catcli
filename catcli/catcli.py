@@ -30,7 +30,7 @@ from catcli.exceptions import BadFormatException, CatcliException
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
-CATALOGPATH = f'{NAME}.catalog'
+CATALOGPATH = os.getenv('CATCLI_CATALOG_PATH', f'{NAME}.catalog')
 GRAPHPATH = f'/tmp/{NAME}.dot'
 FORMATS = ['native', 'csv', 'csv-with-header', 'fzf-native', 'fzf-csv']
 
