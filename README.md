@@ -134,6 +134,13 @@ Five different types of entry are present in a catalog:
   * **file node**: this is a file
   * **archive node**: this is a file contained in an archive (tar, zip, etc)
 
+Following environment variables are supported:
+
+* `CATCLI_CATALOG_PATH`: define the catalog path (`--catalog=<path>`)
+* `CATCLI_NO_BANNER`: disable the banner (`--no-banner`)
+* `CATCLI_VERBOSE`: enable verbose mode (`--verbose`)
+* `CATCLI_FORMAT`: define the output format (`-F --format=<fmt>`)
+
 ## Index data
 
 Let's say the DVD or external hard drive that needs to be indexed

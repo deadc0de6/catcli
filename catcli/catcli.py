@@ -30,9 +30,20 @@ from catcli.exceptions import BadFormatException, CatcliException
 
 NAME = 'catcli'
 CUR = os.path.dirname(os.path.abspath(__file__))
-CATALOGPATH = os.getenv('CATCLI_CATALOG_PATH', f'{NAME}.catalog')
-GRAPHPATH = f'/tmp/{NAME}.dot'
 FORMATS = ['native', 'csv', 'csv-with-header', 'fzf-native', 'fzf-csv']
+
+# env variables
+ENV_CATALOG_PATH = 'CATCLI_CATALOG_PATH'
+ENV_NOBANNER = 'CATCLI_NO_BANNER'
+ENV_VERBOSE = 'CATCLI_VERBOSE'
+ENV_FORMAT = 'CATCLI_FORMAT'
+
+# default paths
+DEFAULT_CATALOGPATH = os.getenv(ENV_CATALOG_PATH, default=f'{NAME}.catalog')
+DEFAULT_GRAPHPATH = f'/tmp/{NAME}.dot'
+DEFAULT_NOBANNER = os.getenv(ENV_NOBANNER) is not None
+DEFAULT_VERBOSEMODE = os.getenv(ENV_VERBOSE) is not None
+DEFAULT_FORMAT = os.getenv(ENV_FORMAT, default='native')
 
 BANNER = f""" +-+-+-+-+-+-+
  |c|a|t|c|l|i|
@@ -64,22 +75,22 @@ Usage:
     {NAME} --version
 
 Options:
-    --catalog=<path>    Path to the catalog [default: {CATALOGPATH}].
+    --catalog=<path>    Path to the catalog [default: {DEFAULT_CATALOGPATH}].
     --meta=<meta>       Additional attribute to store [default: ].
     -a --archive        Handle archive file [default: False].
-    -B --no-banner      Do not display the banner [default: False].
+    -B --no-banner      Do not display the banner [default: {str(DEFAULT_NOBANNER)}].
     -b --script         Output script to manage found file(s) [default: False].
     -C --no-color       Do not output colors [default: False].
     -c --hash           Calculate md5 hash [default: False].
     -d --directory      Only directory [default: False].
-    -F --format=<fmt>   see \"print_supported_formats\" [default: native].
+    -F --format=<fmt>   see \"print_supported_formats\" [default: {DEFAULT_FORMAT}].
     -f --force          Do not ask when updating the catalog [default: False].
     -l --lpath=<path>   Path where changes are logged [default: ]
     -p --path=<path>    Start path.
     -r --recursive      Recursive [default: False].
     -s --raw-size       Print raw size [default: False].
     -S --sortsize       Sort by size, largest first [default: False].
-    -V --verbose        Be verbose [default: False].
+    -V --verbose        Be verbose [default: {str(DEFAULT_VERBOSEMODE)}].
     -v --version        Show version.
     -h --help           Show this screen.
 """  # nopep8
@@ -126,6 +137,8 @@ def cmd_index(args: Dict[str, Any],
             node.parent = None
 
     start = datetime.datetime.now()
+    if debug:
+        Logger.debug('debug mode enabled')
     walker = Walker(noder, usehash=usehash, debug=debug)
     attr = args['--meta']
     root = noder.new_storage_node(name, path, top, attr)
@@ -244,7 +257,7 @@ def cmd_graph(args: Dict[str, Any],
     """graph action"""
     path = args['<path>']
     if not path:
-        path = GRAPHPATH
+        path = DEFAULT_GRAPHPATH
     cmd = noder.to_dot(top, path)
     Logger.info(f'create graph with \"{cmd}\" (you need graphviz)')
 
@@ -403,11 +416,12 @@ def init(argv: List[str]) -> Tuple[Dict[str, Any],
         print_supported_formats()
         sys.exit(0)
 
-    if args['--verbose']:
+    if args['--verbose'] or DEFAULT_VERBOSEMODE:
+        print('verbose mode enabled')
         print(f'args: {args}')
 
     # print banner
-    if not args['--no-banner']:
+    if not args['--no-banner'] and DEFAULT_NOBANNER:
         banner()
 
     # set colors
