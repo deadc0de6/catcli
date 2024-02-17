@@ -12,6 +12,10 @@
 
 *The command line catalog tool for your offline data*
 
+> [!WARNING]
+> catcli has been superseded by [gocatcli](https://github.com/deadc0de6/gocatcli/)
+> which provides all features of catcli and more...
+
 Did you ever wanted to find back that specific file that should be on one of your
 backup DVDs or one of your external hard drives? You usually go through all
 of them hoping to find the right one on the first try?
