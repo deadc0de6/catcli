@@ -17,7 +17,7 @@ except ModuleNotFoundError:
 # local imports
 from catcli.noder import Noder
 from catcli.nodes import NodeTop, NodeAny
-from catcli.utils import path_to_search_all, path_to_top
+from catcli.nodes_utils import path_to_search_all, path_to_top
 from catcli import nodes
 
 
@@ -129,5 +129,5 @@ class CatcliFilesystem(fuse.LoggingMixIn, fuse.Operations):  # type: ignore
         content = ['.', '..']
         entries = self._get_entries(path)
         for entry in entries:
-            content.append(entry.name)
+            content.append(entry.get_name())
         return content

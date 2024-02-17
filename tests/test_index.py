@@ -62,7 +62,7 @@ class TestIndexing(unittest.TestCase):
         self.assertTrue(len(storage.children) == 5)
 
         # ensures files and directories are in
-        names = [x.name for x in storage.children]
+        names = [x.get_name() for x in storage.children]
         self.assertTrue(os.path.basename(file1) in names)
         self.assertTrue(os.path.basename(file2) in names)
         self.assertTrue(os.path.basename(file3) in names)
@@ -70,9 +70,9 @@ class TestIndexing(unittest.TestCase):
         self.assertTrue(os.path.basename(dir2) in names)
 
         for node in storage.children:
-            if node.name == os.path.basename(dir1):
+            if node.get_name() == os.path.basename(dir1):
                 self.assertTrue(len(node.children) == 2)
-            elif node.name == os.path.basename(dir2):
+            elif node.get_name() == os.path.basename(dir2):
                 self.assertTrue(len(node.children) == 1)
 
 

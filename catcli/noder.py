@@ -18,7 +18,7 @@ from catcli import nodes
 from catcli.nodes import NodeAny, NodeStorage, \
     NodeTop, NodeFile, NodeArchived, NodeDir, NodeMeta, \
     typcast_node
-from catcli.utils import md5sum, fix_badchars, has_attr
+from catcli.utils import md5sum
 from catcli.logger import Logger
 from catcli.printer_native import NativePrinter
 from catcli.printer_csv import CsvPrinter
@@ -117,7 +117,7 @@ class Noder:
             return node, False
         # force re-indexing if no maccess
         maccess = os.path.getmtime(path)
-        if not has_attr(node, 'maccess') or \
+        if not node.has_attr('maccess') or \
                 not node.maccess:
             self._debug('\tchange: no maccess found')
             return node, True
@@ -336,7 +336,7 @@ class Noder:
         typcast_node(node)
         if node.type == nodes.TYPE_TOP:
             # top node
-            self.native_printer.print_top(pre, node.name)
+            self.native_printer.print_top(pre, node.get_name())
         elif node.type == nodes.TYPE_FILE:
             # node of type file
             self.native_printer.print_file(pre, node,
@@ -420,7 +420,7 @@ class Noder:
                 continue
             parents = rend.get_fullpath()
             storage = rend.get_storage_node()
-            fullpath = os.path.join(storage.name, parents)
+            fullpath = os.path.join(storage.get_name(), parents)
             the_nodes[fullpath] = rend
         # prompt with fzf
         paths = self._fzf_prompt(the_nodes.keys())
@@ -477,7 +477,7 @@ class Noder:
         paths = {}
         for item in found:
             typcast_node(item)
-            item.name = fix_badchars(item.name)
+            item.set_name(item.get_name())
             key = item.get_fullpath()
             paths[key] = item
 
@@ -574,7 +574,7 @@ class Noder:
         @fmt: output format
         @raw: print raw size
         """
-        self._debug(f'ls walking path: \"{path}\" from \"{top.name}\"')
+        self._debug(f'ls walking path: \"{path}\" from \"{top.get_name()}\"')
         resolv = anytree.resolver.Resolver('name')
         found = []
         try:
@@ -633,7 +633,7 @@ class Noder:
                   path: str,
                   raw: bool = False) -> List[NodeAny]:
         """disk usage"""
-        self._debug(f'du walking path: \"{path}\" from \"{top.name}\"')
+        self._debug(f'du walking path: \"{path}\" from \"{top.get_name()}\"')
         resolv = anytree.resolver.Resolver('name')
         found: NodeAny
         try:
@@ -660,15 +660,15 @@ class Noder:
         """add an entry to the tree"""
         entries = name.rstrip(os.sep).split(os.sep)
         if len(entries) == 1:
-            self.new_archive_node(name, top, top.name)
+            self.new_archive_node(name, top, top.get_name())
             return
         sub = os.sep.join(entries[:-1])
         nodename = entries[-1]
         try:
             parent = resolv.get(top, sub)
-            parent = self.new_archive_node(nodename, parent, top.name)
+            parent = self.new_archive_node(nodename, parent, top.get_name())
         except anytree.resolver.ChildResolverError:
-            self.new_archive_node(nodename, top, top.name)
+            self.new_archive_node(nodename, top, top.get_name())
 
     def list_to_tree(self, parent: NodeAny, names: List[str]) -> None:
         """convert list of files to a tree"""

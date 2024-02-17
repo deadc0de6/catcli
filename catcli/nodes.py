@@ -11,6 +11,7 @@ from typing import Dict, Any, cast
 from anytree import NodeMixin
 
 from catcli.exceptions import CatcliException
+from catcli.utils import fix_badchars
 
 
 TYPE_TOP = 'top'
@@ -58,6 +59,18 @@ class NodeAny(NodeMixin):  # type: ignore
         if children:
             self.children = children
 
+    def get_name(self) -> str:
+        """get node name"""
+        return fix_badchars(self.name)
+
+    def set_name(self, name: str) -> None:
+        """set node name"""
+        self.name = fix_badchars(name)
+
+    def has_attr(self, attr: str) -> bool:
+        """return True if node has attr as attribute"""
+        return attr in self.__dict__
+
     def may_have_children(self) -> bool:
         """can node contains sub"""
         raise NotImplementedError
@@ -75,12 +88,12 @@ class NodeAny(NodeMixin):  # type: ignore
 
     def get_fullpath(self) -> str:
         """return full path to this node"""
-        path = self.name
+        path = self.get_name()
         if self.parent:
             typcast_node(self.parent)
             ppath = self.parent.get_fullpath()
             path = os.path.join(ppath, path)
-        return str(path)
+        return fix_badchars(path)
 
     def get_rec_size(self) -> int:
         """recursively traverse tree and return size"""

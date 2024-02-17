@@ -151,7 +151,7 @@ class TestUpdate(unittest.TestCase):
         self.assertTrue(nod.md5 == d2f2_md5_new)
 
         # ensures files and directories are in
-        names = [node.name for node in anytree.PreOrderIter(storage)]
+        names = [node.get_name() for node in anytree.PreOrderIter(storage)]
         print(names)
         self.assertTrue(os.path.basename(file1) in names)
         self.assertTrue(os.path.basename(file2) in names)
@@ -169,13 +169,13 @@ class TestUpdate(unittest.TestCase):
         self.assertTrue(os.path.basename(new5) in names)
 
         for node in storage.children:
-            if node.name == os.path.basename(dir1):
+            if node.get_name() == os.path.basename(dir1):
                 self.assertTrue(len(node.children) == 3)
-            elif node.name == os.path.basename(dir2):
+            elif node.get_name() == os.path.basename(dir2):
                 self.assertTrue(len(node.children) == 3)
-            elif node.name == os.path.basename(new3):
+            elif node.get_name() == os.path.basename(new3):
                 self.assertTrue(len(node.children) == 0)
-            elif node.name == os.path.basename(new4):
+            elif node.get_name() == os.path.basename(new4):
                 self.assertTrue(len(node.children) == 1)
         self.assertTrue(read_from_file(d1f1) == editval)
 
@@ -189,7 +189,7 @@ class TestUpdate(unittest.TestCase):
         cmd_update(args, noder, catalog, top)
 
         # ensures files and directories are (not) in
-        names = [node.name for node in anytree.PreOrderIter(storage)]
+        names = [node.get_name() for node in anytree.PreOrderIter(storage)]
         print(names)
         self.assertTrue(os.path.basename(file1) in names)
         self.assertTrue(os.path.basename(file2) in names)
@@ -207,9 +207,9 @@ class TestUpdate(unittest.TestCase):
         self.assertTrue(os.path.basename(new4) not in names)
         self.assertTrue(os.path.basename(new5) not in names)
         for node in storage.children:
-            if node.name == os.path.basename(dir1):
+            if node.get_name() == os.path.basename(dir1):
                 self.assertTrue(len(node.children) == 2)
-            elif node.name == os.path.basename(new3):
+            elif node.get_name() == os.path.basename(new3):
                 self.assertTrue(len(node.children) == 0)
 
 

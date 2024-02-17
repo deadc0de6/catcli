@@ -12,7 +12,7 @@ from catcli.nodes import NodeFile, NodeDir, \
 from catcli.colors import Colors
 from catcli.logger import Logger
 from catcli.utils import fix_badchars, size_to_str, \
-    has_attr, epoch_to_str
+    epoch_to_str
 
 
 COLOR_STORAGE = Colors.YELLOW
@@ -54,8 +54,7 @@ class NativePrinter:
                       raw: bool = False) -> None:
         """print a storage node"""
         # construct name
-        name = node.name
-        name = fix_badchars(name)
+        name = node.get_name()
         # construct attrs
         attrs = []
         # nb files
@@ -74,7 +73,7 @@ class NativePrinter:
         szused = size_to_str(node.total - node.free, raw=raw)
         attrs.append(f'du:{szused}/{sztotal}')
         # timestamp
-        if has_attr(node, 'ts'):
+        if node.has_attr('ts'):
             attrs.append(f'date:{epoch_to_str(node.ts)}')
 
         # print
@@ -91,7 +90,7 @@ class NativePrinter:
                    raw: bool = False) -> None:
         """print a file node"""
         # construct name
-        name = node.name
+        name = node.get_name()
         storage = node.get_storage_node()
         if withpath:
             name = node.get_fullpath()
@@ -100,7 +99,7 @@ class NativePrinter:
         if node.md5:
             attrs.append(f'md5:{node.md5}')
         if withstorage:
-            content = Logger.get_bold_text(storage.name)
+            content = Logger.get_bold_text(storage.get_name())
             attrs.append(f'storage:{content}')
         # print
         out = []
@@ -111,7 +110,7 @@ class NativePrinter:
             size = node.nodesize
         line = size_to_str(size, raw=raw)
         out.append(f'{COLOR_SIZE}{line}{Colors.RESET}')
-        if has_attr(node, 'maccess'):
+        if node.has_attr('maccess'):
             line = epoch_to_str(node.maccess)
             out.append(f'{COLOR_TS}{line}{Colors.RESET}')
         if attrs:
@@ -128,7 +127,7 @@ class NativePrinter:
                   raw: bool = False) -> None:
         """print a directory node"""
         # construct name
-        name = node.name
+        name = node.get_name()
         storage = node.get_storage_node()
         if withpath:
             name = node.get_fullpath()
@@ -138,7 +137,7 @@ class NativePrinter:
             nbchildren = len(node.children)
             attrs.append(f'{self.NBFILES}:{nbchildren}')
         if withstorage:
-            attrs.append(f'storage:{Logger.get_bold_text(storage.name)}')
+            attrs.append(f"storage:{Logger.get_bold_text(storage.get_name())}")
         # print
         out = []
         out.append(f'{pre}')
@@ -148,7 +147,7 @@ class NativePrinter:
             size = node.nodesize
         line = size_to_str(size, raw=raw)
         out.append(f'{COLOR_SIZE}{line}{Colors.RESET}')
-        if has_attr(node, 'maccess'):
+        if node.has_attr('maccess'):
             line = epoch_to_str(node.maccess)
             out.append(f'{COLOR_TS}{line}{Colors.RESET}')
         if attrs:

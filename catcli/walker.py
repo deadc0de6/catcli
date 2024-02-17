@@ -171,7 +171,7 @@ class Walker:
         if node and changed:
             # remove this node and re-add
             self._debug(f'\t{path} has changed')
-            self._debug(f'\tremoving node {node.name} for {path}')
+            self._debug(f"\tremoving node {node.get_name()} for {path}")
             node.parent = None
         return True, node
 

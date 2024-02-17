@@ -25,7 +25,8 @@ from catcli.colors import Colors
 from catcli.catalog import Catalog
 from catcli.walker import Walker
 from catcli.noder import Noder
-from catcli.utils import ask, edit, path_to_search_all
+from catcli.utils import ask, edit
+from catcli.nodes_utils import path_to_search_all
 from catcli.exceptions import BadFormatException, CatcliException
 
 NAME = 'catcli'
@@ -241,7 +242,7 @@ def cmd_find(args: Dict[str, Any],
     script = args['--script']
     search_for = args['<term>']
     if args['--verbose']:
-        Logger.debug(f'search for \"{search_for}\" under \"{top.name}\"')
+        Logger.debug(f'search for "{search_for}" under "{top.get_name()}"')
     found = noder.find(top, search_for,
                        script=script,
                        startnode=startpath,
@@ -279,10 +280,10 @@ def cmd_rename(args: Dict[str, Any],
     """rename action"""
     storage = args['<storage>']
     new = args['<name>']
-    storages = list(x.name for x in top.children)
+    storages = list(x.get_name() for x in top.children)
     if storage in storages:
-        node = next(filter(lambda x: x.name == storage, top.children))
-        node.name = new
+        node = next(filter(lambda x: x.get_name() == storage, top.children))
+        node.set_name(new)
         if catalog.save(top):
             msg = f'Storage \"{storage}\" renamed to \"{new}\"'
             Logger.info(msg)
@@ -296,9 +297,9 @@ def cmd_edit(args: Dict[str, Any],
              top: NodeTop) -> None:
     """edit action"""
     storage = args['<storage>']
-    storages = list(x.name for x in top.children)
+    storages = list(x.get_name() for x in top.children)
     if storage in storages:
-        node = next(filter(lambda x: x.name == storage, top.children))
+        node = next(filter(lambda x: x.get_name() == storage, top.children))
         attr = node.attr
         if not attr:
             attr = ''

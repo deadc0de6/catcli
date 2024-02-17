@@ -102,7 +102,7 @@ class Catalog:
         if root.type != nodes.TYPE_TOP:
             return None
         top = NodeTop(root.name, children=root.children)
-        self._debug(f'top imported: {top.name}')
+        self._debug(f'top imported: {top.get_name()}')
         return top
 
 

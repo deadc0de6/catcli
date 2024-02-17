@@ -9,8 +9,7 @@ import sys
 from typing import List
 
 from catcli.nodes import NodeAny, NodeStorage, TYPE_DIR
-from catcli.utils import size_to_str, epoch_to_str, \
-    has_attr
+from catcli.utils import size_to_str, epoch_to_str
 
 
 class CsvPrinter:
@@ -35,7 +34,7 @@ class CsvPrinter:
                       raw: bool = False) -> None:
         """print a storage node"""
         out = []
-        out.append(node.name)   # name
+        out.append(node.get_name())   # name
         out.append(node.type)   # type
         out.append('')          # fake full path
         size = node.get_rec_size()
@@ -56,7 +55,7 @@ class CsvPrinter:
                    raw: bool = False) -> None:
         """print other nodes"""
         out = []
-        out.append(node.name.replace('"', '""'))  # name
+        out.append(node.get_name().replace('"', '""'))  # name
         out.append(node.type)  # type
         fullpath = node.get_fullpath()
         out.append(fullpath.replace('"', '""'))  # full path
@@ -64,11 +63,11 @@ class CsvPrinter:
         out.append(size_to_str(node.nodesize, raw=raw))  # size
         storage = node.get_storage_node()
         out.append(epoch_to_str(storage.ts))  # indexed_at
-        if has_attr(node, 'maccess'):
+        if node.has_attr('maccess'):
             out.append(epoch_to_str(node.maccess))  # maccess
         else:
             out.append('')  # fake maccess
-        if has_attr(node, 'md5'):
+        if node.has_attr('md5'):
             out.append(node.md5)  # md5
         else:
             out.append('')  # fake md5

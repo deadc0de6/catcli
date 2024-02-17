@@ -10,41 +10,13 @@ import hashlib
 import tempfile
 import subprocess
 import datetime
+import string
 
 # local imports
-from catcli import nodes
 from catcli.exceptions import CatcliException
 
 
 WILD = '*'
-
-
-def path_to_top(path: str) -> str:
-    """path pivot under top"""
-    pre = f'{os.path.sep}{nodes.NAME_TOP}'
-    if not path.startswith(pre):
-        # prepend with top node path
-        path = pre + path
-    return path
-
-
-def path_to_search_all(path: str) -> str:
-    """path to search for all subs"""
-    if not path:
-        path = os.path.sep
-    if not path.startswith(os.path.sep):
-        path = os.path.sep + path
-    pre = f'{os.path.sep}{nodes.NAME_TOP}'
-    if not path.startswith(pre):
-        # prepend with top node path
-        path = pre + path
-    # if not path.endswith(os.path.sep):
-    #     # ensure ends with a separator
-    #     path += os.path.sep
-    # if not path.endswith(WILD):
-    #     # add wild card
-    #     path += WILD
-    return path
 
 
 def md5sum(path: str) -> str:
@@ -101,24 +73,20 @@ def ask(question: str) -> bool:
     return resp.lower() == 'y'
 
 
-def edit(string: str) -> str:
+def edit(data: str) -> str:
     """edit the information with the default EDITOR"""
-    data = string.encode('utf-8')
+    content = fix_badchars(data)
     editor = os.environ.get('EDITOR', 'vim')
     with tempfile.NamedTemporaryFile(prefix='catcli', suffix='.tmp') as file:
-        file.write(data)
+        file.write(content.encode('utf-8'))
         file.flush()
-        subprocess.call([editor, file.name])
+        subprocess.call([editor, file.get_name()])
         file.seek(0)
         new = file.read()
     return new.decode('utf-8')
 
 
-def fix_badchars(string: str) -> str:
+def fix_badchars(data: str) -> str:
     """fix none utf-8 chars in string"""
-    return string.encode('utf-8', 'ignore').decode('utf-8')
-
-
-def has_attr(node: nodes.NodeAny, attr: str) -> bool:
-    """return True if node has attr as attribute"""
-    return attr in node.__dict__.keys()
+    data = "".join(x for x in data if x in string.printable)
+    return data.encode("utf-8", "ignore").decode("utf-8")
